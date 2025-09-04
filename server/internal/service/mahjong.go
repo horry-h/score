@@ -343,7 +343,7 @@ func (s *MahjongService) SettleRoom(ctx context.Context, req *SettleRoomRequest)
 
 	var players []struct {
 		UserID   int64
-		Score    int
+		Score    int32
 		Nickname string
 	}
 	
@@ -671,7 +671,7 @@ func (s *MahjongService) calculateOptimalSettlement(players []struct {
 	var settlements []struct {
 		FromUserID int64
 		ToUserID   int64
-		Amount     int
+		Amount     int32
 	}
 
 	// 贪心算法：每次处理一个输家，尽可能多地偿还给赢家
@@ -694,7 +694,7 @@ func (s *MahjongService) calculateOptimalSettlement(players []struct {
 			settlements = append(settlements, struct {
 				FromUserID int64
 				ToUserID   int64
-				Amount     int
+				Amount     int32
 			}{
 				FromUserID: loser.UserID,
 				ToUserID:   winners[i].UserID,
