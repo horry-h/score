@@ -265,7 +265,7 @@ func (s *MahjongService) TransferScore(ctx context.Context, req *TransferScoreRe
 	defer tx.Rollback()
 
 	// 检查转出用户分数是否足够
-	var fromScore int
+	var fromScore int32
 	err = tx.QueryRow(`
 		SELECT current_score FROM room_players 
 		WHERE room_id = ? AND user_id = ?
@@ -350,7 +350,7 @@ func (s *MahjongService) SettleRoom(ctx context.Context, req *SettleRoomRequest)
 	for rows.Next() {
 		var player struct {
 			UserID   int64
-			Score    int
+			Score    int32
 			Nickname string
 		}
 		rows.Scan(&player.UserID, &player.Score, &player.Nickname)
@@ -646,17 +646,17 @@ func (s *MahjongService) getRoomSettlements(roomID int64) ([]*Settlement, error)
 // 计算最优转账方案（最少转账次数）
 func (s *MahjongService) calculateOptimalSettlement(players []struct {
 	UserID   int64
-	Score    int
+	Score    int32
 	Nickname string
 }) []struct {
 	FromUserID int64
 	ToUserID   int64
-	Amount     int
+	Amount     int32
 } {
 	// 分离赢家和输家
 	var winners, losers []struct {
 		UserID   int64
-		Score    int
+		Score    int32
 		Nickname string
 	}
 

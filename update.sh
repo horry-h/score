@@ -26,6 +26,17 @@ fi
 
 echo -e "${GREEN}检测到项目目录: $(pwd)${NC}"
 
+# 检查是否有更新
+echo -e "${YELLOW}检查代码更新...${NC}"
+git fetch origin
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/main)
+
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo -e "${GREEN}代码已是最新版本，无需更新${NC}"
+    exit 0
+fi
+
 # 拉取最新代码
 echo -e "${YELLOW}拉取最新代码...${NC}"
 git pull origin main
@@ -36,6 +47,7 @@ echo -e "${YELLOW}重新构建应用...${NC}"
 # 进入server目录
 cd server
 export PATH=$PATH:/usr/local/go/bin
+go mod tidy
 go build -o mahjong-server main.go
 
 # 返回项目根目录
