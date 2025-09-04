@@ -192,6 +192,15 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
   - 创建mahjong_score数据库
   - 验证连接和数据库创建
 
+### rebuild-app.sh - 应用重新构建脚本
+- **功能**: 在服务器上重新构建应用
+- **特点**:
+  - 检查Go环境和依赖
+  - 清理旧的可执行文件
+  - 重新构建Linux版本的应用
+  - 验证可执行文件架构
+  - 重启服务并测试API
+
 ### quick-fix.sh - 快速修复脚本
 - **功能**: 一键修复常见问题
 - **特点**:
@@ -226,6 +235,9 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 # 快速修复问题
 ./quick-fix.sh
 
+# 重新构建应用（解决架构问题）
+./rebuild-app.sh
+
 # 设置MySQL root密码
 ./setup-mysql-root.sh
 
@@ -257,11 +269,17 @@ systemctl restart score-server
 # 一键修复问题（推荐）
 ./quick-fix.sh
 
+# 如果遇到 "Exec format error" 错误，重新构建应用
+./rebuild-app.sh
+
 # 手动查看详细错误日志
 journalctl -u score-server -n 50 --no-pager
 
 # 检查可执行文件是否存在
 ls -la /root/horry/score/server/mahjong-server
+
+# 检查可执行文件架构
+file /root/horry/score/server/mahjong-server
 
 # 检查配置文件
 cat /root/horry/score/.env

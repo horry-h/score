@@ -42,12 +42,40 @@ echo -e "\n${YELLOW}--- 3. 检查可执行文件 ---${NC}"
 if [ -f "server/mahjong-server" ]; then
     echo -e "${GREEN}可执行文件存在${NC}"
     ls -la server/mahjong-server
+    
+    # 检查文件架构
+    echo -e "${BLUE}检查文件架构...${NC}"
+    FILE_INFO=$(file server/mahjong-server)
+    echo -e "${BLUE}文件信息: ${FILE_INFO}${NC}"
+    
+    # 检查是否是Linux可执行文件
+    if echo "$FILE_INFO" | grep -q "Linux"; then
+        echo -e "${GREEN}可执行文件架构正确 (Linux)${NC}"
+    else
+        echo -e "${RED}可执行文件架构不匹配，需要重新构建${NC}"
+        echo -e "${BLUE}重新构建应用...${NC}"
+        cd server
+        rm -f mahjong-server
+        export PATH=$PATH:/usr/local/go/bin
+        go mod tidy
+        if go build -o mahjong-server main.go; then
+            echo -e "${GREEN}重新构建成功${NC}"
+            ls -la mahjong-server
+        else
+            echo -e "${RED}重新构建失败${NC}"
+            exit 1
+        fi
+        cd ..
+    fi
 else
     echo -e "${RED}可执行文件不存在${NC}"
     echo -e "${BLUE}尝试构建...${NC}"
     cd server
+    export PATH=$PATH:/usr/local/go/bin
+    go mod tidy
     if go build -o mahjong-server main.go; then
         echo -e "${GREEN}构建成功${NC}"
+        ls -la mahjong-server
     else
         echo -e "${RED}构建失败${NC}"
         exit 1
