@@ -32,6 +32,16 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# 检查是否在正确的项目目录
+if [ ! -f "deploy.sh" ] || [ ! -d "server" ]; then
+    echo -e "${RED}错误: 请在项目根目录运行此脚本${NC}"
+    echo -e "${YELLOW}当前目录: $(pwd)${NC}"
+    echo -e "${YELLOW}请确保目录包含 deploy.sh 和 server/ 目录${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}检测到项目目录: $(pwd)${NC}"
+
 # 1. 更新系统并安装必要软件
 echo -e "${YELLOW}[1/5] 安装必要软件...${NC}"
 apt update -y
@@ -46,6 +56,7 @@ if ! command -v go &> /dev/null; then
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
     export PATH=$PATH:/usr/local/go/bin
     rm go1.21.5.linux-amd64.tar.gz
+    cd - > /dev/null  # 返回原目录
 fi
 
 # 3. 配置MySQL
@@ -77,6 +88,8 @@ EOF
 
 # 5. 构建和部署应用
 echo -e "${YELLOW}[5/5] 构建和部署应用...${NC}"
+
+# 进入server目录
 cd server
 
 # 下载依赖
@@ -91,6 +104,9 @@ if [ -f "database.sql" ]; then
     mysql -u ${DB_USER} -p${DB_PASS} ${DB_NAME} < database.sql 2>/dev/null || true
 fi
 
+# 返回项目根目录
+cd ..
+
 # 创建systemd服务
 cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
 [Unit]
@@ -100,8 +116,8 @@ After=network.target mysql.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=${PROJECT_DIR}/server
-ExecStart=${PROJECT_DIR}/server/mahjong-server
+WorkingDirectory=$(pwd)/server
+ExecStart=$(pwd)/server/mahjong-server
 Restart=always
 RestartSec=5
 Environment=ENV=production
@@ -139,12 +155,13 @@ if systemctl is-active --quiet ${SERVICE_NAME}; then
         echo -e "  API地址: http://${SERVER_IP}:8080"
         echo -e "  健康检查: http://${SERVER_IP}:8080/api/v1/health"
         echo -e "  服务状态: $(systemctl is-active ${SERVICE_NAME})"
+        echo -e "  项目目录: $(pwd)"
         echo -e ""
         echo -e "${BLUE}常用命令：${NC}"
         echo -e "  查看状态: systemctl status ${SERVICE_NAME}"
         echo -e "  查看日志: journalctl -u ${SERVICE_NAME} -f"
         echo -e "  重启服务: systemctl restart ${SERVICE_NAME}"
-        echo -e "  更新代码: cd ${PROJECT_DIR} && git pull && systemctl restart ${SERVICE_NAME}"
+        echo -e "  更新代码: cd $(pwd) && git pull && systemctl restart ${SERVICE_NAME}"
     else
         echo -e "${RED}❌ 健康检查失败${NC}"
         echo -e "${YELLOW}查看日志: journalctl -u ${SERVICE_NAME} -f${NC}"
