@@ -9,8 +9,8 @@ NC='\033[0m' # No Color
 
 # 配置
 DB_NAME="mahjong_score"
-DB_USER="mahjong_user"
-DB_PASS="Mahjong2024!"
+DB_USER="root"
+DB_PASS="123456"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  数据库修复脚本${NC}"
@@ -44,36 +44,15 @@ else
     echo -e "${YELLOW}数据库可能已存在${NC}"
 fi
 
-# 4. 检查并创建用户
-echo -e "\n${YELLOW}--- 4. 创建数据库用户 ---${NC}"
-USER_EXISTS=$(sudo mysql -e "SELECT COUNT(*) FROM mysql.user WHERE User='${DB_USER}' AND Host='localhost';" 2>/dev/null | tail -1)
+# 4. 设置root用户密码
+echo -e "\n${YELLOW}--- 4. 设置root用户密码 ---${NC}"
+echo -e "${BLUE}设置MySQL root用户密码为 123456...${NC}"
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASS}';" 2>/dev/null || true
+sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
+echo -e "${GREEN}root用户密码设置完成${NC}"
 
-if [ "$USER_EXISTS" -eq 0 ]; then
-    echo -e "${BLUE}创建用户 ${DB_USER}...${NC}"
-    sudo mysql -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}用户创建成功${NC}"
-    else
-        echo -e "${RED}用户创建失败${NC}"
-        exit 1
-    fi
-else
-    echo -e "${GREEN}用户 ${DB_USER} 已存在${NC}"
-fi
-
-# 5. 授权
-echo -e "\n${YELLOW}--- 5. 设置用户权限 ---${NC}"
-sudo mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}权限设置成功${NC}"
-else
-    echo -e "${RED}权限设置失败${NC}"
-    exit 1
-fi
-
-# 6. 测试用户连接
-echo -e "\n${YELLOW}--- 6. 测试用户连接 ---${NC}"
+# 5. 测试用户连接
+echo -e "\n${YELLOW}--- 5. 测试用户连接 ---${NC}"
 if mysql -u ${DB_USER} -p${DB_PASS} -e "SELECT 1;" ${DB_NAME} &> /dev/null; then
     echo -e "${GREEN}用户连接测试成功${NC}"
 else
@@ -83,8 +62,8 @@ else
     exit 1
 fi
 
-# 7. 初始化数据库表
-echo -e "\n${YELLOW}--- 7. 初始化数据库表 ---${NC}"
+# 6. 初始化数据库表
+echo -e "\n${YELLOW}--- 6. 初始化数据库表 ---${NC}"
 if [ -f "server/database.sql" ]; then
     TABLE_COUNT=$(mysql -u ${DB_USER} -p${DB_PASS} ${DB_NAME} -e "SHOW TABLES;" 2>/dev/null | wc -l)
     if [ "$TABLE_COUNT" -le 1 ]; then
@@ -103,8 +82,8 @@ else
     echo -e "${YELLOW}未找到 database.sql 文件${NC}"
 fi
 
-# 8. 验证数据库
-echo -e "\n${YELLOW}--- 8. 验证数据库 ---${NC}"
+# 7. 验证数据库
+echo -e "\n${YELLOW}--- 7. 验证数据库 ---${NC}"
 echo -e "${BLUE}数据库表列表:${NC}"
 mysql -u ${DB_USER} -p${DB_PASS} ${DB_NAME} -e "SHOW TABLES;" 2>/dev/null
 

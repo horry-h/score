@@ -18,8 +18,8 @@ SERVER_IP="124.156.196.117"
 PROJECT_DIR="/root/horry/score"
 SERVICE_NAME="score-server"
 DB_NAME="mahjong_score"
-DB_USER="mahjong_user"
-DB_PASS="Mahjong2024!"
+DB_USER="root"
+DB_PASS="123456"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  麻将记分小程序一键部署${NC}"
@@ -87,27 +87,11 @@ systemctl start mysql
 systemctl enable mysql
 
 # 检查数据库是否已存在
-DB_EXISTS=$(sudo mysql -e "SHOW DATABASES LIKE '${DB_NAME}';" 2>/dev/null | grep -c "${DB_NAME}" || echo "0")
+DB_EXISTS=$(mysql -u ${DB_USER} -p${DB_PASS} -e "SHOW DATABASES LIKE '${DB_NAME}';" 2>/dev/null | grep -c "${DB_NAME}" || echo "0")
 
 if [ "$DB_EXISTS" -eq 0 ]; then
-    echo -e "${BLUE}创建数据库和用户...${NC}"
-    
-    # 使用sudo mysql连接，避免root用户认证问题
-    sudo mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
-    
-    # 检查用户是否已存在
-    USER_EXISTS=$(sudo mysql -e "SELECT COUNT(*) FROM mysql.user WHERE User='${DB_USER}' AND Host='localhost';" 2>/dev/null | tail -1 || echo "0")
-    
-    if [ "$USER_EXISTS" -eq 0 ]; then
-        echo -e "${BLUE}创建数据库用户...${NC}"
-        sudo mysql -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';" 2>/dev/null || true
-        sudo mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';" 2>/dev/null || true
-        sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
-        echo -e "${GREEN}数据库用户创建完成${NC}"
-    else
-        echo -e "${GREEN}数据库用户已存在${NC}"
-    fi
-    
+    echo -e "${BLUE}创建数据库...${NC}"
+    mysql -u ${DB_USER} -p${DB_PASS} -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
     echo -e "${GREEN}数据库创建完成${NC}"
 else
     echo -e "${GREEN}数据库已存在${NC}"
@@ -122,16 +106,23 @@ if [ -f ".env" ]; then
 else
     echo -e "${BLUE}创建环境配置文件...${NC}"
     cat > .env << EOF
+# 数据库配置
 DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=${DB_USER}
 DB_PASSWORD=${DB_PASS}
 DB_DATABASE=${DB_NAME}
+
+# 服务端口配置
 HTTP_PORT=8080
 SERVER_HOST=0.0.0.0
 SERVER_PUBLIC_IP=${SERVER_IP}
+
+# 微信小程序配置
 WECHAT_APPID=your_wechat_appid
 WECHAT_APPSECRET=your_wechat_appsecret
+
+# 环境配置
 ENV=production
 EOF
     echo -e "${GREEN}环境配置文件创建完成${NC}"

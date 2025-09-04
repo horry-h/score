@@ -50,7 +50,7 @@ if [ "$DB_EXISTS" -gt 0 ]; then
     echo -e "  ${GREEN}✅ 数据库 mahjong_score 存在${NC}"
     
     # 检查表结构
-    TABLE_COUNT=$(mysql -u mahjong_user -pMahjong2024! mahjong_score -e "SHOW TABLES;" 2>/dev/null | wc -l || echo "0")
+    TABLE_COUNT=$(mysql -u root -p123456 mahjong_score -e "SHOW TABLES;" 2>/dev/null | wc -l || echo "0")
     if [ "$TABLE_COUNT" -gt 1 ]; then
         echo -e "  ${GREEN}✅ 数据库表结构完整 (${TABLE_COUNT} 个表)${NC}"
     else

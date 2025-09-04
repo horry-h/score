@@ -10,8 +10,8 @@ NC='\033[0m' # No Color
 # 配置
 SERVICE_NAME="score-server"
 DB_NAME="mahjong_score"
-DB_USER="mahjong_user"
-DB_PASS="Mahjong2024!"
+DB_USER="root"
+DB_PASS="123456"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  快速修复脚本${NC}"

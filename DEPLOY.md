@@ -179,10 +179,18 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 ### fix-database.sh - 数据库修复脚本
 - **功能**: 专门修复数据库连接和权限问题
 - **特点**:
-  - 解决MySQL 8.0+ 认证问题
-  - 自动创建数据库和用户
-  - 设置正确的用户权限
+  - 设置MySQL root用户密码为123456
+  - 自动创建数据库
   - 初始化数据库表结构
+  - 验证数据库连接
+
+### setup-mysql-root.sh - MySQL Root密码设置脚本
+- **功能**: 设置MySQL root用户密码
+- **特点**:
+  - 设置root用户密码为123456
+  - 使用mysql_native_password认证插件
+  - 创建mahjong_score数据库
+  - 验证连接和数据库创建
 
 ### quick-fix.sh - 快速修复脚本
 - **功能**: 一键修复常见问题
@@ -217,6 +225,9 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 
 # 快速修复问题
 ./quick-fix.sh
+
+# 设置MySQL root密码
+./setup-mysql-root.sh
 
 # 修复数据库问题
 ./fix-database.sh
@@ -276,10 +287,10 @@ iptables -L INPUT | grep 8080
 systemctl status mysql
 
 # 测试数据库连接
-mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
+mysql -u root -p123456 -e "SELECT 1"
 
 # 检查数据库表
-mysql -u mahjong_user -pMahjong2024! -e "SHOW TABLES;" mahjong_score
+mysql -u root -p123456 -e "SHOW TABLES;" mahjong_score
 
 # 如果遇到认证问题，使用sudo连接
 sudo mysql -e "SELECT 1"

@@ -47,7 +47,7 @@ fi
 
 # 5. 数据库连接测试
 echo -e "\n${YELLOW}--- 数据库连接 ---${NC}"
-if mysql -u mahjong_user -pMahjong2024! -e "SELECT 1;" mahjong_score &> /dev/null; then
+if mysql -u root -p123456 -e "SELECT 1;" mahjong_score &> /dev/null; then
     echo -e "${GREEN}✅ 数据库连接正常${NC}"
 else
     echo -e "${RED}❌ 数据库连接失败${NC}"
