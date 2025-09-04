@@ -168,6 +168,22 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
   - 显示详细的系统信息
   - 提供健康检查和故障诊断
 
+### troubleshoot.sh - 故障排除脚本
+- **功能**: 深度诊断系统问题
+- **特点**:
+  - 检查所有系统组件和依赖
+  - 提供详细的错误诊断信息
+  - 包含常见问题的解决建议
+  - 监控系统资源使用情况
+
+### fix-database.sh - 数据库修复脚本
+- **功能**: 专门修复数据库连接和权限问题
+- **特点**:
+  - 解决MySQL 8.0+ 认证问题
+  - 自动创建数据库和用户
+  - 设置正确的用户权限
+  - 初始化数据库表结构
+
 ## 常用命令总结
 
 ```bash
@@ -176,6 +192,12 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 
 # 检查部署状态
 ./status.sh
+
+# 故障排除诊断
+./troubleshoot.sh
+
+# 修复数据库问题
+./fix-database.sh
 
 # 更新代码
 ./update.sh
@@ -190,9 +212,85 @@ journalctl -u score-server -f
 systemctl restart score-server
 ```
 
+## 故障排除
+
+### 常见问题及解决方案
+
+#### 1. 服务启动失败
+```bash
+# 查看详细错误日志
+journalctl -u score-server -n 50 --no-pager
+
+# 检查可执行文件是否存在
+ls -la /root/horry/score/server/mahjong-server
+
+# 检查配置文件
+cat /root/horry/score/.env
+```
+
+#### 2. 端口未监听
+```bash
+# 检查端口占用
+ss -tuln | grep 8080
+
+# 检查防火墙设置
+ufw status
+# 或
+iptables -L INPUT | grep 8080
+```
+
+#### 3. 数据库连接失败
+```bash
+# 运行数据库修复脚本（推荐）
+./fix-database.sh
+
+# 手动检查MySQL服务
+systemctl status mysql
+
+# 测试数据库连接
+mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
+
+# 检查数据库表
+mysql -u mahjong_user -pMahjong2024! -e "SHOW TABLES;" mahjong_score
+
+# 如果遇到认证问题，使用sudo连接
+sudo mysql -e "SELECT 1"
+```
+
+#### 4. API无法访问
+```bash
+# 本地测试
+curl http://localhost:8080/api/v1/health
+
+# 外部测试
+curl http://124.156.196.117:8080/api/v1/health
+
+# 检查网络连接
+ping 124.156.196.117
+```
+
+#### 5. 使用故障排除脚本
+```bash
+# 运行全面的系统诊断
+./troubleshoot.sh
+```
+
+### 日志查看
+```bash
+# 查看服务日志
+journalctl -u score-server -f
+
+# 查看系统日志
+journalctl -xe
+
+# 查看MySQL日志
+journalctl -u mysql -f
+```
+
 ## 注意事项
 
 1. 确保服务器有足够的权限访问GitHub仓库
 2. 首次部署前需要配置微信小程序的AppID和AppSecret
 3. 建议定期备份数据库
 4. 监控服务运行状态和日志
+5. 遇到问题时先运行 `./troubleshoot.sh` 进行诊断

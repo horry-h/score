@@ -87,14 +87,27 @@ systemctl start mysql
 systemctl enable mysql
 
 # 检查数据库是否已存在
-DB_EXISTS=$(mysql -e "SHOW DATABASES LIKE '${DB_NAME}';" 2>/dev/null | grep -c "${DB_NAME}" || echo "0")
+DB_EXISTS=$(sudo mysql -e "SHOW DATABASES LIKE '${DB_NAME}';" 2>/dev/null | grep -c "${DB_NAME}" || echo "0")
 
 if [ "$DB_EXISTS" -eq 0 ]; then
     echo -e "${BLUE}创建数据库和用户...${NC}"
-    mysql -e "CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
-    mysql -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';" 2>/dev/null || true
-    mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';" 2>/dev/null || true
-    mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
+    
+    # 使用sudo mysql连接，避免root用户认证问题
+    sudo mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
+    
+    # 检查用户是否已存在
+    USER_EXISTS=$(sudo mysql -e "SELECT COUNT(*) FROM mysql.user WHERE User='${DB_USER}' AND Host='localhost';" 2>/dev/null | tail -1 || echo "0")
+    
+    if [ "$USER_EXISTS" -eq 0 ]; then
+        echo -e "${BLUE}创建数据库用户...${NC}"
+        sudo mysql -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';" 2>/dev/null || true
+        sudo mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';" 2>/dev/null || true
+        sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
+        echo -e "${GREEN}数据库用户创建完成${NC}"
+    else
+        echo -e "${GREEN}数据库用户已存在${NC}"
+    fi
+    
     echo -e "${GREEN}数据库创建完成${NC}"
 else
     echo -e "${GREEN}数据库已存在${NC}"
@@ -183,56 +196,108 @@ systemctl enable ${SERVICE_NAME}
 if systemctl is-active --quiet ${SERVICE_NAME}; then
     echo -e "${GREEN}服务已在运行，重启服务...${NC}"
     systemctl restart ${SERVICE_NAME}
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}服务重启成功${NC}"
+    else
+        echo -e "${RED}服务重启失败${NC}"
+        echo -e "${BLUE}查看错误日志:${NC}"
+        journalctl -u ${SERVICE_NAME} -n 10 --no-pager
+        exit 1
+    fi
 else
     echo -e "${BLUE}启动服务...${NC}"
     systemctl start ${SERVICE_NAME}
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}服务启动成功${NC}"
+    else
+        echo -e "${RED}服务启动失败${NC}"
+        echo -e "${BLUE}查看错误日志:${NC}"
+        journalctl -u ${SERVICE_NAME} -n 10 --no-pager
+        exit 1
+    fi
 fi
 
 # 配置防火墙（只在首次部署时配置）
 echo -e "${BLUE}配置防火墙...${NC}"
-if ! ufw status | grep -q "8080"; then
-    ufw allow 22 2>/dev/null || true
-    ufw allow 80 2>/dev/null || true
-    ufw allow 8080 2>/dev/null || true
-    ufw --force enable 2>/dev/null || true
-    echo -e "${GREEN}防火墙配置完成${NC}"
+if command -v ufw &> /dev/null; then
+    if ! ufw status | grep -q "8080"; then
+        ufw allow 22 2>/dev/null || true
+        ufw allow 80 2>/dev/null || true
+        ufw allow 8080 2>/dev/null || true
+        ufw --force enable 2>/dev/null || true
+        echo -e "${GREEN}UFW防火墙配置完成${NC}"
+    else
+        echo -e "${GREEN}UFW防火墙已配置，跳过${NC}"
+    fi
 else
-    echo -e "${GREEN}防火墙已配置，跳过${NC}"
+    echo -e "${YELLOW}UFW未安装，尝试使用iptables配置防火墙...${NC}"
+    # 使用iptables配置防火墙
+    iptables -I INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null || true
+    iptables -I INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || true
+    iptables -I INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null || true
+    echo -e "${GREEN}iptables防火墙配置完成${NC}"
 fi
 
 # 等待服务启动
-sleep 3
+echo -e "${BLUE}等待服务启动...${NC}"
+sleep 5
 
 # 验证部署
 echo -e "${BLUE}验证部署结果...${NC}"
+
+# 检查服务状态
 if systemctl is-active --quiet ${SERVICE_NAME}; then
-    echo -e "${GREEN}✅ 服务启动成功${NC}"
-    
-    # 测试健康检查
-    if curl -f -s http://localhost:8080/api/v1/health > /dev/null; then
-        echo -e "${GREEN}✅ 健康检查通过${NC}"
-        echo -e "${GREEN}========================================${NC}"
-        echo -e "${GREEN}  部署成功！${NC}"
-        echo -e "${GREEN}========================================${NC}"
-        echo -e "${BLUE}服务信息：${NC}"
-        echo -e "  API地址: http://${SERVER_IP}:8080"
-        echo -e "  健康检查: http://${SERVER_IP}:8080/api/v1/health"
-        echo -e "  服务状态: $(systemctl is-active ${SERVICE_NAME})"
-        echo -e "  项目目录: $(pwd)"
-        echo -e ""
-        echo -e "${BLUE}常用命令：${NC}"
-        echo -e "  查看状态: systemctl status ${SERVICE_NAME}"
-        echo -e "  查看日志: journalctl -u ${SERVICE_NAME} -f"
-        echo -e "  重启服务: systemctl restart ${SERVICE_NAME}"
-        echo -e "  更新代码: cd $(pwd) && git pull && systemctl restart ${SERVICE_NAME}"
-    else
-        echo -e "${RED}❌ 健康检查失败${NC}"
-        echo -e "${YELLOW}查看日志: journalctl -u ${SERVICE_NAME} -f${NC}"
-        exit 1
-    fi
+    echo -e "${GREEN}✅ 服务运行状态正常${NC}"
 else
-    echo -e "${RED}❌ 服务启动失败${NC}"
-    echo -e "${YELLOW}查看日志: journalctl -u ${SERVICE_NAME} -f${NC}"
+    echo -e "${RED}❌ 服务未运行${NC}"
+    echo -e "${BLUE}服务状态:${NC}"
+    systemctl status ${SERVICE_NAME} --no-pager
+    echo -e "${BLUE}查看详细日志:${NC}"
+    journalctl -u ${SERVICE_NAME} -n 20 --no-pager
+    exit 1
+fi
+
+# 检查端口监听
+echo -e "${BLUE}检查端口监听...${NC}"
+if ss -tuln | grep ":8080" &> /dev/null; then
+    echo -e "${GREEN}✅ 端口8080正在监听${NC}"
+else
+    echo -e "${RED}❌ 端口8080未监听${NC}"
+    echo -e "${BLUE}当前监听的端口:${NC}"
+    ss -tuln | grep LISTEN
+    echo -e "${BLUE}查看服务日志:${NC}"
+    journalctl -u ${SERVICE_NAME} -n 10 --no-pager
+    exit 1
+fi
+
+# 测试健康检查
+echo -e "${BLUE}测试API健康检查...${NC}"
+HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/health)
+if [ "$HEALTH_RESPONSE" -eq 200 ]; then
+    echo -e "${GREEN}✅ API健康检查通过 (HTTP $HEALTH_RESPONSE)${NC}"
+    echo -e "${BLUE}API响应内容:${NC}"
+    curl -s http://localhost:8080/api/v1/health | head -3
+    
+    echo -e "${GREEN}========================================${NC}"
+    echo -e "${GREEN}  部署成功！${NC}"
+    echo -e "${GREEN}========================================${NC}"
+    echo -e "${BLUE}服务信息：${NC}"
+    echo -e "  API地址: http://${SERVER_IP}:8080"
+    echo -e "  健康检查: http://${SERVER_IP}:8080/api/v1/health"
+    echo -e "  服务状态: $(systemctl is-active ${SERVICE_NAME})"
+    echo -e "  项目目录: $(pwd)"
+    echo -e ""
+    echo -e "${BLUE}常用命令：${NC}"
+    echo -e "  查看状态: systemctl status ${SERVICE_NAME}"
+    echo -e "  查看日志: journalctl -u ${SERVICE_NAME} -f"
+    echo -e "  重启服务: systemctl restart ${SERVICE_NAME}"
+    echo -e "  更新代码: cd $(pwd) && git pull && systemctl restart ${SERVICE_NAME}"
+else
+    echo -e "${RED}❌ API健康检查失败 (HTTP $HEALTH_RESPONSE)${NC}"
+    echo -e "${BLUE}尝试获取错误信息:${NC}"
+    curl -v http://localhost:8080/api/v1/health 2>&1 | head -10
+    echo -e "${BLUE}查看服务日志:${NC}"
+    journalctl -u ${SERVICE_NAME} -n 10 --no-pager
     exit 1
 fi
 

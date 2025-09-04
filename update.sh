@@ -57,15 +57,59 @@ cd ..
 echo -e "${YELLOW}重启服务...${NC}"
 systemctl restart $SERVICE_NAME
 
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}服务重启成功${NC}"
+else
+    echo -e "${RED}服务重启失败${NC}"
+    echo -e "${BLUE}查看错误日志:${NC}"
+    journalctl -u $SERVICE_NAME -n 10 --no-pager
+    exit 1
+fi
+
 # 等待服务启动
-sleep 3
+echo -e "${BLUE}等待服务启动...${NC}"
+sleep 5
 
 # 验证
+echo -e "${BLUE}验证更新结果...${NC}"
+
+# 检查服务状态
 if systemctl is-active --quiet $SERVICE_NAME; then
-    echo -e "${GREEN}✅ 更新成功！${NC}"
-    echo -e "${BLUE}服务地址: http://124.156.196.117:8080${NC}"
-    echo -e "${BLUE}项目目录: $(pwd)${NC}"
+    echo -e "${GREEN}✅ 服务运行状态正常${NC}"
 else
-    echo -e "${RED}❌ 更新失败，查看日志: journalctl -u $SERVICE_NAME -f${NC}"
+    echo -e "${RED}❌ 服务未运行${NC}"
+    echo -e "${BLUE}服务状态:${NC}"
+    systemctl status $SERVICE_NAME --no-pager
+    echo -e "${BLUE}查看详细日志:${NC}"
+    journalctl -u $SERVICE_NAME -n 20 --no-pager
+    exit 1
+fi
+
+# 检查端口监听
+if ss -tuln | grep ":8080" &> /dev/null; then
+    echo -e "${GREEN}✅ 端口8080正在监听${NC}"
+else
+    echo -e "${RED}❌ 端口8080未监听${NC}"
+    echo -e "${BLUE}查看服务日志:${NC}"
+    journalctl -u $SERVICE_NAME -n 10 --no-pager
+    exit 1
+fi
+
+# 测试健康检查
+HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/health)
+if [ "$HEALTH_RESPONSE" -eq 200 ]; then
+    echo -e "${GREEN}✅ API健康检查通过 (HTTP $HEALTH_RESPONSE)${NC}"
+    echo -e "${GREEN}========================================${NC}"
+    echo -e "${GREEN}  更新成功！${NC}"
+    echo -e "${GREEN}========================================${NC}"
+    echo -e "${BLUE}服务信息：${NC}"
+    echo -e "  API地址: http://124.156.196.117:8080"
+    echo -e "  健康检查: http://124.156.196.117:8080/api/v1/health"
+    echo -e "  服务状态: $(systemctl is-active $SERVICE_NAME)"
+    echo -e "  项目目录: $(pwd)"
+else
+    echo -e "${RED}❌ API健康检查失败 (HTTP $HEALTH_RESPONSE)${NC}"
+    echo -e "${BLUE}查看服务日志:${NC}"
+    journalctl -u $SERVICE_NAME -n 10 --no-pager
     exit 1
 fi
