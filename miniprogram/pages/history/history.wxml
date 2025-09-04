@@ -1,0 +1,57 @@
+<!--history.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">历史房间</text>
+  </view>
+
+  <view class="info-tip">
+    <text class="icon">ℹ️</text>
+    <text>查看所有历史房间的流水和结算信息</text>
+  </view>
+
+  <view wx:if="{{rooms.length > 0}}">
+    <view 
+      wx:for="{{rooms}}" 
+      wx:key="room_id" 
+      class="card room-card"
+      bindtap="viewRoomDetail"
+      data-room="{{item}}"
+    >
+      <view class="room-header">
+        <text class="room-id">房间号: {{item.room_code}}</text>
+        <text class="status-badge {{item.status === 1 ? 'status-active' : 'status-settled'}}">
+          {{item.status === 1 ? '进行中' : '已结算'}}
+        </text>
+      </view>
+      <view class="room-info">
+        <view class="room-time">
+          <text class="icon">📅</text>
+          <text>{{item.created_at | formatTimestamp}}</text>
+        </view>
+        <view class="room-score {{item.final_score > 0 ? 'positive' : 'negative'}}">
+          <text class="icon">💰</text>
+          <text>{{item.final_score | formatScore}}分</text>
+        </view>
+      </view>
+      <view class="room-stats">
+        <text class="icon">👥</text>
+        <text>{{item.player_count}}人参与</text>
+        <text class="separator">|</text>
+        <text class="icon">🔄</text>
+        <text>{{item.transfer_count}}次转移</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <text class="icon">📝</text>
+    <text>暂无历史房间</text>
+  </view>
+
+  <view wx:if="{{hasMore}}" class="load-more">
+    <button class="btn btn-secondary" bindtap="loadMore">
+      <text class="icon">📄</text>
+      <text>加载更多</text>
+    </button>
+  </view>
+</view>

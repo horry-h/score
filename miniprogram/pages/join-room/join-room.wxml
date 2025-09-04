@@ -1,0 +1,25 @@
+<!--join-room.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">扫码加入</text>
+  </view>
+
+  <view class="qr-section">
+    <view class="qr-code">
+      <text class="icon">📱</text>
+      <text>扫描二维码加入房间</text>
+    </view>
+  </view>
+
+  <view class="input-section">
+    <view class="input-group">
+      <label>或输入房间号</label>
+      <input type="text" placeholder="请输入6位房间号" maxlength="6" value="{{roomCode}}" bindinput="onRoomCodeInput" />
+    </view>
+    
+    <button class="btn" bindtap="joinRoom">
+      <text class="icon">🚪</text>
+      <text>加入房间</text>
+    </button>
+  </view>
+</view>

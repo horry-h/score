@@ -1,0 +1,139 @@
+// API服务模块
+const API_BASE_URL = 'http://localhost:8080'; // 后端服务地址
+
+class ApiService {
+  constructor() {
+    this.baseURL = API_BASE_URL;
+  }
+
+  // 通用请求方法
+  async request(url, options = {}) {
+    const defaultOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    const finalOptions = { ...defaultOptions, ...options };
+    
+    try {
+      const response = await wx.request({
+        url: `${this.baseURL}${url}`,
+        ...finalOptions,
+      });
+
+      if (response.statusCode === 200) {
+        return response.data;
+      } else {
+        throw new Error(`请求失败: ${response.statusCode}`);
+      }
+    } catch (error) {
+      console.error('API请求错误:', error);
+      throw error;
+    }
+  }
+
+  // 用户相关API
+  async login(code, nickname, avatarUrl) {
+    return this.request('/api/v1/login', {
+      method: 'POST',
+      data: {
+        code,
+        nickname,
+        avatar_url: avatarUrl,
+      },
+    });
+  }
+
+  async updateUser(userId, nickname, avatarUrl) {
+    return this.request('/api/v1/updateUser', {
+      method: 'POST',
+      data: {
+        user_id: userId,
+        nickname,
+        avatar_url: avatarUrl,
+      },
+    });
+  }
+
+  async getUser(userId) {
+    return this.request(`/api/v1/getUser?user_id=${userId}`);
+  }
+
+  // 房间相关API
+  async createRoom(creatorId, roomName) {
+    return this.request('/api/v1/createRoom', {
+      method: 'POST',
+      data: {
+        creator_id: creatorId,
+        room_name: roomName,
+      },
+    });
+  }
+
+  async joinRoom(userId, roomCode) {
+    return this.request('/api/v1/joinRoom', {
+      method: 'POST',
+      data: {
+        user_id: userId,
+        room_code: roomCode,
+      },
+    });
+  }
+
+  async getRoom(roomId, roomCode) {
+    const params = roomId ? `room_id=${roomId}` : `room_code=${roomCode}`;
+    return this.request(`/api/v1/getRoom?${params}`);
+  }
+
+  async getRoomPlayers(roomId) {
+    return this.request(`/api/v1/getRoomPlayers?room_id=${roomId}`);
+  }
+
+  async getRoomTransfers(roomId) {
+    return this.request(`/api/v1/getRoomTransfers?room_id=${roomId}`);
+  }
+
+  // 分数转移API
+  async transferScore(roomId, fromUserId, toUserId, amount) {
+    return this.request('/api/v1/transferScore', {
+      method: 'POST',
+      data: {
+        room_id: roomId,
+        from_user_id: fromUserId,
+        to_user_id: toUserId,
+        amount,
+      },
+    });
+  }
+
+  // 结算API
+  async settleRoom(roomId, userId) {
+    return this.request('/api/v1/settleRoom', {
+      method: 'POST',
+      data: {
+        room_id: roomId,
+        user_id: userId,
+      },
+    });
+  }
+
+  // 历史房间API
+  async getUserRooms(userId, page = 1, pageSize = 10) {
+    return this.request(`/api/v1/getUserRooms?user_id=${userId}&page=${page}&page_size=${pageSize}`);
+  }
+
+  async getRoomDetail(roomId, userId) {
+    return this.request(`/api/v1/getRoomDetail?room_id=${roomId}&user_id=${userId}`);
+  }
+
+  async getRecentRoom(userId) {
+    return this.request(`/api/v1/getRecentRoom?user_id=${userId}`);
+  }
+}
+
+// 创建单例实例
+const apiService = new ApiService();
+
+module.exports = apiService;

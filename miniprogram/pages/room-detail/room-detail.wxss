@@ -1,0 +1,123 @@
+/* room-detail.wxss */
+.header {
+  text-align: center;
+  padding: 40rpx 0;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  color: white;
+  margin: -40rpx -40rpx 40rpx -40rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 600;
+}
+
+.room-info {
+  margin-bottom: 40rpx;
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.room-id {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #07c160;
+}
+
+.room-meta {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.room-time {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 10rpx;
+}
+
+.room-stats {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.separator {
+  margin: 0 10rpx;
+}
+
+.settlement-section {
+  margin-bottom: 40rpx;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.player-name {
+  font-size: 32rpx;
+  margin-bottom: 5rpx;
+}
+
+.player-score-desc {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.transfer-desc {
+  font-size: 28rpx;
+}
+
+.history-section {
+  margin-bottom: 40rpx;
+}
+
+.transfer-info {
+  flex: 1;
+}
+
+.transfer-desc {
+  font-size: 28rpx;
+  margin-bottom: 5rpx;
+}
+
+.transfer-time {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.transfer-amount {
+  font-weight: 600;
+  font-size: 32rpx;
+}
+
+.transfer-amount.positive {
+  color: #07c160;
+}
+
+.transfer-amount.negative {
+  color: #ff4757;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}

@@ -1,0 +1,40 @@
+<!--settlement.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">房间结算</text>
+  </view>
+
+  <view class="settlement-section">
+    <view class="section-title">
+      <text class="icon">🧮</text>
+      <text>最终分数</text>
+    </view>
+    
+    <view wx:for="{{players}}" wx:key="id" class="settlement-item">
+      <view class="player-info">
+        <view class="player-name">{{item.user.nickname}}</view>
+        <view class="player-score-desc">最终分数: {{item.final_score | formatScore}}</view>
+      </view>
+      <view class="settlement-amount {{item.final_score > 0 ? 'positive' : 'negative'}}">
+        {{item.final_score | formatScore}}
+      </view>
+    </view>
+  </view>
+
+  <view class="settlement-section" wx:if="{{settlements.length > 0}}">
+    <view class="section-title">
+      <text class="icon">💰</text>
+      <text>转账方案</text>
+    </view>
+    
+    <view wx:for="{{settlements}}" wx:key="id" class="settlement-item">
+      <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
+      <view class="settlement-amount">{{item.amount}}分</view>
+    </view>
+  </view>
+
+  <button class="btn" bindtap="confirmSettlement">
+    <text class="icon">✅</text>
+    <text>确认结算</text>
+  </button>
+</view>

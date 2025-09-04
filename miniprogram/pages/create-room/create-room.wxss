@@ -1,0 +1,32 @@
+/* create-room.wxss */
+.header {
+  text-align: center;
+  padding: 40rpx 0;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  color: white;
+  margin: -40rpx -40rpx 40rpx -40rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 600;
+}
+
+.info-tip {
+  background: #f8f9fa;
+  padding: 30rpx;
+  border-radius: 16rpx;
+  margin: 30rpx 0;
+  color: #666;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}

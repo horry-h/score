@@ -1,0 +1,134 @@
+<!--room.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">房间 {{roomInfo.room_code}}</text>
+  </view>
+
+  <!-- 玩家信息 -->
+  <view class="players-section">
+    <view class="players-grid">
+      <view 
+        wx:for="{{players}}" 
+        wx:key="id" 
+        class="player-card {{item.user_id === currentUserId ? 'current' : ''}}"
+        bindtap="quickTransfer"
+        data-player="{{item}}"
+      >
+        <view class="player-avatar">
+          <image wx:if="{{item.user.avatar_url}}" src="{{item.user.avatar_url}}" class="avatar-image" mode="aspectFill"></image>
+          <text wx:else class="icon">👤</text>
+        </view>
+        <view class="player-name">{{item.user.nickname}}</view>
+        <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
+          {{item.current_score | formatScore}}
+        </view>
+        <view class="player-hint">
+          {{item.user_id === currentUserId ? '当前用户' : '点击转移'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速转移 -->
+  <view class="transfer-section">
+    <view class="section-title">
+      <text class="icon">🔄</text>
+      <text>快速转移</text>
+    </view>
+    <view class="transfer-hint">
+      <text class="icon">👆</text>
+      <text>点击上方玩家头像快速转移分数</text>
+    </view>
+    <view class="transfer-actions">
+      <button class="btn btn-secondary" bindtap="goToTransfer">
+        <text class="icon">⚙️</text>
+        <text>详细转移设置</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 房间流水 -->
+  <view class="history-section">
+    <view class="section-title">
+      <text class="icon">📜</text>
+      <text>房间流水</text>
+    </view>
+    <view wx:if="{{transfers.length > 0}}">
+      <view 
+        wx:for="{{transfers}}" 
+        wx:key="id" 
+        class="history-item"
+      >
+        <view class="transfer-info">
+          <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
+          <view class="transfer-time">{{item.created_at | formatTimestamp}}</view>
+        </view>
+        <view class="transfer-amount {{item.amount > 0 ? 'positive' : 'negative'}}">
+          {{item.amount | formatScore}}
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-state">
+      <text class="icon">📝</text>
+      <text>暂无转移记录</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="btn" bindtap="settleRoom">
+      <text class="icon">🧮</text>
+      <text>结算房间</text>
+    </button>
+    <button class="btn btn-secondary" bindtap="shareRoom">
+      <text class="icon">📤</text>
+      <text>分享房间</text>
+    </button>
+  </view>
+</view>
+
+<!-- 分享模态框 -->
+<view class="modal {{showShareModal ? 'show' : ''}}" bindtap="hideShareModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">
+        <text class="icon">📤</text>
+        <text>分享房间</text>
+      </text>
+      <text class="close-btn" bindtap="hideShareModal">✕</text>
+    </view>
+    
+    <view class="share-room-info">
+      <view class="room-header">
+        <text class="room-id">房间号: {{roomInfo.room_code}}</text>
+        <text class="status-badge status-active">等待加入</text>
+      </view>
+      <view class="room-stats">
+        <text class="icon">👥</text>
+        <text>{{players.length}}人（无人数限制）</text>
+      </view>
+    </view>
+
+    <view class="qr-code">
+      <text class="icon">📱</text>
+      <text>分享二维码</text>
+    </view>
+
+    <view class="share-actions">
+      <button class="btn" bindtap="shareToWeChat">
+        <text class="icon">💬</text>
+        <text>分享给好友</text>
+      </button>
+      <button class="btn btn-secondary" bindtap="copyRoomCode">
+        <text class="icon">📋</text>
+        <text>复制房间号</text>
+      </button>
+    </view>
+
+    <view class="modal-footer">
+      <button class="btn btn-secondary" bindtap="hideShareModal">
+        稍后分享
+      </button>
+    </view>
+  </view>
+</view>

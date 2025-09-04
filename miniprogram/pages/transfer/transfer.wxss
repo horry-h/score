@@ -1,0 +1,93 @@
+/* transfer.wxss */
+.header {
+  text-align: center;
+  padding: 40rpx 0;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  color: white;
+  margin: -40rpx -40rpx 40rpx -40rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 600;
+}
+
+.transfer-hint {
+  background: #f8f9fa;
+  padding: 30rpx;
+  border-radius: 16rpx;
+  margin: 40rpx 0;
+  color: #666;
+  font-size: 28rpx;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.player-hint {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 10rpx;
+}
+
+.transfer-confirm {
+  margin-top: 40rpx;
+  opacity: 0;
+  transform: translateY(20rpx);
+  transition: all 0.3s ease;
+}
+
+.transfer-confirm.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.transfer-info {
+  text-align: center;
+  margin: 40rpx 0;
+}
+
+.transfer-direction {
+  font-size: 36rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+}
+
+.from-player {
+  color: #07c160;
+  font-weight: 600;
+}
+
+.arrow {
+  color: #666;
+}
+
+.to-player {
+  color: #ff4757;
+  font-weight: 600;
+}
+
+.current-score {
+  color: #666;
+  font-size: 28rpx;
+  margin-bottom: 30rpx;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 30rpx;
+}
+
+.confirm-actions .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}

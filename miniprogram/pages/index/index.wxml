@@ -1,0 +1,80 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="header-content">
+      <view class="header-title">
+        <text class="title-icon">🏠</text>
+        <text class="title-text">麻将记分</text>
+      </view>
+      <view class="header-avatar" bindtap="goToProfile">
+        <image class="avatar-img" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近房间区域 -->
+  <view class="recent-section">
+    <view class="section-title">
+      <text class="section-icon">🕐</text>
+      <text class="section-text">最近房间</text>
+    </view>
+    
+    <view class="recent-room-card" bindtap="enterRecentRoom" wx:if="{{recentRoom}}">
+      <view class="room-header">
+        <text class="room-id">房间号: {{recentRoom.roomId}}</text>
+        <view class="status-badge status-active">进行中</view>
+      </view>
+      <view class="room-info">
+        <view class="room-time">
+          <text class="time-icon">📅</text>
+          <text class="time-text">{{recentRoom.time}}</text>
+        </view>
+        <view class="room-score">
+          <text class="score-icon">💰</text>
+          <text class="score-text {{recentRoom.score > 0 ? 'positive' : 'negative'}}">{{recentRoom.score > 0 ? '+' : ''}}{{recentRoom.score}}分</text>
+        </view>
+      </view>
+      <view class="room-stats">
+        <text class="stats-icon">👥</text>
+        <text class="stats-text">{{recentRoom.playerCount}}人参与</text>
+        <text class="stats-separator">|</text>
+        <text class="stats-icon">🔄</text>
+        <text class="stats-text">{{recentRoom.transferCount}}次转移</text>
+      </view>
+      <view class="continue-hint">
+        <text class="hint-icon">▶️</text>
+        <text class="hint-text">点击继续游戏</text>
+      </view>
+    </view>
+
+    <view class="history-btn-wrapper">
+      <button class="history-btn" bindtap="goToHistory">
+        <text class="btn-icon">📋</text>
+        <text class="btn-text">查看所有历史房间</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 分隔线 -->
+  <view class="divider"></view>
+
+  <!-- 快速操作区域 -->
+  <view class="quick-actions">
+    <view class="section-title">
+      <text class="section-icon">⚡</text>
+      <text class="section-text">快速操作</text>
+    </view>
+    
+    <view class="action-buttons">
+      <button class="action-btn primary" bindtap="createRoom">
+        <text class="btn-icon">➕</text>
+        <text class="btn-text">创建房间</text>
+      </button>
+      <button class="action-btn secondary" bindtap="joinRoom">
+        <text class="btn-icon">📱</text>
+        <text class="btn-text">扫码加入</text>
+      </button>
+    </view>
+  </view>
+</view>

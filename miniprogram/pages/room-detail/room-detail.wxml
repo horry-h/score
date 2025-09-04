@@ -1,0 +1,88 @@
+<!--room-detail.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">房间详情</text>
+  </view>
+
+  <view class="room-info">
+    <view class="room-header">
+      <text class="room-id">房间号: {{roomInfo.room_code}}</text>
+      <text class="status-badge {{roomInfo.status === 1 ? 'status-active' : 'status-settled'}}">
+        {{roomInfo.status === 1 ? '进行中' : '已结算'}}
+      </text>
+    </view>
+    <view class="room-meta">
+      <view class="room-time">
+        <text class="icon">📅</text>
+        <text>{{roomInfo.created_at | formatTimestamp}} - {{roomInfo.settled_at | formatTimestamp}}</text>
+      </view>
+      <view class="room-stats">
+        <text class="icon">👥</text>
+        <text>{{players.length}}人参与</text>
+        <text class="separator">|</text>
+        <text class="icon">🔄</text>
+        <text>{{transfers.length}}次转移</text>
+        <text class="separator">|</text>
+        <text class="icon">⏰</text>
+        <text>{{gameDuration}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="settlement-section">
+    <view class="section-title">
+      <text class="icon">🧮</text>
+      <text>最终结算</text>
+    </view>
+    
+    <view wx:for="{{players}}" wx:key="id" class="settlement-item">
+      <view class="player-info">
+        <view class="player-name">{{item.user.nickname}}</view>
+        <view class="player-score-desc">最终分数: {{item.final_score | formatScore}}</view>
+      </view>
+      <view class="settlement-amount {{item.final_score > 0 ? 'positive' : 'negative'}}">
+        {{item.final_score | formatScore}}
+      </view>
+    </view>
+  </view>
+
+  <view class="settlement-section" wx:if="{{settlements.length > 0}}">
+    <view class="section-title">
+      <text class="icon">💰</text>
+      <text>转账方案</text>
+    </view>
+    
+    <view wx:for="{{settlements}}" wx:key="id" class="settlement-item">
+      <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
+      <view class="settlement-amount">{{item.amount}}分</view>
+    </view>
+  </view>
+
+  <view class="history-section">
+    <view class="section-title">
+      <text class="icon">📜</text>
+      <text>完整流水记录</text>
+    </view>
+    
+    <view wx:if="{{transfers.length > 0}}">
+      <view wx:for="{{transfers}}" wx:key="id" class="history-item">
+        <view class="transfer-info">
+          <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
+          <view class="transfer-time">{{item.created_at | formatTimestamp}}</view>
+        </view>
+        <view class="transfer-amount {{item.amount > 0 ? 'positive' : 'negative'}}">
+          {{item.amount | formatScore}}
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-state">
+      <text class="icon">📝</text>
+      <text>暂无转移记录</text>
+    </view>
+  </view>
+
+  <button class="btn" bindtap="backToHistory">
+    <text class="icon">⬅️</text>
+    <text>返回历史房间</text>
+  </button>
+</view>

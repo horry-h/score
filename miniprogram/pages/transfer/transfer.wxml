@@ -1,0 +1,66 @@
+<!--transfer.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">分数转移</text>
+  </view>
+
+  <view class="transfer-hint">
+    <text class="icon">👆</text>
+    <text>点击玩家头像发起转移</text>
+  </view>
+
+  <view class="players-grid">
+    <view 
+      wx:for="{{players}}" 
+      wx:key="id" 
+      class="player-card"
+      bindtap="initiateTransfer"
+      data-player="{{item}}"
+    >
+      <view class="player-avatar">
+        <image wx:if="{{item.user.avatar_url}}" src="{{item.user.avatar_url}}" class="avatar-image" mode="aspectFill"></image>
+        <text wx:else class="icon">👤</text>
+      </view>
+      <view class="player-name">{{item.user.nickname}}</view>
+      <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
+        {{item.current_score | formatScore}}
+      </view>
+      <view class="player-hint">点击转移</view>
+    </view>
+  </view>
+
+  <!-- 转移确认区域 -->
+  <view class="transfer-confirm {{showConfirm ? 'show' : ''}}" wx:if="{{showConfirm}}">
+    <view class="section-title">
+      <text class="icon">✅</text>
+      <text>确认转移</text>
+    </view>
+    
+    <view class="transfer-info">
+      <view class="transfer-direction">
+        <text class="from-player">{{currentUser.nickname}}</text>
+        <text class="arrow">→</text>
+        <text class="to-player">{{selectedPlayer.user.nickname}}</text>
+      </view>
+      <view class="current-score">
+        当前分数：{{selectedPlayer.current_score | formatScore}}
+      </view>
+    </view>
+    
+    <view class="input-group">
+      <label>转移分数</label>
+      <input type="number" placeholder="请输入分数" value="{{transferAmount}}" bindinput="onAmountInput" />
+    </view>
+    
+    <view class="confirm-actions">
+      <button class="btn" bindtap="confirmTransfer">
+        <text class="icon">✅</text>
+        <text>确认转移</text>
+      </button>
+      <button class="btn btn-secondary" bindtap="cancelTransfer">
+        <text class="icon">❌</text>
+        <text>取消</text>
+      </button>
+    </view>
+  </view>
+</view>
