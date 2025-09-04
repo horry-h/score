@@ -1,8 +1,11 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -30,6 +33,11 @@ type WeChatConfig struct {
 }
 
 func Load() *Config {
+	// 加载.env文件
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: 无法加载.env文件: %v", err)
+	}
+
 	return &Config{
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

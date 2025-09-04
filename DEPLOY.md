@@ -201,6 +201,15 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
   - 验证可执行文件架构
   - 重启服务并测试API
 
+### fix-env-config.sh - 环境配置修复脚本
+- **功能**: 修复环境配置和.env文件问题
+- **特点**:
+  - 检查并创建正确的.env文件
+  - 验证数据库连接配置
+  - 设置MySQL root密码
+  - 检查systemd服务配置
+  - 重启服务并测试API
+
 ### quick-fix.sh - 快速修复脚本
 - **功能**: 一键修复常见问题
 - **特点**:
@@ -238,6 +247,9 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 # 重新构建应用（解决架构问题）
 ./rebuild-app.sh
 
+# 修复环境配置问题
+./fix-env-config.sh
+
 # 设置MySQL root密码
 ./setup-mysql-root.sh
 
@@ -271,6 +283,9 @@ systemctl restart score-server
 
 # 如果遇到 "Exec format error" 错误，重新构建应用
 ./rebuild-app.sh
+
+# 如果遇到 "using password: NO" 错误，修复环境配置
+./fix-env-config.sh
 
 # 手动查看详细错误日志
 journalctl -u score-server -n 50 --no-pager
