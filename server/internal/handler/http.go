@@ -54,6 +54,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.handleGetRoomDetail(w, r)
 	case r.Method == "GET" && path == "getRecentRoom":
 		h.handleGetRecentRoom(w, r)
+	case r.Method == "GET" && path == "health":
+		h.handleHealth(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -409,4 +411,21 @@ func (h *HTTPHandler) writeError(w http.ResponseWriter, code int, message string
 		"message": message,
 		"data":    "",
 	})
+}
+
+// 健康检查
+func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"code":    200,
+		"message": "服务运行正常",
+		"data": map[string]interface{}{
+			"service":    "麻将记分小程序后端服务",
+			"version":    "1.0.0",
+			"status":     "healthy",
+			"server_ip":  "124.156.196.117",
+			"timestamp":  "2025-09-05T01:25:00Z",
+		},
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
