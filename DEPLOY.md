@@ -184,6 +184,22 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
   - 设置正确的用户权限
   - 初始化数据库表结构
 
+### quick-fix.sh - 快速修复脚本
+- **功能**: 一键修复常见问题
+- **特点**:
+  - 自动诊断和修复服务问题
+  - 检查并构建可执行文件
+  - 修复数据库连接问题
+  - 重启服务并验证
+
+### check-service.sh - 服务状态检查脚本
+- **功能**: 快速检查服务状态
+- **特点**:
+  - 显示服务运行状态
+  - 检查端口监听情况
+  - 显示最近的服务日志
+  - 验证可执行文件和数据库连接
+
 ## 常用命令总结
 
 ```bash
@@ -195,6 +211,12 @@ mysql -u mahjong_user -pMahjong2024! -e "SELECT 1"
 
 # 故障排除诊断
 ./troubleshoot.sh
+
+# 快速检查服务状态
+./check-service.sh
+
+# 快速修复问题
+./quick-fix.sh
 
 # 修复数据库问题
 ./fix-database.sh
@@ -218,7 +240,13 @@ systemctl restart score-server
 
 #### 1. 服务启动失败
 ```bash
-# 查看详细错误日志
+# 快速检查服务状态
+./check-service.sh
+
+# 一键修复问题（推荐）
+./quick-fix.sh
+
+# 手动查看详细错误日志
 journalctl -u score-server -n 50 --no-pager
 
 # 检查可执行文件是否存在
