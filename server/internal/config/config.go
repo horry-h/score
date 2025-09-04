@@ -1,11 +1,8 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -33,25 +30,20 @@ type WeChatConfig struct {
 }
 
 func Load() *Config {
-	// 加载.env文件
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: 无法加载.env文件: %v", err)
-	}
-
 	return &Config{
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     getEnvAsInt("DB_PORT", 3306),
-			Username: getEnv("DB_USERNAME", "root"),
-			Password: getEnv("DB_PASSWORD", ""),
-			Database: getEnv("DB_DATABASE", "mahjong_score"),
+			Host:     "localhost",
+			Port:     3306,
+			Username: "root",
+			Password: "123456",
+			Database: "mahjong_score",
 		},
 		HTTP: HTTPConfig{
-			Port: getEnvAsInt("HTTP_PORT", 8080),
+			Port: 8080,
 		},
 		WeChat: WeChatConfig{
-			AppID:     getEnv("WECHAT_APPID", ""),
-			AppSecret: getEnv("WECHAT_APPSECRET", ""),
+			AppID:     "your_wechat_appid",
+			AppSecret: "your_wechat_appsecret",
 		},
 	}
 }
