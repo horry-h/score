@@ -72,66 +72,50 @@ else
     exit 1
 fi
 
-# 7. 安装Nginx和certbot
-echo "7. 安装Nginx和certbot..."
+# 7. 安装Nginx
+echo "7. 安装Nginx..."
 apt update
-apt install -y nginx certbot python3-certbot-nginx
+apt install -y nginx
 
-# 8. 创建web根目录
-echo "8. 创建web根目录..."
-mkdir -p /var/www/html
+# 8. 检查腾讯云SSL证书文件
+echo "8. 检查腾讯云SSL证书文件..."
+SSL_DIR="/root/horry/score/server/ssl"
+CERT_FILE="$SSL_DIR/aipaint.cloud_bundle.crt"
+KEY_FILE="$SSL_DIR/aipaint.cloud.key"
 
-# 9. 创建临时Nginx配置
-echo "9. 创建临时Nginx配置..."
-cat > /etc/nginx/sites-available/temp << 'EOF'
-server {
-    listen 80;
-    server_name www.aipaint.cloud aipaint.cloud;
-    
-    location / {
-        return 200 'OK';
-        add_header Content-Type text/plain;
-    }
-    
-    location /.well-known/acme-challenge/ {
-        root /var/www/html;
-    }
-}
-EOF
-
-# 启用临时配置
-ln -sf /etc/nginx/sites-available/temp /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-
-# 10. 启动Nginx
-echo "10. 启动Nginx..."
-systemctl start nginx
-
-# 11. 获取SSL证书
-echo "11. 获取SSL证书..."
-echo "正在获取SSL证书，请稍等..."
-certbot certonly --webroot -w /var/www/html -d www.aipaint.cloud -d aipaint.cloud --non-interactive --agree-tos --email admin@aipaint.cloud
-
-# 12. 配置Apple ATS合规的SSL
-echo "12. 配置Apple ATS合规的SSL..."
-
-# 生成更强的DH参数文件（如果不存在）
-if [ ! -f "/etc/ssl/certs/dhparam.pem" ]; then
-    echo "生成2048位DH参数文件（这可能需要几分钟）..."
-    openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
-else
-    echo "检查现有DH参数文件强度..."
-    DH_BITS=$(openssl dhparam -in /etc/ssl/certs/dhparam.pem -text -noout 2>/dev/null | grep "DH Parameters" | grep -o '[0-9]*' | head -1)
-    if [ "$DH_BITS" -lt 2048 ]; then
-        echo "当前DH参数文件强度不足，重新生成2048位..."
-        openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
-    else
-        echo "DH参数文件强度足够（$DH_BITS位）"
-    fi
+if [ ! -f "$CERT_FILE" ]; then
+    echo "❌ 错误：找不到证书文件 $CERT_FILE"
+    echo "请确保已将腾讯云SSL证书文件上传到 $SSL_DIR 目录"
+    echo "需要的文件："
+    echo "  - aipaint.cloud_bundle.crt (证书文件)"
+    echo "  - aipaint.cloud.key (私钥文件)"
+    exit 1
 fi
 
-# 13. 配置正式Nginx（Apple ATS合规版本）
-echo "13. 配置正式Nginx（Apple ATS合规版本）..."
+if [ ! -f "$KEY_FILE" ]; then
+    echo "❌ 错误：找不到私钥文件 $KEY_FILE"
+    echo "请确保已将腾讯云SSL证书文件上传到 $SSL_DIR 目录"
+    exit 1
+fi
+
+echo "✅ 找到腾讯云SSL证书文件"
+echo "  证书文件: $CERT_FILE"
+echo "  私钥文件: $KEY_FILE"
+
+# 9. 复制SSL证书到Nginx目录
+echo "9. 复制SSL证书到Nginx目录..."
+mkdir -p /etc/nginx/ssl
+cp "$CERT_FILE" /etc/nginx/ssl/
+cp "$KEY_FILE" /etc/nginx/ssl/
+chmod 600 /etc/nginx/ssl/aipaint.cloud.key
+chmod 644 /etc/nginx/ssl/aipaint.cloud_bundle.crt
+
+# 10. 配置Apple ATS合规的SSL
+echo "10. 配置Apple ATS合规的SSL..."
+echo "使用ECDHE加密套件，无需生成DH参数文件"
+
+# 11. 配置正式Nginx（Apple ATS合规版本）
+echo "11. 配置正式Nginx（Apple ATS合规版本）..."
 cat > /etc/nginx/sites-available/aipaint.cloud << 'EOF'
 server {
     listen 80;
@@ -145,9 +129,9 @@ server {
     listen 443 ssl http2;
     server_name www.aipaint.cloud aipaint.cloud;
 
-    # SSL证书配置
-    ssl_certificate /etc/letsencrypt/live/www.aipaint.cloud/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/www.aipaint.cloud/privkey.pem;
+    # SSL证书配置（腾讯云SSL证书）
+    ssl_certificate /etc/nginx/ssl/aipaint.cloud_bundle.crt;
+    ssl_certificate_key /etc/nginx/ssl/aipaint.cloud.key;
     
     # Apple ATS规范要求的SSL配置
     # 1. 只支持TLS 1.2和TLS 1.3
@@ -157,9 +141,8 @@ server {
     ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256';
     ssl_prefer_server_ciphers off;
     
-    # 3. 启用完美前向保密(PFS)
+    # 3. 启用完美前向保密(PFS) - 使用ECDHE
     ssl_ecdh_curve secp384r1;
-    ssl_dhparam /etc/ssl/certs/dhparam.pem;
     
     # 4. 会话配置
     ssl_session_cache shared:SSL:10m;
@@ -201,21 +184,21 @@ server {
 }
 EOF
 
-# 14. 更新站点配置
-echo "14. 更新站点配置..."
+# 12. 更新站点配置
+echo "12. 更新站点配置..."
 ln -sf /etc/nginx/sites-available/aipaint.cloud /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/temp
+rm -f /etc/nginx/sites-enabled/default
 
-# 15. 测试Nginx配置
-echo "15. 测试Nginx配置..."
+# 13. 测试Nginx配置
+echo "13. 测试Nginx配置..."
 nginx -t
 
-# 16. 重启Nginx
-echo "16. 重启Nginx..."
+# 14. 重启Nginx
+echo "14. 重启Nginx..."
 systemctl restart nginx
 
-# 17. 检查服务状态
-echo "17. 检查服务状态..."
+# 15. 检查服务状态
+echo "15. 检查服务状态..."
 sleep 3
 echo "Go服务状态:"
 systemctl status mahjong-server --no-pager
@@ -223,8 +206,8 @@ echo ""
 echo "Nginx服务状态:"
 systemctl status nginx --no-pager
 
-# 18. 测试HTTPS和Apple ATS合规性
-echo "18. 测试HTTPS和Apple ATS合规性..."
+# 16. 测试HTTPS和Apple ATS合规性
+echo "16. 测试HTTPS和Apple ATS合规性..."
 sleep 2
 
 # 测试HTTPS连接
