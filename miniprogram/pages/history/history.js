@@ -117,4 +117,11 @@ Page({
   onReachBottom() {
     this.loadMore();
   },
+
+  // 返回主页
+  goToHome() {
+    wx.switchTab({
+      url: '/pages/index/index'
+    });
+  },
 });

@@ -3,15 +3,19 @@
   min-height: 100vh;
   background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
   padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 /* 头部样式 */
 .header {
   background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
-  padding: 60rpx 40rpx 40rpx;
+  padding: 60rpx 24rpx 40rpx;
   color: white;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header::before {
@@ -77,7 +81,9 @@
 
 /* 最近房间区域 */
 .recent-section {
-  padding: 20rpx 24rpx 16rpx;
+  padding: 20rpx 16rpx 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section-title {
@@ -105,7 +111,7 @@
 .recent-room-card {
   background: white;
   border-radius: 24rpx;
-  padding: 32rpx 28rpx;
+  padding: 32rpx 24rpx;
   margin-bottom: 16rpx;
   box-shadow: 0 6rpx 24rpx rgba(7, 193, 96, 0.12);
   border: 2rpx solid rgba(7, 193, 96, 0.1);
@@ -113,6 +119,8 @@
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .recent-room-card:active {
@@ -244,6 +252,8 @@
 .history-btn-wrapper {
   text-align: center;
   margin: 12rpx 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 个人信息浮窗样式 */
@@ -422,6 +432,8 @@
   align-items: center;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .history-btn:active {
@@ -440,8 +452,10 @@
 .divider {
   height: 1rpx;
   background: linear-gradient(90deg, transparent 0%, rgba(7, 193, 96, 0.1) 50%, transparent 100%);
-  margin: 24rpx 0;
+  margin: 24rpx 16rpx;
   position: relative;
+  width: calc(100% - 32rpx);
+  box-sizing: border-box;
 }
 
 .divider::before {
@@ -458,18 +472,22 @@
 
 /* 快速操作区域 */
 .quick-actions {
-  padding: 16rpx 24rpx 40rpx;
+  padding: 16rpx 16rpx 40rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .action-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16rpx;
+  gap: 12rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .action-btn {
   border: none;
-  padding: 28rpx 20rpx;
+  padding: 28rpx 16rpx;
   border-radius: 20rpx;
   font-size: 30rpx;
   display: flex;
@@ -481,6 +499,8 @@
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .action-btn:active {

@@ -1,7 +1,9 @@
 /* room.wxss */
 .header {
-  text-align: center;
-  padding: 50rpx 0 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50rpx 24rpx 30rpx;
   background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
   color: white;
   margin: -40rpx -40rpx 24rpx -40rpx;
@@ -20,13 +22,44 @@
   animation: float 6s ease-in-out infinite;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.header-left:active {
+  opacity: 0.7;
+}
+
+.back-icon {
+  font-size: 32rpx;
+}
+
+.back-text {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
 .title {
   font-size: 40rpx;
   font-weight: 700;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
   letter-spacing: 1rpx;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+}
+
+.header-right {
+  width: 80rpx; /* 占位，保持标题居中 */
+  position: relative;
+  z-index: 2;
 }
 
 .players-section {

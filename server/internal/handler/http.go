@@ -166,8 +166,8 @@ func (h *HTTPHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
 // 加入房间
 func (h *HTTPHandler) handleJoinRoom(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		UserId   int64  `json:"user_id"`
-		RoomCode string `json:"room_code"`
+		UserId int64 `json:"user_id"`
+		RoomId int64 `json:"room_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -176,8 +176,8 @@ func (h *HTTPHandler) handleJoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, err := h.service.JoinRoom(r.Context(), &service.JoinRoomRequest{
-		UserId:   req.UserId,
-		RoomCode: req.RoomCode,
+		UserId: req.UserId,
+		RoomId: req.RoomId,
 	})
 	
 	if err != nil {

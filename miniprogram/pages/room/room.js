@@ -365,4 +365,11 @@ Page({
       path: `/pages/join-room/join-room?roomCode=${this.data.roomInfo.room_code}`,
     };
   },
+
+  // 返回主页
+  goToHome() {
+    wx.switchTab({
+      url: '/pages/index/index'
+    });
+  },
 });

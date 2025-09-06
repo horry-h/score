@@ -79,4 +79,11 @@ Page({
   backToHistory() {
     wx.navigateBack();
   },
+
+  // 返回主页
+  goToHome() {
+    wx.switchTab({
+      url: '/pages/index/index'
+    });
+  },
 });
