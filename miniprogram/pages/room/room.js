@@ -283,12 +283,21 @@ Page({
               console.log('自动加入房间响应:', joinResponse);
               
               if (joinResponse.code === 200) {
-                console.log('自动加入房间成功');
-                wx.showToast({
-                  title: '欢迎加入房间！',
-                  icon: 'success',
-                  duration: 2000
-                });
+                console.log('自动加入房间成功，消息:', joinResponse.message);
+                
+                // 只有首次加入房间才显示欢迎语
+                if (joinResponse.message === '加入成功') {
+                  console.log('用户首次加入房间，显示欢迎语');
+                  wx.showToast({
+                    title: '欢迎加入房间！',
+                    icon: 'success',
+                    duration: 2000
+                  });
+                } else if (joinResponse.message === '已在房间中') {
+                  console.log('用户已在房间中，不显示欢迎语');
+                } else {
+                  console.log('其他情况，不显示欢迎语');
+                }
                 
                 // 重新获取玩家列表
                 const updatedPlayersResponse = await api.getRoomPlayers(this.data.roomId);
