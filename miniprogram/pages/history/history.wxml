@@ -9,12 +9,13 @@
     <view class="header-right"></view>
   </view>
 
-  <view class="info-tip">
-    <text class="icon">ℹ️</text>
-    <text>查看所有历史房间的流水和结算信息</text>
-  </view>
+  <view class="content-section">
+    <view class="info-tip">
+      <text class="icon">ℹ️</text>
+      <text>查看所有历史房间的流水和结算信息</text>
+    </view>
 
-  <view wx:if="{{rooms.length > 0}}">
+    <view wx:if="{{rooms.length > 0}}">
     <view 
       wx:for="{{rooms}}" 
       wx:key="room_id" 
@@ -48,15 +49,16 @@
     </view>
   </view>
 
-  <view wx:else class="empty-state">
-    <text class="icon">📝</text>
-    <text>暂无历史房间</text>
-  </view>
+    <view wx:else class="empty-state">
+      <text class="icon">📝</text>
+      <text>暂无历史房间</text>
+    </view>
 
-  <view wx:if="{{hasMore}}" class="load-more">
-    <button class="btn btn-secondary" bindtap="loadMore">
-      <text class="icon">📄</text>
-      <text>加载更多</text>
-    </button>
+    <view wx:if="{{hasMore}}" class="load-more">
+      <button class="btn btn-secondary" bindtap="loadMore">
+        <text class="icon">📄</text>
+        <text>加载更多</text>
+      </button>
+    </view>
   </view>
 </view>

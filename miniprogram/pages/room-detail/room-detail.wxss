@@ -1,4 +1,13 @@
 /* room-detail.wxss */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -49,8 +58,16 @@
   width: 80rpx; /* 占位，保持标题居中 */
 }
 
+.content-section {
+  padding: 0 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .room-info {
   margin-bottom: 40rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .room-header {

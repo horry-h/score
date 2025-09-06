@@ -1,4 +1,13 @@
 /* join-room.wxss */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -51,10 +60,14 @@
 
 .qr-section {
   margin-bottom: 40rpx;
+  padding: 0 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .qr-code {
-  width: 400rpx;
+  width: 100%;
+  max-width: 400rpx;
   height: 400rpx;
   background: #f0f0f0;
   border-radius: 24rpx;
@@ -66,10 +79,14 @@
   color: #666;
   font-size: 28rpx;
   gap: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .input-section {
   margin-bottom: 40rpx;
+  padding: 0 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group {

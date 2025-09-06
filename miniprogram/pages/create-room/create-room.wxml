@@ -9,25 +9,27 @@
     <view class="header-right"></view>
   </view>
 
-  <view class="card">
-    <view class="section-title">
-      <text class="icon">⚙️</text>
-      <text>房间设置</text>
+  <view class="content-section">
+    <view class="card">
+      <view class="section-title">
+        <text class="icon">⚙️</text>
+        <text>房间设置</text>
+      </view>
+      
+      <view class="input-group">
+        <label>房间名称（可选）</label>
+        <input type="text" placeholder="我的麻将房间" value="{{roomName}}" bindinput="onRoomNameInput" />
+      </view>
+      
+      <view class="info-tip">
+        <text class="icon">ℹ️</text>
+        <text>房间支持多人加入，无人数限制</text>
+      </view>
+      
+      <button class="btn" bindtap="createRoom">
+        <text class="icon">➕</text>
+        <text>立即创建房间</text>
+      </button>
     </view>
-    
-    <view class="input-group">
-      <label>房间名称（可选）</label>
-      <input type="text" placeholder="我的麻将房间" value="{{roomName}}" bindinput="onRoomNameInput" />
-    </view>
-    
-    <view class="info-tip">
-      <text class="icon">ℹ️</text>
-      <text>房间支持多人加入，无人数限制</text>
-    </view>
-    
-    <button class="btn" bindtap="createRoom">
-      <text class="icon">➕</text>
-      <text>立即创建房间</text>
-    </button>
   </view>
 </view>

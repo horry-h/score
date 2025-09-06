@@ -1,4 +1,13 @@
 /* settlement.wxss */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .header {
   text-align: center;
   padding: 40rpx 0;
@@ -12,8 +21,16 @@
   font-weight: 600;
 }
 
+.content-section {
+  padding: 0 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .settlement-section {
   margin-bottom: 40rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .player-info {
