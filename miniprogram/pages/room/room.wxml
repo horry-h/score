@@ -24,7 +24,14 @@
         data-player="{{item}}"
       >
         <view class="player-avatar-container">
-          <image wx:if="{{item.user.avatar_url}}" src="{{item.user.avatar_url}}" class="player-avatar" mode="aspectFill"></image>
+          <image 
+            wx:if="{{item.user.avatar_url && !item.avatarError}}" 
+            src="{{item.user.avatar_url}}" 
+            class="player-avatar" 
+            mode="aspectFill"
+            binderror="onAvatarError"
+            data-index="{{index}}"
+          ></image>
           <view wx:else class="player-avatar default-avatar">
             <text class="avatar-icon">👤</text>
           </view>

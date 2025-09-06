@@ -678,6 +678,21 @@ Page({
     }
   },
 
+  // 头像加载失败处理
+  onAvatarError(e) {
+    const index = e.currentTarget.dataset.index;
+    console.log('头像加载失败，索引:', index);
+    
+    // 更新对应玩家的头像错误状态
+    const sortedPlayers = this.data.sortedPlayers;
+    if (sortedPlayers && sortedPlayers[index]) {
+      sortedPlayers[index].avatarError = true;
+      this.setData({
+        sortedPlayers: sortedPlayers
+      });
+    }
+  },
+
   // 返回主页
   goToHome() {
     wx.redirectTo({
