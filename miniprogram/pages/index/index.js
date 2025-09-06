@@ -527,6 +527,14 @@ Page({
   // 选择头像 - 个人信息浮窗
   async onProfileChooseAvatar(e) {
     console.log('头像选择事件:', e)
+    console.log('事件详情:', e.detail)
+    
+    // 先显示一个简单的提示，确认事件被触发
+    wx.showToast({
+      title: '头像选择事件已触发',
+      icon: 'none'
+    })
+    
     const { avatarUrl } = e.detail
     if (avatarUrl) {
       try {
@@ -613,7 +621,7 @@ Page({
   async authorizeWeChat() {
     try {
       const userInfoRes = await new Promise((resolve, reject) => {
-        wx.getUserProfile({
+    wx.getUserProfile({
           desc: '用于完善用户资料',
           success: resolve,
           fail: reject

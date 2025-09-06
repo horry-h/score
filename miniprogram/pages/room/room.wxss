@@ -690,6 +690,15 @@
   position: relative;
 }
 
+.avatar-upload-btn::after {
+  border: none;
+}
+
+.avatar-btn-hover {
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
 .avatar-image {
   width: 120rpx;
   height: 120rpx;
@@ -713,8 +722,8 @@
 
 .placeholder-icon {
   font-size: 32rpx;
-  color: #999;
   margin-bottom: 8rpx;
+  opacity: 0.6;
 }
 
 .placeholder-text {

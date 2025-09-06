@@ -589,7 +589,17 @@ Page({
 
   // 选择头像
   async onProfileChooseAvatar(e) {
+    console.log('头像选择事件触发:', e)
+    console.log('事件详情:', e.detail)
+    
+    // 先显示一个简单的提示，确认事件被触发
+    wx.showToast({
+      title: '头像选择事件已触发',
+      icon: 'none'
+    })
+    
     const { avatarUrl } = e.detail
+    console.log('获取到的头像URL:', avatarUrl)
     if (avatarUrl) {
       try {
         wx.showLoading({ title: '上传头像中...' })
