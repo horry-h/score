@@ -8,6 +8,27 @@ Page({
     loading: false
   },
 
+  async onLoad() {
+    // 立即调用wx.login获取用户openid，确保用户信息可用
+    try {
+      console.log('开始获取用户登录信息...');
+      const userInfo = await app.autoLogin();
+      console.log('获取用户信息成功:', userInfo);
+      
+      // 保存到全局数据
+      app.globalData.userInfo = userInfo;
+      wx.setStorageSync('userInfo', userInfo);
+      
+    } catch (error) {
+      console.error('获取用户登录信息失败:', error);
+      wx.showToast({
+        title: '登录失败，请重试',
+        icon: 'none'
+      });
+      return;
+    }
+  },
+
   // 房间名称输入
   onRoomNameInput(e) {
     this.setData({

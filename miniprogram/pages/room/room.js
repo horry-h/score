@@ -21,12 +21,37 @@ Page({
     }
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     console.log('房间页面onLoad，接收到的参数:', options);
     console.log('参数类型检查:');
     console.log('- options.scene:', options.scene, '类型:', typeof options.scene);
     console.log('- options.roomId:', options.roomId, '类型:', typeof options.roomId);
     console.log('- options.roomCode:', options.roomCode, '类型:', typeof options.roomCode);
+    
+    // 立即调用wx.login获取用户openid，确保用户信息可用
+    try {
+      console.log('开始获取用户登录信息...');
+      const userInfo = await app.autoLogin();
+      console.log('获取用户信息成功:', userInfo);
+      
+      // 更新页面数据中的用户信息
+      this.setData({
+        currentUserId: userInfo.user_id,
+        userInfo: userInfo
+      });
+      
+      // 保存到全局数据
+      app.globalData.userInfo = userInfo;
+      wx.setStorageSync('userInfo', userInfo);
+      
+    } catch (error) {
+      console.error('获取用户登录信息失败:', error);
+      wx.showToast({
+        title: '登录失败，请重试',
+        icon: 'none'
+      });
+      return;
+    }
     
     let roomId = null;
     let roomCode = null;
@@ -139,13 +164,25 @@ Page({
       console.log('loadRoomData开始，当前roomId:', this.data.roomId);
       console.log('loadRoomData开始，当前roomCode:', this.data.roomCode);
       
-      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+      // 用户信息已在onLoad时确保可用
+      const userInfo = this.data.userInfo || app.globalData.userInfo || wx.getStorageSync('userInfo');
       if (!userInfo || !userInfo.user_id) {
-        wx.showToast({
-          title: '请先登录',
-          icon: 'none'
-        });
-        return;
+        console.error('用户信息不可用，重新获取...');
+        try {
+          const newUserInfo = await app.autoLogin();
+          this.setData({
+            currentUserId: newUserInfo.user_id,
+            userInfo: newUserInfo
+          });
+          app.globalData.userInfo = newUserInfo;
+          wx.setStorageSync('userInfo', newUserInfo);
+        } catch (error) {
+          wx.showToast({
+            title: '请先登录',
+            icon: 'none'
+          });
+          return;
+        }
       }
 
       // 检查是否有有效的房间标识
@@ -160,6 +197,7 @@ Page({
 
       this.setData({ 
         currentUserId: userInfo.user_id,
+        userInfo: userInfo,
         loading: true 
       });
 
@@ -224,6 +262,7 @@ Page({
           const currentUserInList = playersData.find(player => player.user_id === userInfo.user_id);
           if (!currentUserInList) {
             console.log('当前用户不在房间中，尝试自动加入房间...');
+            console.log('使用用户信息:', userInfo);
             try {
               // 自动加入房间
               const joinResponse = await api.joinRoom(userInfo.user_id, this.data.roomId);
