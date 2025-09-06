@@ -123,8 +123,12 @@ Page({
           // 解析返回的房间数据并跳转
           let roomData;
           try {
+            console.log("已在房间中，原始响应:", response);
+            console.log("response.data类型:", typeof response.data);
+            console.log("response.data内容:", response.data);
+            
             roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-            console.log("已在房间中，房间数据:", roomData);
+            console.log("已在房间中，解析后的房间数据:", roomData);
             console.log("房间ID:", roomData.id, "类型:", typeof roomData.id);
             
             // 检查房间ID是否有效

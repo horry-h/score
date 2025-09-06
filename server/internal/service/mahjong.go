@@ -258,6 +258,7 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 		}
 		
 		roomData, _ := json.Marshal(room)
+		fmt.Printf("已在房间中，返回房间数据: %s\n", string(roomData))
 		return &Response{Code: 200, Message: "已在房间中", Data: string(roomData)}, nil
 	}
 
