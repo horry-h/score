@@ -23,7 +23,14 @@ class ApiService {
         ...finalOptions,
         success: (response) => {
           if (response.statusCode === 200) {
-            resolve(response.data);
+            // 检查业务逻辑状态码
+            if (response.data && response.data.code === 200) {
+              resolve(response.data);
+            } else {
+              // 业务逻辑错误，但HTTP请求成功
+              const errorMsg = response.data ? response.data.message : '请求失败';
+              reject(new Error(errorMsg));
+            }
           } else {
             reject(new Error(`请求失败: ${response.statusCode}`));
           }

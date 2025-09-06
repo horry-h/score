@@ -401,7 +401,14 @@ func (h *HTTPHandler) handleGetRecentRoom(w http.ResponseWriter, r *http.Request
 
 // 写入响应
 func (h *HTTPHandler) writeResponse(w http.ResponseWriter, response *service.Response) {
-	w.WriteHeader(int(response.Code))
+	// 对于业务逻辑错误，返回HTTP 200状态码，在响应体中包含业务状态码
+	if response.Code == 404 {
+		w.WriteHeader(http.StatusOK)
+	} else if response.Code >= 400 {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 	json.NewEncoder(w).Encode(response)
 }
 
