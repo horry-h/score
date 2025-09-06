@@ -272,7 +272,7 @@
 }
 
 .transfer-section {
-  margin-bottom: 24rpx;
+  margin-bottom: 8rpx;
   padding: 0 16rpx;
   width: 100%;
   box-sizing: border-box;
@@ -280,9 +280,9 @@
 
 .transfer-hint {
   background: #f8f9fa;
-  padding: 24rpx;
+  padding: 16rpx 24rpx;
   border-radius: 16rpx;
-  margin: 20rpx 0;
+  margin: 8rpx 0;
   color: #666;
   font-size: 26rpx;
   text-align: center;
