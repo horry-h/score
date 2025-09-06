@@ -81,11 +81,6 @@ type AutoLoginRequest struct {
 	Code string `json:"code"`
 }
 
-type LoginRequest struct {
-	Code      string `json:"code"`
-	Nickname  string `json:"nickname"`
-	AvatarUrl string `json:"avatar_url"`
-}
 
 type UpdateUserRequest struct {
 	UserId    int64  `json:"user_id"`

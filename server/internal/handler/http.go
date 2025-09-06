@@ -38,8 +38,6 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "POST" && path == "autoLogin":
 		h.handleAutoLogin(w, r)
-	case r.Method == "POST" && path == "login":
-		h.handleLogin(w, r)
 	case r.Method == "POST" && path == "updateUser":
 		h.handleUpdateUser(w, r)
 	case r.Method == "GET" && path == "getUser":
@@ -98,32 +96,6 @@ func (h *HTTPHandler) handleAutoLogin(w http.ResponseWriter, r *http.Request) {
 	h.writeResponse(w, response)
 }
 
-// 用户登录
-func (h *HTTPHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Code      string `json:"code"`
-		Nickname  string `json:"nickname"`
-		AvatarUrl string `json:"avatar_url"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.writeError(w, 400, "Invalid request body")
-		return
-	}
-
-	response, err := h.service.Login(r.Context(), &service.LoginRequest{
-		Code:      req.Code,
-		Nickname:  req.Nickname,
-		AvatarUrl: req.AvatarUrl,
-	})
-	
-	if err != nil {
-		h.writeError(w, 500, "Internal server error")
-		return
-	}
-
-	h.writeResponse(w, response)
-}
 
 // 更新用户信息
 func (h *HTTPHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {

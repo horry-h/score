@@ -53,16 +53,6 @@ class ApiService {
     });
   }
 
-  async login(code, nickname, avatarUrl) {
-    return this.request('/api/v1/login', {
-      method: 'POST',
-      data: {
-        code,
-        nickname,
-        avatar_url: avatarUrl,
-      },
-    });
-  }
 
   async getUserInfo(userId) {
     return this.request(`/api/v1/getUser?user_id=${userId}`, {
