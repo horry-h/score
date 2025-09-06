@@ -14,12 +14,13 @@
   </view>
 
   <!-- 最近房间区域 -->
-  <view class="recent-section">
+  <view class="recent-section {{recentRoom ? 'has-room' : 'no-room'}}">
     <view class="section-title">
       <text class="section-icon">🕐</text>
       <text class="section-text">最近房间</text>
     </view>
     
+    <!-- 有最近房间时显示完整卡片 -->
     <view class="recent-room-card" bindtap="enterRecentRoom" wx:if="{{recentRoom}}">
       <view class="room-header">
         <text class="room-id">房间号: {{recentRoom.room_id}}</text>
@@ -46,6 +47,13 @@
         <text class="hint-icon">▶️</text>
         <text class="hint-text">点击继续游戏</text>
       </view>
+    </view>
+
+    <!-- 没有最近房间时显示简化提示 -->
+    <view class="no-recent-room" wx:else>
+      <view class="no-room-icon">🏠</view>
+      <text class="no-room-text">暂无最近房间</text>
+      <text class="no-room-hint">创建或加入房间开始游戏</text>
     </view>
 
     <view class="history-btn-wrapper">

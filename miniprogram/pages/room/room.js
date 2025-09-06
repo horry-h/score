@@ -440,7 +440,6 @@ Page({
 
     try {
       const response = await api.generateQRCode(this.data.roomId);
-      console.log('生成二维码响应:', response);
 
       if (response.code === 200) {
         const qrData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
