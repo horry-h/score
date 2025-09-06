@@ -266,14 +266,19 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	}
 
 	// 加入房间
-	_, err = s.db.Exec(`
+	fmt.Printf("JoinRoom: 插入玩家记录, 房间ID: %d, 用户ID: %d\n", roomID, req.UserId)
+	result, err := s.db.Exec(`
 		INSERT INTO room_players (room_id, user_id) 
 		VALUES (?, ?)
 	`, roomID, req.UserId)
 	
 	if err != nil {
+		fmt.Printf("JoinRoom: 插入玩家记录失败: %v\n", err)
 		return &Response{Code: 500, Message: "加入房间失败"}, nil
 	}
+	
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("JoinRoom: 成功插入玩家记录, 影响行数: %d\n", rowsAffected)
 
 	// 更新用户最近房间
 	s.updateRecentRoom(req.UserId, roomID)
@@ -707,6 +712,8 @@ func (s *MahjongService) updateRecentRoom(userID, roomID int64) {
 }
 
 func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
+	fmt.Printf("getRoomPlayers: 查询房间ID %d 的玩家\n", roomID)
+	
 	rows, err := s.db.Query(`
 		SELECT rp.id, rp.room_id, rp.user_id, rp.current_score, rp.final_score, rp.joined_at,
 		       u.id, u.openid, u.nickname, u.avatar_url, u.created_at, u.updated_at
@@ -717,11 +724,13 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 	`, roomID)
 	
 	if err != nil {
+		fmt.Printf("getRoomPlayers: 查询失败: %v\n", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	var players []*RoomPlayer
+	playerCount := 0
 	for rows.Next() {
 		player := &RoomPlayer{}
 		user := &User{}
@@ -738,8 +747,11 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		
 		player.User = user
 		players = append(players, player)
+		playerCount++
+		fmt.Printf("getRoomPlayers: 找到玩家 %d, 用户ID: %d, 昵称: %s\n", playerCount, player.UserId, user.Nickname)
 	}
 
+	fmt.Printf("getRoomPlayers: 总共找到 %d 个玩家\n", playerCount)
 	return players, nil
 }
 
