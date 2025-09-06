@@ -298,6 +298,8 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	room.CreatedAt = createdAt.Unix()
 	if settledAt.Valid {
 		room.SettledAt = settledAt.Time.Unix()
+	} else {
+		room.SettledAt = 0  // 如果settled_at为NULL，设置为0
 	}
 
 	// 获取房间玩家
