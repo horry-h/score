@@ -207,6 +207,12 @@ Page({
             console.error('解析玩家数据失败:', error);
             playersData = [];
           }
+          
+          // 确保 playersData 是数组
+          if (!playersData || !Array.isArray(playersData)) {
+            playersData = [];
+          }
+          
           // 确保当前用户在玩家列表中
           const currentUserInList = playersData.find(player => player.user_id === userInfo.user_id);
           if (!currentUserInList) {
