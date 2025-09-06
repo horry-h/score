@@ -1,5 +1,5 @@
 // API服务模块
-const API_BASE_URL = 'http://124.156.196.117:8080'; // 后端服务地址
+const API_BASE_URL = 'https://www.aipaint.cloud'; // 后端服务地址
 
 class ApiService {
   constructor() {

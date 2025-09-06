@@ -45,7 +45,7 @@ func main() {
 		})
 	}
 
-	// 启动HTTP服务器
+	// 启动HTTP服务器（由Nginx处理HTTPS）
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.HTTP.Port),
 		Handler:      corsHandler(httpHandler),
@@ -53,7 +53,7 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 	}
 
-	log.Printf("HTTP server listening on port %d", cfg.HTTP.Port)
+	log.Printf("HTTP server listening on port %d (HTTPS handled by Nginx)", cfg.HTTP.Port)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Failed to start HTTP server: %v", err)
 	}

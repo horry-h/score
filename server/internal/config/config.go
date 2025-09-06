@@ -21,7 +21,9 @@ type DatabaseConfig struct {
 
 
 type HTTPConfig struct {
-	Port int
+	Port     int
+	CertFile string
+	KeyFile  string
 }
 
 type WeChatConfig struct {
@@ -39,7 +41,9 @@ func Load() *Config {
 			Database: "mahjong_score",
 		},
 		HTTP: HTTPConfig{
-			Port: 8080,
+			Port:     8080,
+			CertFile: "/etc/ssl/certs/aipaint.cloud.crt",
+			KeyFile:  "/etc/ssl/private/aipaint.cloud.key",
 		},
 		WeChat: WeChatConfig{
 			AppID:     "wx367870ff70acb37b",

@@ -24,6 +24,12 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 设置响应头
 	w.Header().Set("Content-Type", "application/json")
 
+	// 健康检查接口
+	if r.URL.Path == "/health" || r.URL.Path == "/api/v1/health" {
+		h.handleHealth(w, r)
+		return
+	}
+
 	// 路由处理
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/")
 	
@@ -453,6 +459,19 @@ func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// 健康检查接口
+func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"status":    "healthy",
+		"service":   "mahjong-score-server",
+		"version":   "1.0.0",
+		"timestamp": "2024-01-01T00:00:00Z",
+	}
+	
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }
