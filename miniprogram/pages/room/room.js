@@ -312,6 +312,8 @@ Page({
 
   // 分享房间
   shareRoom() {
+    // 自动生成二维码
+    this.generateQRCode();
     this.setData({ showShareModal: true });
   },
 
@@ -363,6 +365,9 @@ Page({
 
   // 分享
   onShareAppMessage() {
+    // 自动生成二维码
+    this.generateQRCode();
+    
     return {
       title: `麻将记分房间 ${this.data.roomInfo.id}`,
       path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,

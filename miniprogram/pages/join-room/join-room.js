@@ -33,10 +33,11 @@ Page({
         this.setData({
           roomCode: sceneParams.roomId,
         });
-        // 自动尝试加入房间
-        setTimeout(() => {
-          this.joinRoom();
-        }, 1000);
+        // 只填入房间号，不自动加入，让用户手动点击加入
+        wx.showToast({
+          title: '房间号已填入，请点击加入',
+          icon: 'success'
+        });
       }
     }
   },
