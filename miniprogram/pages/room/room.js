@@ -597,9 +597,9 @@ Page({
         // 引入COS上传工具
         const cosUploader = require('../../utils/cos.js')
         
-        // 获取当前用户ID
+        // 获取当前用户信息
         const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
-        if (!userInfo || !userInfo.user_id) {
+        if (!userInfo || !userInfo.openid) {
           wx.hideLoading()
           wx.showToast({
             title: '用户信息无效',
@@ -608,8 +608,8 @@ Page({
           return
         }
         
-        // 上传头像到COS
-        const uploadResult = await cosUploader.uploadAvatar(avatarUrl, userInfo.user_id)
+        // 上传头像到COS，使用openid作为文件名
+        const uploadResult = await cosUploader.uploadAvatar(avatarUrl, userInfo.openid)
         
         wx.hideLoading()
         

@@ -39,15 +39,13 @@ class COSUploader {
   }
 
   // 上传头像到COS
-  async uploadAvatar(filePath, userId) {
+  async uploadAvatar(filePath, openid) {
     try {
       // 确保COS已初始化
       this.init()
 
-      // 生成唯一的文件名
-      const timestamp = Date.now()
-      const randomStr = Math.random().toString(36).substring(2, 8)
-      const fileName = `avatars/${userId}_${timestamp}_${randomStr}.jpg`
+      // 使用openid作为文件名，确保唯一性
+      const fileName = `avatars/${openid}.jpg`
 
       console.log('开始上传头像到COS:', fileName)
 
