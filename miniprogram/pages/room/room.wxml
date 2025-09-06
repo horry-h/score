@@ -6,40 +6,35 @@
     <text class="back-text">返回主页</text>
   </view>
 
-  <!-- 房间标题区域 -->
-  <view class="room-header">
-    <view class="room-title-container">
-      <view class="room-title-section">
-        <text class="room-icon">🏠</text>
-        <text class="room-title">房间号 {{roomInfo.id}}</text>
-      </view>
-      <view class="room-status">
-        <view class="status-dot"></view>
-        <text class="status-text">进行中</text>
-      </view>
+  <!-- 房间号区域 -->
+  <view class="room-number-section">
+    <view class="room-number-container">
+      <text class="room-number-label">房间号</text>
+      <text class="room-number">{{roomInfo.id}}</text>
     </view>
   </view>
 
-  <!-- 玩家信息 -->
+  <!-- 玩家信息区域 -->
   <view class="players-section">
-    <view class="players-grid">
+    <view class="players-container">
       <view 
-        wx:for="{{players}}" 
+        wx:for="{{sortedPlayers}}" 
         wx:key="id" 
-        class="player-card {{item.user_id === currentUserId ? 'current' : ''}}"
+        class="player-item {{item.user_id === currentUserId ? 'current-player' : ''}}"
         bindtap="quickTransfer"
         data-player="{{item}}"
       >
-        <view class="player-avatar">
-          <image wx:if="{{item.user.avatar_url}}" src="{{item.user.avatar_url}}" class="avatar-image" mode="aspectFill"></image>
-          <text wx:else class="icon">👤</text>
+        <view class="player-avatar-container">
+          <image wx:if="{{item.user.avatar_url}}" src="{{item.user.avatar_url}}" class="player-avatar" mode="aspectFill"></image>
+          <view wx:else class="player-avatar default-avatar">
+            <text class="avatar-icon">👤</text>
+          </view>
         </view>
-        <view class="player-name">{{item.user.nickname}}</view>
-        <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
-          {{item.current_score | formatScore}}
-        </view>
-        <view class="player-hint">
-          {{item.user_id === currentUserId ? '当前用户' : '点击转移'}}
+        <view class="player-info">
+          <view class="player-name">{{item.user.nickname}}</view>
+          <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
+            {{item.current_score | formatScore}}
+          </view>
         </view>
       </view>
     </view>

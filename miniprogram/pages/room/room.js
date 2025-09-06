@@ -7,6 +7,7 @@ Page({
     roomId: null,
     roomInfo: {},
     players: [],
+    sortedPlayers: [],
     transfers: [],
     currentUserId: null,
     showShareModal: false,
@@ -201,8 +202,12 @@ Page({
             console.error('解析玩家数据失败:', error);
             playersData = [];
           }
+          // 排序玩家：当前用户始终在第一个位置
+          const sortedPlayers = this.sortPlayers(playersData, userInfo.user_id);
+          
           this.setData({
             players: playersData,
+            sortedPlayers: sortedPlayers,
           });
         }
 
@@ -519,6 +524,19 @@ Page({
     }
     console.log('最终解析结果:', params);
     return params;
+  },
+
+  // 排序玩家：当前用户始终在第一个位置
+  sortPlayers(players, currentUserId) {
+    if (!players || players.length === 0) {
+      return [];
+    }
+    
+    const currentUser = players.find(player => player.user_id === currentUserId);
+    const otherPlayers = players.filter(player => player.user_id !== currentUserId);
+    
+    // 当前用户排在第一位，其他用户按原顺序排列
+    return currentUser ? [currentUser, ...otherPlayers] : players;
   },
 
   // 返回主页
