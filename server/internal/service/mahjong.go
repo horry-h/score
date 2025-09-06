@@ -21,6 +21,85 @@ func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService
 	}
 }
 
+// 自动登录（只获取openid，查询或创建用户记录）
+func (s *MahjongService) AutoLogin(ctx context.Context, req *AutoLoginRequest) (*Response, error) {
+	// 通过微信code获取openid
+	wechatResp, err := s.wechatService.GetOpenID(req.Code)
+	if err != nil {
+		return &Response{Code: 500, Message: "获取微信用户信息失败: " + err.Error()}, nil
+	}
+	
+	openid := wechatResp.OpenID
+	if openid == "" {
+		return &Response{Code: 500, Message: "获取openid失败"}, nil
+	}
+	
+	// 查询用户是否已存在
+	var user User
+	var createdAt, updatedAt time.Time
+	err = s.db.QueryRow(`
+		SELECT id, openid, nickname, avatar_url, created_at, updated_at 
+		FROM users WHERE openid = ?
+	`, openid).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &createdAt, &updatedAt)
+	
+	if err == sql.ErrNoRows {
+		// 用户不存在，创建新用户记录（使用默认值）
+		result, err := s.db.Exec(`
+			INSERT INTO users (openid, nickname, avatar_url, created_at, updated_at) 
+			VALUES (?, ?, ?, NOW(), NOW())
+		`, openid, "微信用户", "/images/default-avatar.png")
+		
+		if err != nil {
+			return &Response{Code: 500, Message: "创建用户失败: " + err.Error()}, nil
+		}
+		
+		userID, _ := result.LastInsertId()
+		user = User{
+			Id:        userID,
+			Openid:    openid,
+			Nickname:  "微信用户",
+			AvatarUrl: "/images/default-avatar.png",
+			CreatedAt: time.Now().Unix(),
+			UpdatedAt: time.Now().Unix(),
+		}
+	} else if err != nil {
+		return &Response{Code: 500, Message: "查询用户失败: " + err.Error()}, nil
+	} else {
+		// 用户已存在，更新最后登录时间
+		user.CreatedAt = createdAt.Unix()
+		user.UpdatedAt = updatedAt.Unix()
+		
+		_, err = s.db.Exec(`UPDATE users SET updated_at = NOW() WHERE id = ?`, user.Id)
+		if err != nil {
+			return &Response{Code: 500, Message: "更新用户登录时间失败: " + err.Error()}, nil
+		}
+	}
+	
+	// 生成session
+	sessionID := generateSessionID()
+	expiresAt := time.Now().Add(24 * time.Hour)
+	
+	// 保存session到数据库
+	_, err = s.db.Exec(`
+		INSERT INTO user_sessions (session_id, user_id, expires_at, created_at) 
+		VALUES (?, ?, ?, NOW())
+	`, sessionID, user.Id, expiresAt)
+	
+	if err != nil {
+		return &Response{Code: 500, Message: "保存session失败: " + err.Error()}, nil
+	}
+	
+	// 返回用户信息和session
+	responseData := map[string]interface{}{
+		"user":       user,
+		"session_id": sessionID,
+		"expires_at": expiresAt.Unix(),
+	}
+	
+	userData, _ := json.Marshal(responseData)
+	return &Response{Code: 200, Message: "自动登录成功", Data: string(userData)}, nil
+}
+
 // 用户登录
 func (s *MahjongService) Login(ctx context.Context, req *LoginRequest) (*Response, error) {
 	// 通过微信code获取openid

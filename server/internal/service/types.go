@@ -77,6 +77,10 @@ type Response struct {
 }
 
 // 请求结构体
+type AutoLoginRequest struct {
+	Code string `json:"code"`
+}
+
 type LoginRequest struct {
 	Code      string `json:"code"`
 	Nickname  string `json:"nickname"`

@@ -25,7 +25,11 @@ Page({
     }
   },
 
-  onLoad() {
+  async onLoad() {
+    // 首先尝试自动登录
+    await this.autoLogin()
+    
+    // 然后加载用户信息和最近房间
     this.loadUserInfo()
     this.loadRecentRoom()
     
@@ -38,6 +42,35 @@ Page({
   onShow() {
     // 每次显示页面时刷新最近房间信息
     this.loadRecentRoom()
+  },
+
+  // 自动登录
+  async autoLogin() {
+    try {
+      // 检查是否已经有用户信息
+      const existingUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (existingUserInfo && existingUserInfo.user_id) {
+        console.log('用户已登录，跳过自动登录')
+        return
+      }
+
+      console.log('开始自动登录...')
+      const userInfo = await app.autoLogin()
+      console.log('自动登录成功:', userInfo)
+      
+      // 更新页面显示
+      this.setData({
+        userInfo: {
+          user_id: userInfo.user_id,
+          nickName: userInfo.nickName,
+          avatarUrl: userInfo.avatarUrl
+        }
+      })
+      
+    } catch (error) {
+      console.error('自动登录失败:', error)
+      // 自动登录失败不影响页面正常显示，用户仍可以手动登录
+    }
   },
 
   // 加载用户信息

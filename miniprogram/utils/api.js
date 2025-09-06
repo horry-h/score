@@ -44,6 +44,15 @@ class ApiService {
   }
 
   // 用户相关API
+  async autoLogin(code) {
+    return this.request('/api/v1/autoLogin', {
+      method: 'POST',
+      data: {
+        code,
+      },
+    });
+  }
+
   async login(code, nickname, avatarUrl) {
     return this.request('/api/v1/login', {
       method: 'POST',

@@ -36,6 +36,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("请求路径: %s, 方法: %s, 处理后路径: %s\n", r.URL.Path, r.Method, path)
 	
 	switch {
+	case r.Method == "POST" && path == "autoLogin":
+		h.handleAutoLogin(w, r)
 	case r.Method == "POST" && path == "login":
 		h.handleLogin(w, r)
 	case r.Method == "POST" && path == "updateUser":
@@ -71,6 +73,29 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+// 自动登录（只获取openid，查询或创建用户记录）
+func (h *HTTPHandler) handleAutoLogin(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Code string `json:"code"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.writeError(w, 400, "Invalid request body")
+		return
+	}
+
+	response, err := h.service.AutoLogin(r.Context(), &service.AutoLoginRequest{
+		Code: req.Code,
+	})
+	
+	if err != nil {
+		h.writeError(w, 500, "Internal server error")
+		return
+	}
+
+	h.writeResponse(w, response)
 }
 
 // 用户登录

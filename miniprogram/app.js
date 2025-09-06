@@ -24,6 +24,49 @@ App({
     }
   },
 
+  // 自动登录方法（获取openid并查询数据库）
+  async autoLogin() {
+    try {
+      // 获取微信登录code
+      const loginRes = await this.wxLogin()
+      if (!loginRes.code) {
+        throw new Error('获取微信登录code失败')
+      }
+      
+      // 调用后端自动登录接口（只传递code，让后端处理用户信息）
+      const response = await api.autoLogin(loginRes.code)
+      
+      if (response.code === 200) {
+        // 解析登录响应数据
+        const loginData = JSON.parse(response.data)
+        const user = loginData.user
+        const sessionID = loginData.session_id
+        const expiresAt = loginData.expires_at
+        
+        // 保存用户信息到本地存储和全局数据
+        const userData = {
+          ...user,
+          user_id: user.id, // 添加user_id字段，使用后端返回的id
+          nickName: user.nickname || '微信用户',
+          avatarUrl: user.avatar_url || '/images/default-avatar.png',
+          session_id: sessionID,
+          expires_at: expiresAt
+        }
+        
+        wx.setStorageSync('userInfo', userData)
+        wx.setStorageSync('sessionID', sessionID)
+        this.globalData.userInfo = userData
+        
+        return userData
+      } else {
+        throw new Error(response.message || '自动登录失败')
+      }
+    } catch (error) {
+      console.error('自动登录失败:', error)
+      throw error
+    }
+  },
+
   // 用户登录（不包含微信授权）
   async login(nickname = '微信用户', avatarUrl = '') {
     try {

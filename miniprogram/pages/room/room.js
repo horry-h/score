@@ -31,15 +31,36 @@ Page({
       console.log('scene参数长度:', options.scene.length);
       console.log('scene参数内容:', JSON.stringify(options.scene));
       
-      const sceneParams = this.parseSceneParams(options.scene);
-      console.log('解析后的scene参数:', sceneParams);
-      console.log('scene参数对象键:', Object.keys(sceneParams));
+      // 尝试直接处理URL编码的scene参数
+      let decodedScene = options.scene;
+      try {
+        decodedScene = decodeURIComponent(options.scene);
+        console.log('直接URL解码后的scene:', decodedScene);
+      } catch (error) {
+        console.log('URL解码失败，使用原始scene:', error);
+      }
       
-      if (sceneParams.roomId) {
-        roomId = sceneParams.roomId;
-        console.log('从scene获取到roomId:', roomId, '类型:', typeof roomId);
-      } else {
-        console.log('scene参数中没有找到roomId，可用的键:', Object.keys(sceneParams));
+      // 如果解码后包含roomId=，直接提取
+      if (decodedScene.includes('roomId=')) {
+        const roomIdMatch = decodedScene.match(/roomId=(\d+)/);
+        if (roomIdMatch) {
+          roomId = roomIdMatch[1];
+          console.log('直接从scene提取到roomId:', roomId);
+        }
+      }
+      
+      // 如果直接提取失败，使用解析方法
+      if (!roomId) {
+        const sceneParams = this.parseSceneParams(options.scene);
+        console.log('解析后的scene参数:', sceneParams);
+        console.log('scene参数对象键:', Object.keys(sceneParams));
+        
+        if (sceneParams.roomId) {
+          roomId = sceneParams.roomId;
+          console.log('从scene获取到roomId:', roomId, '类型:', typeof roomId);
+        } else {
+          console.log('scene参数中没有找到roomId，可用的键:', Object.keys(sceneParams));
+        }
       }
     }
     
@@ -461,7 +482,9 @@ Page({
       
       for (const pair of pairs) {
         console.log('处理键值对:', pair);
-        const [key, value] = pair.split('=');
+        const decodedValue = decodeURIComponent(value);
+        console.log('处理键值对111:', pair);
+        const [key, value] = decodedValue.split('=');
         console.log('分割结果 - key:', key, 'value:', value);
         
         if (key && value) {
