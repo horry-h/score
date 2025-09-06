@@ -188,10 +188,12 @@
               class="avatar-image"
               mode="aspectFill"
             />
-            <view wx:else class="avatar-placeholder">
-              <text class="placeholder-icon">📷</text>
-              <text class="placeholder-text">点击选择头像</text>
-            </view>
+            <image 
+              wx:else 
+              src="/images/default-avatar.png" 
+              class="avatar-image"
+              mode="aspectFill"
+            />
           </button>
           <text class="avatar-hint">点击上方按钮选择头像</text>
         </view>
