@@ -68,6 +68,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.handleValidateSession(w, r)
 	case r.Method == "POST" && path == "generateQRCode":
 		h.handleGenerateQRCode(w, r)
+	case r.Method == "GET" && path == "cos/credentials":
+		h.handleGetCOSCredentials(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -480,5 +482,17 @@ func (h *HTTPHandler) handleGenerateQRCode(w http.ResponseWriter, r *http.Reques
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+// 获取COS临时密钥
+func (h *HTTPHandler) handleGetCOSCredentials(w http.ResponseWriter, r *http.Request) {
+	response, err := h.service.GetCOSCredentials(r.Context(), &service.COSCredentialsRequest{})
+	
+	if err != nil {
+		h.writeError(w, 500, "Internal server error")
+		return
+	}
+
+	h.writeResponse(w, response)
 }
 

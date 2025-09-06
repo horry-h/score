@@ -525,18 +525,65 @@ Page({
   },
 
   // 选择头像 - 个人信息浮窗
-  onProfileChooseAvatar(e) {
+  async onProfileChooseAvatar(e) {
     console.log('头像选择事件:', e)
     const { avatarUrl } = e.detail
     if (avatarUrl) {
-      this.setData({
-        'profileForm.avatarUrl': avatarUrl
-      })
-      console.log('选择的头像:', avatarUrl)
-      wx.showToast({
-        title: '头像选择成功',
-        icon: 'success'
-      })
+      try {
+        wx.showLoading({ title: '上传头像中...' })
+        
+        // 引入COS上传工具
+        const cosUploader = require('../../utils/cos.js')
+        
+        // 获取当前用户ID
+        const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+        if (!userInfo || !userInfo.user_id) {
+          wx.hideLoading()
+          wx.showToast({
+            title: '用户信息无效',
+            icon: 'none'
+          })
+          return
+        }
+        
+        // 上传头像到COS
+        const uploadResult = await cosUploader.uploadAvatar(avatarUrl, userInfo.user_id)
+        
+        wx.hideLoading()
+        
+        if (uploadResult.success) {
+          // 上传成功，使用COS的URL
+          this.setData({
+            'profileForm.avatarUrl': uploadResult.url
+          })
+          console.log('头像上传到COS成功:', uploadResult.url)
+          wx.showToast({
+            title: '头像上传成功',
+            icon: 'success'
+          })
+        } else {
+          // 上传失败，使用临时URL作为备选
+          this.setData({
+            'profileForm.avatarUrl': avatarUrl
+          })
+          console.log('COS上传失败，使用临时URL:', avatarUrl)
+          wx.showToast({
+            title: '头像选择成功（临时）',
+            icon: 'success'
+          })
+        }
+      } catch (error) {
+        wx.hideLoading()
+        console.error('头像上传失败:', error)
+        // 上传失败时使用临时URL
+        this.setData({
+          'profileForm.avatarUrl': avatarUrl
+        })
+        wx.showToast({
+          title: '头像选择成功（临时）',
+          icon: 'success'
+        })
+      }
     } else {
       console.log('头像选择失败或取消')
       wx.showToast({

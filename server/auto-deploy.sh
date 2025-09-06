@@ -48,6 +48,8 @@ ExecStart=/usr/local/bin/mahjong-server
 Restart=always
 RestartSec=5
 Environment=GIN_MODE=release
+Environment=TENCENT_SECRET_ID=your_secret_id_here
+Environment=TENCENT_SECRET_KEY=your_secret_key_here
 
 [Install]
 WantedBy=multi-user.target
