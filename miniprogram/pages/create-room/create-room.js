@@ -90,4 +90,11 @@ Page({
       this.setData({ loading: false });
     }
   },
+
+  // 返回主页
+  goToHome() {
+    wx.redirectTo({
+      url: '/pages/index/index'
+    });
+  },
 });

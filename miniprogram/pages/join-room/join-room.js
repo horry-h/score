@@ -104,10 +104,47 @@ Page({
         }, 1500);
       } else {
         wx.hideLoading();
-        wx.showToast({
-          title: response.message || '加入房间失败',
-          icon: 'none'
-        });
+        
+        // 处理不同的错误情况
+        if (response.message === '房间已结算') {
+          wx.showModal({
+            title: '房间已结束',
+            content: '该房间已经结算，无法加入',
+            showCancel: false,
+            confirmText: '知道了'
+          });
+        } else if (response.message === '已在房间中') {
+          // 用户已经在房间中，直接进入房间
+          wx.showToast({
+            title: '您已在此房间中',
+            icon: 'success'
+          });
+          
+          // 获取房间信息并跳转
+          setTimeout(async () => {
+            try {
+              const roomResponse = await api.getRoom(roomId);
+              if (roomResponse.code === 200) {
+                let roomData;
+                try {
+                  roomData = typeof roomResponse.data === 'string' ? JSON.parse(roomResponse.data) : roomResponse.data;
+                  wx.redirectTo({
+                    url: `/pages/room/room?roomId=${roomData.id}`,
+                  });
+                } catch (error) {
+                  console.error("解析房间数据失败:", error);
+                }
+              }
+            } catch (error) {
+              console.error("获取房间信息失败:", error);
+            }
+          }, 1500);
+        } else {
+          wx.showToast({
+            title: response.message || '加入房间失败',
+            icon: 'none'
+          });
+        }
       }
     } catch (error) {
       wx.hideLoading();
@@ -119,5 +156,12 @@ Page({
     } finally {
       this.setData({ loading: false });
     }
+  },
+
+  // 返回主页
+  goToHome() {
+    wx.redirectTo({
+      url: '/pages/index/index'
+    });
   },
 });

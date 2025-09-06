@@ -368,7 +368,7 @@ Page({
 
   // 返回主页
   goToHome() {
-    wx.switchTab({
+    wx.redirectTo({
       url: '/pages/index/index'
     });
   },

@@ -78,9 +78,17 @@ Page({
           return
         }
         
-        this.setData({
-          recentRoom: recentRoomData
-        })
+        // 只展示未结算的房间 (status === 1)
+        if (recentRoomData && recentRoomData.status === 1) {
+          this.setData({
+            recentRoom: recentRoomData
+          })
+        } else {
+          console.log('最近房间已结算，不展示')
+          this.setData({
+            recentRoom: null
+          })
+        }
       } else {
         this.setData({
           recentRoom: null

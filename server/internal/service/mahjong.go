@@ -606,15 +606,14 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 	var recentRoom RecentRoom
 	var lastAccessedAt time.Time
 	err := s.db.QueryRow(`
-		SELECT r.id, r.room_code, r.room_name, r.status, urr.last_accessed_at,
+		SELECT r.id, r.room_code, r.room_name, r.status, rp.joined_at,
 		       rp.current_score,
 		       (SELECT COUNT(*) FROM room_players WHERE room_id = r.id) as player_count,
 		       (SELECT COUNT(*) FROM score_transfers WHERE room_id = r.id) as transfer_count
-		FROM user_recent_rooms urr
-		INNER JOIN rooms r ON urr.room_id = r.id
-		INNER JOIN room_players rp ON r.id = rp.room_id AND rp.user_id = urr.user_id
-		WHERE urr.user_id = ?
-		ORDER BY urr.last_accessed_at DESC
+		FROM room_players rp
+		INNER JOIN rooms r ON rp.room_id = r.id
+		WHERE rp.user_id = ? AND r.status = 1
+		ORDER BY rp.joined_at DESC
 		LIMIT 1
 	`, req.UserId).Scan(
 		&recentRoom.RoomId, &recentRoom.RoomCode, &recentRoom.RoomName, &recentRoom.Status,
