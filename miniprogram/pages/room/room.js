@@ -16,8 +16,9 @@ Page({
   },
 
   onLoad(options) {
-    const { roomId, roomCode } = options;
     console.log('房间页面onLoad，接收到的参数:', options);
+    
+    const { roomId, roomCode } = options;
     console.log('roomId值:', roomId, '类型:', typeof roomId);
     console.log('roomCode值:', roomCode, '类型:', typeof roomCode);
     
@@ -311,8 +312,6 @@ Page({
 
   // 分享房间
   shareRoom() {
-    // 自动生成二维码
-    this.generateQRCode();
     this.setData({ showShareModal: true });
   },
 
@@ -364,12 +363,9 @@ Page({
 
   // 分享
   onShareAppMessage() {
-    // 自动生成二维码
-    this.generateQRCode();
-    
     return {
       title: `麻将记分房间 ${this.data.roomInfo.id}`,
-      path: `/pages/room/room?roomId=${this.data.roomInfo.id}`,
+      path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
     };
   },
 

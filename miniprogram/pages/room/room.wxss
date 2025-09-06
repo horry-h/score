@@ -513,3 +513,28 @@
   padding: 16rpx 40rpx;
   font-size: 28rpx;
 }
+
+.share-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: #f8f9fa;
+  border-radius: 16rpx;
+  margin: 20rpx 0;
+  border: 2rpx solid #e9ecef;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: #333;
+  font-size: 28rpx;
+  line-height: 1.4;
+}
+
+.instruction-item .icon {
+  font-size: 32rpx;
+  color: #07c160;
+}
