@@ -71,8 +71,8 @@ class COSUploader {
         })
       })
 
-      // 生成预签名URL（用于访问私有文件）
-      const avatarUrl = await this.getObjectUrl(fileName)
+      // 构建公共访问URL（存储桶已设置为公有读）
+      const avatarUrl = `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileName}`
       
       console.log('头像上传完成，URL:', avatarUrl)
       return {
@@ -117,6 +117,35 @@ class COSUploader {
       console.error('生成预签名URL失败:', error)
       // 如果生成预签名URL失败，返回直接URL作为备选
       return `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileKey}`
+    }
+  }
+
+  // 测试COS存储桶访问权限
+  async testBucketAccess() {
+    try {
+      const testUrl = `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/`
+      console.log('测试COS存储桶访问权限:', testUrl)
+      
+      // 使用wx.request测试访问
+      const result = await new Promise((resolve, reject) => {
+        wx.request({
+          url: testUrl,
+          method: 'GET',
+          success: (res) => {
+            console.log('COS存储桶访问测试成功:', res)
+            resolve({ success: true, data: res })
+          },
+          fail: (err) => {
+            console.log('COS存储桶访问测试失败:', err)
+            resolve({ success: false, error: err })
+          }
+        })
+      })
+      
+      return result
+    } catch (error) {
+      console.error('测试COS存储桶访问权限失败:', error)
+      return { success: false, error: error.message }
     }
   }
 

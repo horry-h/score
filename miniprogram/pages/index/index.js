@@ -624,6 +624,11 @@ Page({
           return
         }
         
+        // 先测试COS存储桶访问权限
+        console.log('测试COS存储桶访问权限...')
+        const testResult = await cosUploader.testBucketAccess()
+        console.log('COS访问权限测试结果:', testResult)
+        
         // 上传头像到COS，使用openid作为文件名
         const uploadResult = await cosUploader.uploadAvatar(avatarUrl, openid)
         
