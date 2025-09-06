@@ -422,8 +422,7 @@ Page({
       
       return {
         title: '麻将记分',
-        path: `/pages/room/room?roomId=${roomId}`,
-        imageUrl: ''
+        path: `/pages/room/room?roomId=${roomId}`
       };
     } else {
       // 从右上角菜单分享，进入加入房间页面
@@ -431,8 +430,7 @@ Page({
       
       return {
         title: '麻将记分',
-        path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
-        imageUrl: ''
+        path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
       };
     }
   },

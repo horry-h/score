@@ -161,8 +161,7 @@ App({
   onShareAppMessage() {
     return {
       title: '麻将记分',
-      path: '/pages/index/index',
-      imageUrl: ''
+      path: '/pages/index/index'
     }
   },
 
