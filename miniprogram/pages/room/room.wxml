@@ -15,7 +15,7 @@
 
   <!-- 玩家信息区域 -->
   <view class="players-section">
-    <view class="players-grid">
+    <view wx:if="{{sortedPlayers.length > 0}}" class="players-grid">
       <view 
         wx:for="{{sortedPlayers}}" 
         wx:key="id" 
@@ -42,10 +42,15 @@
         </view>
       </view>
     </view>
+    <view wx:else class="empty-players">
+      <view class="empty-icon">👥</view>
+      <view class="empty-text">暂无玩家</view>
+      <view class="empty-hint">分享房间邀请好友加入</view>
+    </view>
   </view>
 
   <!-- 快速转移 -->
-  <view class="transfer-hint">
+  <view wx:if="{{sortedPlayers.length > 0}}" class="transfer-hint">
     <text class="icon">👆</text>
     <text>点击上方玩家头像快速转移分数</text>
   </view>

@@ -175,19 +175,19 @@
 
 .player-card {
   background: white;
-  border-radius: 12rpx;
-  padding: 12rpx;
+  border-radius: 16rpx;
+  padding: 16rpx 12rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  gap: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2rpx solid transparent;
   position: relative;
   overflow: hidden;
-  min-height: 120rpx;
+  min-height: 140rpx;
   justify-content: center;
 }
 
@@ -218,8 +218,8 @@
 }
 
 .player-avatar {
-  width: 50rpx;
-  height: 50rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
@@ -240,12 +240,12 @@
 }
 
 .avatar-icon {
-  font-size: 24rpx;
+  font-size: 28rpx;
   color: #999;
 }
 
 .player-name {
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: 600;
   color: #333;
   line-height: 1.2;
@@ -255,17 +255,50 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 4rpx;
 }
 
 .player-score {
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 700;
   color: #07c160;
-  margin-bottom: 8rpx;
+  margin-top: 4rpx;
+  text-align: center;
 }
 
 .player-score.score-negative {
   color: #ff4757;
+}
+
+/* 空状态样式 */
+.empty-players {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 20rpx;
+  background: #f8f9fa;
+  border-radius: 16rpx;
+  margin: 20rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
 }
 
 .player-hint {
