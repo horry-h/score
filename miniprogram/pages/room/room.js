@@ -253,6 +253,14 @@ Page({
           try {
             playersData = typeof playersResponse.data === 'string' ? JSON.parse(playersResponse.data) : playersResponse.data;
             console.log('解析后的玩家数据:', playersData);
+            console.log('玩家数据类型:', typeof playersData);
+            console.log('玩家数据长度:', playersData ? playersData.length : 0);
+            
+            // 检查每个玩家的数据结构
+            if (playersData && playersData.length > 0) {
+              console.log('第一个玩家数据结构:', playersData[0]);
+              console.log('第一个玩家的用户信息:', playersData[0].user);
+            }
           } catch (error) {
             console.error('解析玩家数据失败:', error);
             playersData = [];
@@ -260,6 +268,7 @@ Page({
           
           // 确保 playersData 是数组
           if (!playersData || !Array.isArray(playersData)) {
+            console.log('玩家数据不是数组，重置为空数组');
             playersData = [];
           }
           
@@ -654,14 +663,24 @@ Page({
   // 排序玩家：当前用户始终在第一个位置
   sortPlayers(players, currentUserId) {
     if (!players || players.length === 0) {
+      console.log('sortPlayers: 没有玩家数据');
       return [];
     }
+    
+    console.log('sortPlayers: 开始排序，当前用户ID:', currentUserId);
+    console.log('sortPlayers: 玩家列表:', players);
     
     const currentUser = players.find(player => player.user_id === currentUserId);
     const otherPlayers = players.filter(player => player.user_id !== currentUserId);
     
+    console.log('sortPlayers: 当前用户:', currentUser);
+    console.log('sortPlayers: 其他用户:', otherPlayers);
+    
     // 当前用户排在第一位，其他用户按原顺序排列
-    return currentUser ? [currentUser, ...otherPlayers] : players;
+    const sortedPlayers = currentUser ? [currentUser, ...otherPlayers] : players;
+    console.log('sortPlayers: 排序后的玩家列表:', sortedPlayers);
+    
+    return sortedPlayers;
   },
 
   // 显示个人信息浮窗
