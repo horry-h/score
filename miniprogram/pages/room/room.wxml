@@ -128,7 +128,7 @@
         <image src="data:image/png;base64,{{qrCodeData}}" class="qr-code-image" mode="aspectFit"></image>
         <view class="qr-code-hint">
           <text class="icon">📱</text>
-          <text>微信扫码进入加入房间页面</text>
+          <text>微信扫码直接进入房间</text>
         </view>
       </view>
       

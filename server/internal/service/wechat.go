@@ -161,7 +161,7 @@ func (w *WeChatService) GenerateUnlimitedQRCode(roomID int64) (string, error) {
 	
 	// 构建请求参数
 	requestData := map[string]interface{}{
-		"page":       "pages/join-room/join-room", // 跳转到加入房间页面
+		"page":       "pages/room/room", // 直接跳转到房间页面
 		"scene":      "roomId=" + strconv.FormatInt(roomID, 10), // 传递房间ID参数
 		"check_path": false, // 不检查页面路径
 		"env_version": "develop", // 正式版

@@ -18,9 +18,34 @@ Page({
   onLoad(options) {
     console.log('房间页面onLoad，接收到的参数:', options);
     
-    const { roomId, roomCode } = options;
-    console.log('roomId值:', roomId, '类型:', typeof roomId);
-    console.log('roomCode值:', roomCode, '类型:', typeof roomCode);
+    let roomId = null;
+    let roomCode = null;
+    
+    // 处理从二维码扫描进入的情况
+    if (options.scene) {
+      console.log('从二维码扫描进入，scene参数:', options.scene);
+      const sceneParams = this.parseSceneParams(options.scene);
+      console.log('解析后的scene参数:', sceneParams);
+      
+      if (sceneParams.roomId) {
+        roomId = sceneParams.roomId;
+        console.log('从scene获取到roomId:', roomId);
+      }
+    }
+    
+    // 处理直接URL参数
+    if (options.roomId) {
+      roomId = options.roomId;
+      console.log('从URL参数获取到roomId:', roomId);
+    }
+    
+    if (options.roomCode) {
+      roomCode = options.roomCode;
+      console.log('从URL参数获取到roomCode:', roomCode);
+    }
+    
+    console.log('最终roomId值:', roomId, '类型:', typeof roomId);
+    console.log('最终roomCode值:', roomCode, '类型:', typeof roomCode);
     
     // 优先使用roomId，如果没有则使用roomCode
     if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId.trim() !== '') {
@@ -410,6 +435,21 @@ Page({
     } finally {
       this.setData({ qrCodeLoading: false });
     }
+  },
+
+  // 解析scene参数
+  parseSceneParams(scene) {
+    const params = {};
+    if (scene) {
+      const pairs = scene.split('&');
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      }
+    }
+    return params;
   },
 
   // 返回主页
