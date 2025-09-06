@@ -32,6 +32,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 路由处理
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/")
+	fmt.Printf("请求路径: %s, 方法: %s, 处理后路径: %s\n", r.URL.Path, r.Method, path)
 	
 	switch {
 	case r.Method == "POST" && path == "login":
