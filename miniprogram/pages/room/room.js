@@ -17,6 +17,10 @@ Page({
 
   onLoad(options) {
     console.log('房间页面onLoad，接收到的参数:', options);
+    console.log('参数类型检查:');
+    console.log('- options.scene:', options.scene, '类型:', typeof options.scene);
+    console.log('- options.roomId:', options.roomId, '类型:', typeof options.roomId);
+    console.log('- options.roomCode:', options.roomCode, '类型:', typeof options.roomCode);
     
     let roomId = null;
     let roomCode = null;
@@ -24,12 +28,18 @@ Page({
     // 处理从二维码扫描进入的情况
     if (options.scene) {
       console.log('从二维码扫描进入，scene参数:', options.scene);
+      console.log('scene参数长度:', options.scene.length);
+      console.log('scene参数内容:', JSON.stringify(options.scene));
+      
       const sceneParams = this.parseSceneParams(options.scene);
       console.log('解析后的scene参数:', sceneParams);
+      console.log('scene参数对象键:', Object.keys(sceneParams));
       
       if (sceneParams.roomId) {
         roomId = sceneParams.roomId;
-        console.log('从scene获取到roomId:', roomId);
+        console.log('从scene获取到roomId:', roomId, '类型:', typeof roomId);
+      } else {
+        console.log('scene参数中没有找到roomId，可用的键:', Object.keys(sceneParams));
       }
     }
     
@@ -439,16 +449,27 @@ Page({
 
   // 解析scene参数
   parseSceneParams(scene) {
+    console.log('parseSceneParams开始解析:', scene);
     const params = {};
     if (scene) {
       const pairs = scene.split('&');
+      console.log('分割后的键值对数组:', pairs);
+      
       for (const pair of pairs) {
+        console.log('处理键值对:', pair);
         const [key, value] = pair.split('=');
+        console.log('分割结果 - key:', key, 'value:', value);
+        
         if (key && value) {
-          params[key] = decodeURIComponent(value);
+          const decodedValue = decodeURIComponent(value);
+          params[key] = decodedValue;
+          console.log('设置参数:', key, '=', decodedValue);
+        } else {
+          console.log('跳过无效键值对:', pair);
         }
       }
     }
+    console.log('最终解析结果:', params);
     return params;
   },
 
