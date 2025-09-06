@@ -15,11 +15,11 @@
 
   <!-- 玩家信息区域 -->
   <view class="players-section">
-    <view class="players-container">
+    <view class="players-grid">
       <view 
         wx:for="{{sortedPlayers}}" 
         wx:key="id" 
-        class="player-item {{item.user_id === currentUserId ? 'current-player' : ''}}"
+        class="player-card {{item.user_id === currentUserId ? 'current-player' : ''}}"
         bindtap="quickTransfer"
         data-player="{{item}}"
       >
@@ -29,22 +29,18 @@
             <text class="avatar-icon">👤</text>
           </view>
         </view>
-        <view class="player-info">
-          <view class="player-name">{{item.user.nickname}}</view>
-          <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
-            {{item.current_score | formatScore}}
-          </view>
+        <view class="player-name">{{item.user.nickname}}</view>
+        <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
+          {{item.current_score | formatScore}}
         </view>
       </view>
     </view>
   </view>
 
   <!-- 快速转移 -->
-  <view class="transfer-section">
-    <view class="transfer-hint">
-      <text class="icon">👆</text>
-      <text>点击上方玩家头像快速转移分数</text>
-    </view>
+  <view class="transfer-hint">
+    <text class="icon">👆</text>
+    <text>点击上方玩家头像快速转移分数</text>
   </view>
   <!-- 房间流水 -->
   <view class="history-section">

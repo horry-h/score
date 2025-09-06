@@ -164,22 +164,23 @@
   box-sizing: border-box;
 }
 
-.players-container {
-  display: flex;
-  flex-direction: column;
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16rpx;
   width: 100%;
   box-sizing: border-box;
 }
 
-.player-item {
+.player-card {
   background: white;
-  border-radius: 20rpx;
-  padding: 24rpx;
+  border-radius: 16rpx;
+  padding: 16rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  gap: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2rpx solid transparent;
@@ -187,23 +188,23 @@
   overflow: hidden;
 }
 
-.player-item:active {
-  transform: scale(0.98);
-  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
+.player-card:active {
+  transform: scale(0.95);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
 }
 
-.player-item.current-player {
+.player-card.current-player {
   border-color: #07c160;
   background: linear-gradient(135deg, #f0f9f4 0%, #e8f5e8 100%);
-  box-shadow: 0 6rpx 20rpx rgba(7, 193, 96, 0.15);
+  box-shadow: 0 6rpx 16rpx rgba(7, 193, 96, 0.15);
 }
 
-.player-item.current-player::before {
+.player-card.current-player::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  width: 6rpx;
+  width: 4rpx;
   height: 100%;
   background: linear-gradient(180deg, #07c160 0%, #06ad56 100%);
 }
@@ -214,21 +215,21 @@
 }
 
 .player-avatar {
-  width: 100rpx;
-  height: 100rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 3rpx solid #f0f0f0;
+  border: 2rpx solid #f0f0f0;
   transition: all 0.3s ease;
 }
 
-.player-item.current-player .player-avatar {
+.player-card.current-player .player-avatar {
   border-color: #07c160;
-  box-shadow: 0 0 0 3rpx rgba(7, 193, 96, 0.2);
+  box-shadow: 0 0 0 2rpx rgba(7, 193, 96, 0.2);
 }
 
 .default-avatar {
@@ -236,26 +237,25 @@
 }
 
 .avatar-icon {
-  font-size: 40rpx;
+  font-size: 24rpx;
   color: #999;
 }
 
-.player-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
 .player-name {
-  font-size: 32rpx;
+  font-size: 22rpx;
   font-weight: 600;
   color: #333;
   line-height: 1.2;
+  text-align: center;
+  word-break: break-all;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-score {
-  font-size: 36rpx;
+  font-size: 24rpx;
   font-weight: 700;
   color: #07c160;
   margin-bottom: 8rpx;
