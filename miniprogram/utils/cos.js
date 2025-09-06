@@ -71,8 +71,8 @@ class COSUploader {
         })
       })
 
-      // 构建访问URL
-      const avatarUrl = `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileName}`
+      // 生成预签名URL（用于访问私有文件）
+      const avatarUrl = await this.getObjectUrl(fileName)
       
       console.log('头像上传完成，URL:', avatarUrl)
       return {
@@ -86,6 +86,55 @@ class COSUploader {
       return {
         success: false,
         error: error.message || '上传失败'
+      }
+    }
+  }
+
+  // 生成预签名URL（用于访问私有文件）
+  async getObjectUrl(fileKey) {
+    try {
+      this.init()
+
+      const result = await new Promise((resolve, reject) => {
+        this.cos.getObjectUrl({
+          Bucket: COS_CONFIG.Bucket,
+          Region: COS_CONFIG.Region,
+          Key: fileKey,
+          Sign: true, // 生成预签名URL
+          Expires: 3600 // 1小时有效期
+        }, function(err, data) {
+          if (err) {
+            reject(err)
+          } else {
+            resolve(data)
+          }
+        })
+      })
+
+      console.log('生成预签名URL成功:', result.Url)
+      return result.Url
+    } catch (error) {
+      console.error('生成预签名URL失败:', error)
+      // 如果生成预签名URL失败，返回直接URL作为备选
+      return `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileKey}`
+    }
+  }
+
+  // 刷新预签名URL（当URL过期时使用）
+  async refreshAvatarUrl(openid) {
+    try {
+      const fileName = `avatars/${openid}.jpg`
+      const newUrl = await this.getObjectUrl(fileName)
+      console.log('刷新头像URL成功:', newUrl)
+      return {
+        success: true,
+        url: newUrl
+      }
+    } catch (error) {
+      console.error('刷新头像URL失败:', error)
+      return {
+        success: false,
+        error: error.message
       }
     }
   }
