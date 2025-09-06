@@ -125,14 +125,27 @@ Page({
           try {
             roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
             console.log("已在房间中，房间数据:", roomData);
+            console.log("房间ID:", roomData.id, "类型:", typeof roomData.id);
+            
+            // 检查房间ID是否有效
+            if (!roomData.id || roomData.id === 0) {
+              console.error("房间ID无效:", roomData.id);
+              wx.showToast({
+                title: '房间信息异常',
+                icon: 'none'
+              });
+              return;
+            }
             
             // 保存最近房间信息
             wx.setStorageSync('recentRoom', roomData);
             
             // 直接跳转到房间页面
             setTimeout(() => {
+              const roomId = roomData.id;
+              console.log("准备跳转到房间页面，roomId:", roomId);
               wx.redirectTo({
-                url: `/pages/room/room?roomId=${roomData.id}`,
+                url: `/pages/room/room?roomId=${roomId}`,
               });
             }, 1500);
           } catch (error) {

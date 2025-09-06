@@ -227,21 +227,35 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	
 	if exists > 0 {
 		// 用户已在房间中，直接返回房间信息
+		var roomCode, roomName string
+		var creatorId int64
+		var createdAt time.Time
+		var settledAt sql.NullTime
+		
+		// 获取房间详细信息
+		err := s.db.QueryRow(`
+			SELECT room_code, room_name, creator_id, created_at, settled_at
+			FROM rooms WHERE id = ?
+		`, roomID).Scan(&roomCode, &roomName, &creatorId, &createdAt, &settledAt)
+		
+		if err != nil {
+			return &Response{Code: 500, Message: "获取房间信息失败"}, nil
+		}
+		
 		room := &Room{
 			Id:        roomID,
-			RoomCode:  "", // 这里不需要room_code
-			RoomName:  "",
-			CreatorId: 0,
+			RoomCode:  roomCode,
+			RoomName:  roomName,
+			CreatorId: creatorId,
 			Status:    int32(status),
-			CreatedAt: 0,
+			CreatedAt: createdAt.Unix(),
 			SettledAt: 0,
 		}
 		
-		// 获取房间详细信息
-		s.db.QueryRow(`
-			SELECT room_code, room_name, creator_id, created_at, settled_at
-			FROM rooms WHERE id = ?
-		`, roomID).Scan(&room.RoomCode, &room.RoomName, &room.CreatorId, &room.CreatedAt, &room.SettledAt)
+		// 处理settled_at字段
+		if settledAt.Valid {
+			room.SettledAt = settledAt.Time.Unix()
+		}
 		
 		roomData, _ := json.Marshal(room)
 		return &Response{Code: 200, Message: "已在房间中", Data: string(roomData)}, nil
