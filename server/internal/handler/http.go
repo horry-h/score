@@ -463,15 +463,3 @@ func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(response)
 }
 
-// 健康检查接口
-func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"status":    "healthy",
-		"service":   "mahjong-score-server",
-		"version":   "1.0.0",
-		"timestamp": "2024-01-01T00:00:00Z",
-	}
-	
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
-}
