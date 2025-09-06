@@ -77,6 +77,42 @@
   margin-top: 60rpx;
 }
 
+.input-group {
+  margin-bottom: 32rpx;
+}
+
+.input-group label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 24rpx 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.input-group input:focus {
+  border-color: #07c160;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.15);
+  outline: none;
+}
+
+.input-group input::placeholder {
+  color: #999;
+  font-size: 28rpx;
+}
+
 .action-buttons .btn {
   display: flex;
   align-items: center;

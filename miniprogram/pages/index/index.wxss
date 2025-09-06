@@ -330,15 +330,24 @@
   width: 100%;
   padding: 24rpx 20rpx;
   border: 2rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  background: #fafafa;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
   box-sizing: border-box;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .profile-modal .form-input:focus {
   border-color: #07c160;
-  background: white;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.15);
+  outline: none;
+}
+
+.profile-modal .form-input::placeholder {
+  color: #999;
+  font-size: 28rpx;
 }
 
 .avatar-section {
@@ -601,16 +610,26 @@
 
 .form-input {
   width: 100%;
-  padding: 24rpx;
+  padding: 24rpx 20rpx;
   border: 2rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  background: #fafafa;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
 }
 
 .form-input:focus {
   border-color: #07c160;
-  background: white;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.15);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: #999;
+  font-size: 28rpx;
 }
 
 .avatar-upload {

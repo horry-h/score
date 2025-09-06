@@ -12,22 +12,30 @@
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 12rpx;
+  padding: 12rpx 20rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50rpx;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .header-left:active {
-  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(0.95);
 }
 
 .back-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
+  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .back-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 500;
+  letter-spacing: 1rpx;
 }
 
 .title {
@@ -62,6 +70,42 @@
 
 .input-section {
   margin-bottom: 40rpx;
+}
+
+.input-group {
+  margin-bottom: 32rpx;
+}
+
+.input-group label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 24rpx 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.input-group input:focus {
+  border-color: #07c160;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.15);
+  outline: none;
+}
+
+.input-group input::placeholder {
+  color: #999;
+  font-size: 28rpx;
 }
 
 .btn {
