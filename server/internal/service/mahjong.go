@@ -714,6 +714,15 @@ func (s *MahjongService) updateRecentRoom(userID, roomID int64) {
 func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 	fmt.Printf("getRoomPlayers: 查询房间ID %d 的玩家\n", roomID)
 	
+	// 先简单查询room_players表，看看是否有记录
+	var count int
+	err := s.db.QueryRow("SELECT COUNT(*) FROM room_players WHERE room_id = ?", roomID).Scan(&count)
+	if err != nil {
+		fmt.Printf("getRoomPlayers: 查询room_players表失败: %v\n", err)
+	} else {
+		fmt.Printf("getRoomPlayers: room_players表中房间ID %d 有 %d 条记录\n", roomID, count)
+	}
+	
 	rows, err := s.db.Query(`
 		SELECT rp.id, rp.room_id, rp.user_id, rp.current_score, rp.final_score, rp.joined_at,
 		       u.id, u.openid, u.nickname, u.avatar_url, u.created_at, u.updated_at
