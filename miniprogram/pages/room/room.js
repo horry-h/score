@@ -337,10 +337,10 @@ Page({
 
   // 复制房间号
   copyRoomCode() {
-    const roomCode = this.data.roomInfo.room_code;
-    if (roomCode) {
+    const roomId = this.data.roomInfo.id;
+    if (roomId) {
       wx.setClipboardData({
-        data: roomCode,
+        data: roomId.toString(),
         success: () => {
           wx.showToast({
             title: '房间号已复制',
@@ -361,7 +361,7 @@ Page({
   // 分享
   onShareAppMessage() {
     return {
-      title: `麻将记分房间 ${this.data.roomInfo.room_code}`,
+      title: `麻将记分房间 ${this.data.roomInfo.id}`,
       path: `/pages/join-room/join-room?roomCode=${this.data.roomInfo.room_code}`,
     };
   },

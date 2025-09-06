@@ -14,7 +14,7 @@
   <view class="input-section">
     <view class="input-group">
       <label>或输入房间号</label>
-      <input type="text" placeholder="请输入6位房间号" maxlength="6" value="{{roomCode}}" bindinput="onRoomCodeInput" />
+      <input type="number" placeholder="请输入房间号" value="{{roomCode}}" bindinput="onRoomCodeInput" />
     </view>
     
     <button class="btn" bindtap="joinRoom">

@@ -99,8 +99,8 @@ type CreateRoomRequest struct {
 }
 
 type JoinRoomRequest struct {
-	UserId   int64  `json:"user_id"`
-	RoomCode string `json:"room_code"`
+	UserId int64 `json:"user_id"`
+	RoomId int64 `json:"room_id"`
 }
 
 type GetRoomRequest struct {

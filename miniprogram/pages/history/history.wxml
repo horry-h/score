@@ -18,7 +18,7 @@
       data-room="{{item}}"
     >
       <view class="room-header">
-        <text class="room-id">房间号: {{item.room_code}}</text>
+        <text class="room-id">房间号: {{item.room_id}}</text>
         <text class="status-badge {{item.status === 1 ? 'status-active' : 'status-settled'}}">
           {{item.status === 1 ? '进行中' : '已结算'}}
         </text>

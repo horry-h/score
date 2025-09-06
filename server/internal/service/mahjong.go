@@ -205,8 +205,8 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	var roomID int64
 	var status int
 	err := s.db.QueryRow(`
-		SELECT id, status FROM rooms WHERE room_code = ?
-	`, req.RoomCode).Scan(&roomID, &status)
+		SELECT id, status FROM rooms WHERE id = ?
+	`, req.RoomId).Scan(&roomID, &status)
 	
 	if err == sql.ErrNoRows {
 		return &Response{Code: 404, Message: "房间不存在"}, nil

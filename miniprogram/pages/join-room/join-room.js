@@ -15,6 +15,12 @@ Page({
         roomCode: options.roomCode,
       });
     }
+    // 如果从其他页面传入roomId，也自动填入
+    if (options.roomId) {
+      this.setData({
+        roomCode: options.roomId,
+      });
+    }
   },
 
   // 房间号输入
@@ -28,9 +34,19 @@ Page({
   async joinRoom() {
     const { roomCode } = this.data;
     
-    if (!roomCode || roomCode.length !== 6) {
+    if (!roomCode || roomCode.trim() === '') {
       wx.showToast({
-        title: '请输入6位房间号',
+        title: '请输入房间号',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 验证房间号是否为有效数字
+    const roomId = parseInt(roomCode);
+    if (isNaN(roomId) || roomId <= 0) {
+      wx.showToast({
+        title: '请输入有效的房间号',
         icon: 'none'
       });
       return;
@@ -49,7 +65,7 @@ Page({
       this.setData({ loading: true });
       wx.showLoading({ title: '加入中...' });
 
-      const response = await api.joinRoom(userInfo.user_id, roomCode);
+      const response = await api.joinRoom(userInfo.user_id, roomId);
       
       if (response.code === 200) {
         console.log("加入房间响应:", response)

@@ -22,25 +22,25 @@
     
     <view class="recent-room-card" bindtap="enterRecentRoom" wx:if="{{recentRoom}}">
       <view class="room-header">
-        <text class="room-id">房间号: {{recentRoom.roomId}}</text>
+        <text class="room-id">房间号: {{recentRoom.room_id}}</text>
         <view class="status-badge status-active">进行中</view>
       </view>
       <view class="room-info">
         <view class="room-time">
           <text class="time-icon">📅</text>
-          <text class="time-text">{{recentRoom.time}}</text>
+          <text class="time-text">{{recentRoom.room_name}}</text>
         </view>
         <view class="room-score">
           <text class="score-icon">💰</text>
-          <text class="score-text {{recentRoom.score > 0 ? 'positive' : 'negative'}}">{{recentRoom.score > 0 ? '+' : ''}}{{recentRoom.score}}分</text>
+          <text class="score-text {{recentRoom.current_score > 0 ? 'positive' : 'negative'}}">{{recentRoom.current_score > 0 ? '+' : ''}}{{recentRoom.current_score}}分</text>
         </view>
       </view>
       <view class="room-stats">
         <text class="stats-icon">👥</text>
-        <text class="stats-text">{{recentRoom.playerCount}}人参与</text>
+        <text class="stats-text">{{recentRoom.player_count}}人参与</text>
         <text class="stats-separator">|</text>
         <text class="stats-icon">🔄</text>
-        <text class="stats-text">{{recentRoom.transferCount}}次转移</text>
+        <text class="stats-text">{{recentRoom.transfer_count}}次转移</text>
       </view>
       <view class="continue-hint">
         <text class="hint-icon">▶️</text>

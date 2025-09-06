@@ -6,7 +6,7 @@
 
   <view class="room-info">
     <view class="room-header">
-      <text class="room-id">房间号: {{roomInfo.room_code}}</text>
+      <text class="room-id">房间号: {{roomInfo.id}}</text>
       <text class="status-badge {{roomInfo.status === 1 ? 'status-active' : 'status-settled'}}">
         {{roomInfo.status === 1 ? '进行中' : '已结算'}}
       </text>

@@ -81,12 +81,12 @@ class ApiService {
     });
   }
 
-  async joinRoom(userId, roomCode) {
+  async joinRoom(userId, roomId) {
     return this.request('/api/v1/joinRoom', {
       method: 'POST',
       data: {
         user_id: userId,
-        room_code: roomCode,
+        room_id: roomId,
       },
     });
   }

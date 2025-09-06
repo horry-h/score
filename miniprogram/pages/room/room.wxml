@@ -1,7 +1,7 @@
 <!--room.wxml-->
 <view class="container">
   <view class="header">
-    <text class="title">房间 {{roomInfo.room_code}}</text>
+    <text class="title">房间 {{roomInfo.id}}</text>
   </view>
 
   <!-- 玩家信息 -->
@@ -100,7 +100,7 @@
     
     <view class="share-room-info">
       <view class="room-header">
-        <text class="room-id">房间号: {{roomInfo.room_code}}</text>
+        <text class="room-id">房间号: {{roomInfo.id}}</text>
         <text class="status-badge status-active">等待加入</text>
       </view>
       <view class="room-stats">
