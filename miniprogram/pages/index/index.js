@@ -419,22 +419,28 @@ Page({
     try {
       wx.showLoading({ title: '保存中...' })
       
-      // 调用登录API，传入昵称和头像URL
-      const loginRes = await app.login(nickname, avatarUrl)
-      if (loginRes) {
+      // 调用更新用户信息API
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.user_id) {
+        wx.hideLoading()
+        wx.showToast({
+          title: '用户信息异常，请重新进入',
+          icon: 'error'
+        })
+        return
+      }
+      
+      const response = await api.updateUser(userInfo.user_id, nickname, avatarUrl)
+      if (response.code === 200) {
         // 更新本地用户信息
         const updatedUserInfo = {
-          ...loginRes,
-          user_id: loginRes.id, // 添加user_id字段，使用后端返回的id
-          nickname: nickname,
+          ...userInfo,
+          nickName: nickname,
           avatarUrl: avatarUrl
         }
         
         wx.setStorageSync('userInfo', updatedUserInfo)
         app.globalData.userInfo = updatedUserInfo
-        
-        // 清除欢迎弹窗标记，因为用户已经登录
-        wx.removeStorageSync('hasShownWelcome')
         
         this.setData({
           userInfo: updatedUserInfo,
@@ -578,22 +584,28 @@ Page({
     try {
       wx.showLoading({ title: '保存中...' })
       
-      // 调用登录API，传入昵称和头像URL
-      const loginRes = await app.login(nickname, avatarUrl)
-      if (loginRes) {
+      // 调用更新用户信息API
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.user_id) {
+        wx.hideLoading()
+        wx.showToast({
+          title: '用户信息异常，请重新进入',
+          icon: 'error'
+        })
+        return
+      }
+      
+      const response = await api.updateUser(userInfo.user_id, nickname, avatarUrl)
+      if (response.code === 200) {
         // 更新本地用户信息
         const updatedUserInfo = {
-          ...loginRes,
-          user_id: loginRes.id, // 添加user_id字段，使用后端返回的id
-          nickname: nickname,
+          ...userInfo,
+          nickName: nickname,
           avatarUrl: avatarUrl
         }
         
         wx.setStorageSync('userInfo', updatedUserInfo)
         app.globalData.userInfo = updatedUserInfo
-        
-        // 清除欢迎弹窗标记，因为用户已经登录
-        wx.removeStorageSync('hasShownWelcome')
         
         this.setData({
           userInfo: updatedUserInfo,

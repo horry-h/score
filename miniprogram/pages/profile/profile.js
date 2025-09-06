@@ -121,19 +121,8 @@ Page({
       this.setData({ loading: true });
       wx.showLoading({ title: '保存中...' });
       
-      let response;
-      if (isNewUser) {
-        // 新用户登录，传入昵称和头像URL
-        const loginRes = await app.login(userInfo.nickname, userInfo.avatar_url);
-        if (loginRes) {
-          response = { code: 200, data: loginRes };
-        } else {
-          throw new Error('登录失败');
-        }
-      } else {
-        // 更新用户信息
-        response = await api.updateUser(userInfo.user_id, userInfo.nickname, userInfo.avatar_url);
-      }
+      // 现在所有用户都通过自动登录获得ID，直接更新用户信息
+      const response = await api.updateUser(userInfo.user_id, userInfo.nickname, userInfo.avatar_url);
       
       wx.hideLoading();
       
