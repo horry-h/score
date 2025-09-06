@@ -8,7 +8,7 @@ set -e
 echo "开始自动化部署HTTPS服务..."
 
 # 检查是否以root权限运行
-if [ "$EUID" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
     echo "请以root权限运行此脚本"
     exit 1
 fi
