@@ -207,8 +207,28 @@ Page({
             console.error('解析玩家数据失败:', error);
             playersData = [];
           }
+          // 确保当前用户在玩家列表中
+          const currentUserInList = playersData.find(player => player.user_id === userInfo.user_id);
+          if (!currentUserInList) {
+            // 如果当前用户不在列表中，添加当前用户
+            const currentUserPlayer = {
+              id: Date.now(), // 临时ID
+              user_id: userInfo.user_id,
+              room_id: this.data.roomId,
+              current_score: 0,
+              user: {
+                id: userInfo.user_id,
+                nickname: userInfo.nickName || userInfo.nickname || '微信用户',
+                avatar_url: userInfo.avatarUrl || userInfo.avatar_url || ''
+              }
+            };
+            playersData.unshift(currentUserPlayer);
+            console.log('当前用户不在玩家列表中，已添加:', currentUserPlayer);
+          }
+          
           // 排序玩家：当前用户始终在第一个位置
           const sortedPlayers = this.sortPlayers(playersData, userInfo.user_id);
+          console.log('排序后的玩家列表:', sortedPlayers);
           
           this.setData({
             players: playersData,

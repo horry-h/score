@@ -40,12 +40,11 @@
   </view>
 
   <!-- 快速转移 -->
-  <view class="transfer-section">
-    <view class="transfer-hint">
-      <text class="icon">👆</text>
-      <text>点击上方玩家头像快速转移分数</text>
-    </view>
+  <view class="transfer-hint">
+    <text class="icon">👆</text>
+    <text>点击上方玩家头像快速转移分数</text>
   </view>
+
   <!-- 房间流水 -->
   <view class="history-section">
     <view class="section-title">
