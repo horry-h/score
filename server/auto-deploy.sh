@@ -185,15 +185,8 @@ nginx -t
 echo "15. 重启Nginx..."
 systemctl restart nginx
 
-# 16. 配置防火墙
-echo "16. 配置防火墙..."
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-
-# 17. 检查服务状态
-echo "17. 检查服务状态..."
+# 16. 检查服务状态
+echo "16. 检查服务状态..."
 sleep 3
 echo "Go服务状态:"
 systemctl status mahjong-server --no-pager
@@ -201,8 +194,8 @@ echo ""
 echo "Nginx服务状态:"
 systemctl status nginx --no-pager
 
-# 18. 测试HTTPS
-echo "18. 测试HTTPS..."
+# 17. 测试HTTPS
+echo "17. 测试HTTPS..."
 sleep 2
 if curl -k -s https://www.aipaint.cloud/health > /dev/null; then
     echo "HTTPS服务测试成功！"

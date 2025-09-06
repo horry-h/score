@@ -74,9 +74,4 @@ echo "测试Nginx (80端口):"
 curl -s http://127.0.0.1/health || echo "Nginx HTTP连接失败"
 echo ""
 
-# 8. 检查防火墙
-echo "8. 检查防火墙状态:"
-ufw status || echo "防火墙未配置"
-echo ""
-
 echo "=== 诊断完成 ==="

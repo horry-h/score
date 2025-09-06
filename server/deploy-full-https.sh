@@ -91,14 +91,7 @@ read
 
 certbot --nginx -d www.aipaint.cloud -d aipaint.cloud --non-interactive --agree-tos --email admin@aipaint.cloud
 
-# 12. 配置防火墙
-echo "配置防火墙..."
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-
-# 13. 检查服务状态
+# 12. 检查服务状态
 echo "检查服务状态..."
 sleep 3
 echo "Go服务状态:"

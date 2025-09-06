@@ -41,11 +41,6 @@ cat > /etc/cron.d/certbot-renew << EOF
 0 12 * * * root certbot renew --quiet --post-hook "systemctl reload mahjong-server"
 EOF
 
-# 设置防火墙规则
-echo "配置防火墙..."
-ufw allow 443/tcp
-ufw allow 80/tcp
-
 echo "SSL证书配置完成！"
 echo "证书文件位置："
 echo "  证书: /etc/ssl/certs/aipaint.cloud.crt"

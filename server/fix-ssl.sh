@@ -133,15 +133,8 @@ systemctl start mahjong-server
 echo "9. 重启Nginx..."
 systemctl restart nginx
 
-# 10. 配置防火墙
-echo "10. 配置防火墙..."
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-
-# 11. 检查服务状态
-echo "11. 检查服务状态..."
+# 10. 检查服务状态
+echo "10. 检查服务状态..."
 sleep 3
 echo "Go服务状态:"
 systemctl status mahjong-server --no-pager
