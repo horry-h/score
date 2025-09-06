@@ -452,7 +452,11 @@ Page({
     console.log('parseSceneParams开始解析:', scene);
     const params = {};
     if (scene) {
-      const pairs = scene.split('&');
+      // 首先对整个scene字符串进行URL解码
+      const decodedScene = decodeURIComponent(scene);
+      console.log('URL解码后的scene:', decodedScene);
+      
+      const pairs = decodedScene.split('&');
       console.log('分割后的键值对数组:', pairs);
       
       for (const pair of pairs) {
@@ -461,6 +465,7 @@ Page({
         console.log('分割结果 - key:', key, 'value:', value);
         
         if (key && value) {
+          // 对值进行额外的URL解码（防止双重编码）
           const decodedValue = decodeURIComponent(value);
           params[key] = decodedValue;
           console.log('设置参数:', key, '=', decodedValue);
