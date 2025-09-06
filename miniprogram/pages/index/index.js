@@ -98,24 +98,35 @@ Page({
     if (this.data.recentRoom) {
       console.log('准备跳转，room_id:', this.data.recentRoom.room_id)
       console.log('准备跳转，room_code:', this.data.recentRoom.room_code)
+      console.log('recentRoom完整数据:', JSON.stringify(this.data.recentRoom))
       
-      // 使用room_code进行跳转，因为它是包含时间戳的唯一字符串
+      // 优先使用room_code，如果没有则使用room_id
       const roomCode = this.data.recentRoom.room_code
-      if (!roomCode) {
-        console.error('room_code为空，无法跳转')
+      const roomId = this.data.recentRoom.room_id
+      
+      if (roomCode && roomCode !== 'undefined' && roomCode !== 'null') {
+        // 使用room_code进行跳转
+        const url = `/pages/room/room?roomCode=${roomCode}`
+        console.log('使用roomCode跳转，URL:', url)
+        
+        wx.navigateTo({
+          url: url
+        })
+      } else if (roomId) {
+        // 如果没有room_code，使用room_id
+        const url = `/pages/room/room?roomId=${roomId}`
+        console.log('使用roomId跳转，URL:', url)
+        
+        wx.navigateTo({
+          url: url
+        })
+      } else {
+        console.error('room_code和room_id都无效:', { roomCode, roomId })
         wx.showToast({
-          title: '房间号无效',
+          title: '房间信息无效',
           icon: 'none'
         })
-        return
       }
-      
-      const url = `/pages/room/room?roomCode=${roomCode}`
-      console.log('跳转URL:', url)
-      
-      wx.navigateTo({
-        url: url
-      })
     } else {
       console.error('recentRoom为空，无法跳转')
       wx.showToast({

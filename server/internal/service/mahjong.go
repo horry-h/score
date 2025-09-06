@@ -242,8 +242,13 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	// 更新用户最近房间
 	s.updateRecentRoom(req.UserId, roomID)
 
+	// 获取房间的room_code
+	var roomCode string
+	s.db.QueryRow("SELECT room_code FROM rooms WHERE id = ?", roomID).Scan(&roomCode)
+
 	roomData := map[string]interface{}{
-		"room_id": roomID,
+		"room_id":   roomID,
+		"room_code": roomCode,
 	}
 	
 	data, _ := json.Marshal(roomData)

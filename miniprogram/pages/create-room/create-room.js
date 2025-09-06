@@ -41,6 +41,23 @@ Page({
       const response = await api.createRoom(userInfo.user_id, this.data.roomName);
       
       if (response.code === 200) {
+        console.log("新房间响应:", response)
+        
+        // 解析data字段中的JSON字符串
+        let roomData;
+        try {
+          roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log("解析后的房间数据:", roomData)
+        } catch (error) {
+          console.error("解析房间数据失败:", error)
+          wx.hideLoading();
+          wx.showToast({
+            title: '房间数据解析失败',
+            icon: 'none'
+          });
+          return;
+        }
+        
         wx.hideLoading();
         wx.showToast({
           title: '房间创建成功！',
@@ -48,12 +65,14 @@ Page({
         });
         
         // 保存最近房间信息
-        wx.setStorageSync('recentRoom', response.data);
+        wx.setStorageSync('recentRoom', roomData);
+        console.log("保存的房间数据:", roomData)
+        console.log("房间号:", roomData.room_code)
         
         // 跳转到房间页面
         setTimeout(() => {
           wx.redirectTo({
-            url: `/pages/room/room?roomCode=${response.data.room_code}`,
+            url: `/pages/room/room?roomCode=${roomData.room_code}`,
           });
         }, 1500);
       } else {

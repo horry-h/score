@@ -20,11 +20,11 @@ Page({
     console.log('roomCode值:', roomCode, '类型:', typeof roomCode);
     
     // 优先使用roomCode，如果没有则使用roomId
-    if (roomCode) {
+    if (roomCode && roomCode !== 'undefined' && roomCode !== 'null' && roomCode.trim() !== '') {
       console.log('使用roomCode进入房间:', roomCode);
       this.setData({ roomCode: roomCode });
       this.loadRoomData();
-    } else if (roomId) {
+    } else if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId.trim() !== '') {
       const parsedRoomId = parseInt(roomId);
       console.log('解析后的roomId:', parsedRoomId);
       
@@ -40,7 +40,7 @@ Page({
       this.setData({ roomId: parsedRoomId });
       this.loadRoomData();
     } else {
-      console.error('未接收到roomId或roomCode参数');
+      console.error('未接收到有效的roomId或roomCode参数:', { roomId, roomCode });
       wx.showToast({
         title: '缺少房间信息',
         icon: 'none'
