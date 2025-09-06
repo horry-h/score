@@ -5,8 +5,9 @@ const COS = require('../lib/cos-wx-sdk-v5.js')
 const COS_CONFIG = {
   Bucket: 'avatar-1251760642',
   Region: 'ap-guangzhou',
-  // 注意：这里需要从后端获取临时密钥，不能在前端硬编码
-  // 实际使用时应该通过API获取临时密钥
+  // 永久密钥配置
+  SecretId: 'AKIDiV6Zrww476xcCUPL8kAMWY1NXURHwPfl',
+  SecretKey: 'ykKgtJoIbhdXHqCMJ3bx62wieVAfx2vc'
 }
 
 class COSUploader {
@@ -15,22 +16,16 @@ class COSUploader {
     this.isInitialized = false
   }
 
-  // 初始化COS实例（需要临时密钥）
-  async init() {
+  // 初始化COS实例（使用永久密钥）
+  init() {
     if (this.isInitialized) {
       return this.cos
     }
 
     try {
-      // 从后端获取临时密钥
-      const tempCredentials = await this.getTempCredentials()
-      
       this.cos = new COS({
-        SecretId: tempCredentials.tmpSecretId,
-        SecretKey: tempCredentials.tmpSecretKey,
-        SecurityToken: tempCredentials.sessionToken,
-        StartTime: tempCredentials.startTime,
-        ExpiredTime: tempCredentials.expiredTime,
+        SecretId: COS_CONFIG.SecretId,
+        SecretKey: COS_CONFIG.SecretKey,
         SimpleUploadMethod: 'putObject'
       })
       
@@ -43,33 +38,11 @@ class COSUploader {
     }
   }
 
-  // 从后端获取临时密钥
-  async getTempCredentials() {
-    try {
-      const response = await wx.request({
-        url: 'https://www.aipaint.cloud/api/v1/cos/credentials',
-        method: 'GET',
-        header: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (response.data && response.data.code === 200) {
-        return response.data.data
-      } else {
-        throw new Error('获取临时密钥失败')
-      }
-    } catch (error) {
-      console.error('获取临时密钥失败:', error)
-      throw error
-    }
-  }
-
   // 上传头像到COS
   async uploadAvatar(filePath, userId) {
     try {
       // 确保COS已初始化
-      await this.init()
+      this.init()
 
       // 生成唯一的文件名
       const timestamp = Date.now()
@@ -122,7 +95,7 @@ class COSUploader {
   // 删除COS中的头像文件
   async deleteAvatar(fileKey) {
     try {
-      await this.init()
+      this.init()
 
       const result = await new Promise((resolve, reject) => {
         this.cos.deleteObject({

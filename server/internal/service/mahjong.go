@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"os"
 )
 
 type MahjongService struct {
@@ -903,48 +902,3 @@ func (s *MahjongService) GenerateQRCode(ctx context.Context, req *GenerateQRCode
 	return &Response{Code: 200, Message: "生成成功", Data: string(data)}, nil
 }
 
-// COS临时密钥请求
-type COSCredentialsRequest struct {
-	// 暂时不需要参数，后续可以根据需要添加
-}
-
-// COS临时密钥响应
-type COSCredentialsResponse struct {
-	TmpSecretId  string `json:"tmpSecretId"`
-	TmpSecretKey string `json:"tmpSecretKey"`
-	SessionToken string `json:"sessionToken"`
-	StartTime    int64  `json:"startTime"`
-	ExpiredTime  int64  `json:"expiredTime"`
-}
-
-// 获取COS临时密钥
-func (s *MahjongService) GetCOSCredentials(ctx context.Context, req *COSCredentialsRequest) (*Response, error) {
-	// 从环境变量获取腾讯云COS的永久密钥
-	secretId := os.Getenv("TENCENT_SECRET_ID")
-	secretKey := os.Getenv("TENCENT_SECRET_KEY")
-	
-	if secretId == "" || secretKey == "" {
-		return &Response{Code: 500, Message: "COS配置缺失，请联系管理员"}, nil
-	}
-	
-	// 生成临时密钥（这里使用简化的方式，实际生产环境建议使用STS服务）
-	// 注意：这里只是示例，实际应该调用腾讯云STS服务获取真正的临时密钥
-	startTime := time.Now().Unix()
-	expiredTime := startTime + 3600 // 1小时后过期
-	
-	// 生成临时密钥（实际应该调用STS API）
-	tmpSecretId := fmt.Sprintf("tmp_%s_%d", secretId, startTime)
-	tmpSecretKey := fmt.Sprintf("tmp_%s_%d", secretKey, startTime)
-	sessionToken := fmt.Sprintf("session_%d_%d", startTime, expiredTime)
-	
-	responseData := COSCredentialsResponse{
-		TmpSecretId:  tmpSecretId,
-		TmpSecretKey: tmpSecretKey,
-		SessionToken: sessionToken,
-		StartTime:    startTime,
-		ExpiredTime:  expiredTime,
-	}
-	
-	data, _ := json.Marshal(responseData)
-	return &Response{Code: 200, Message: "获取成功", Data: string(data)}, nil
-}
