@@ -106,6 +106,12 @@ Page({
         icon: 'none'
       });
     }
+    
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
   },
 
   onShow() {
@@ -410,7 +416,7 @@ Page({
     wx.stopPullDownRefresh();
   },
 
-  // 分享
+  // 分享给好友
   onShareAppMessage(res) {
     console.log('分享事件触发:', res);
     
@@ -433,6 +439,16 @@ Page({
         path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
       };
     }
+  },
+
+  // 分享到朋友圈
+  onShareTimeline() {
+    console.log('分享到朋友圈');
+    
+    return {
+      title: '麻将记分',
+      path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
+    };
   },
 
   // 生成二维码

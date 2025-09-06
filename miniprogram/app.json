@@ -20,6 +20,8 @@
       "desc": "用于完善用户资料"
     }
   },
+  "requiredBackgroundModes": [],
+  "plugins": {},
   "style": "v2",
   "renderer": "skyline",
   "rendererOptions": {

@@ -37,6 +37,12 @@ Page({
     eventBus.on('showProfileModal', () => {
       this.showProfileModal()
     })
+    
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    })
   },
 
   onShow() {
@@ -829,6 +835,22 @@ Page({
       })
     } finally {
       this.setData({ loading: false })
+    }
+  },
+
+  // 分享给好友
+  onShareAppMessage() {
+    return {
+      title: '麻将记分',
+      path: '/pages/index/index'
+    }
+  },
+
+  // 分享到朋友圈
+  onShareTimeline() {
+    return {
+      title: '麻将记分',
+      path: '/pages/index/index'
     }
   }
 })
