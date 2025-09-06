@@ -1,12 +1,23 @@
 <!--room.wxml-->
 <view class="container">
-  <view class="header">
-    <view class="header-left" bindtap="goToHome">
-      <text class="back-icon">🏠</text>
-      <text class="back-text">返回主页</text>
+  <!-- 返回主页按钮 -->
+  <view class="back-button" bindtap="goToHome">
+    <text class="back-icon">🏠</text>
+    <text class="back-text">返回主页</text>
+  </view>
+
+  <!-- 房间标题区域 -->
+  <view class="room-header">
+    <view class="room-title-container">
+      <view class="room-title-section">
+        <text class="room-icon">🏠</text>
+        <text class="room-title">房间号 {{roomInfo.id}}</text>
+      </view>
+      <view class="room-status">
+        <view class="status-dot"></view>
+        <text class="status-text">进行中</text>
+      </view>
     </view>
-    <text class="title">房间 {{roomInfo.id}}</text>
-    <view class="header-right"></view>
   </view>
 
   <!-- 玩家信息 -->

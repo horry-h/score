@@ -13,6 +13,8 @@ Page({
     loading: false,
     showLoginModal: false,
     showProfileModal: false,
+    showJoinRoomModal: false,
+    roomCode: '',
     loginForm: {
       nickname: '微信用户',
       avatarUrl: ''
@@ -182,8 +184,10 @@ Page({
       return
     }
     
-    wx.navigateTo({
-      url: '/pages/join-room/join-room'
+    // 显示加入房间浮窗
+    this.setData({
+      showJoinRoomModal: true,
+      roomCode: ''
     })
   },
 
@@ -510,6 +514,176 @@ Page({
         title: '保存失败',
         icon: 'none'
       })
+    }
+  },
+
+  // 隐藏加入房间浮窗
+  hideJoinRoomModal() {
+    this.setData({
+      showJoinRoomModal: false,
+      roomCode: ''
+    })
+  },
+
+  // 房间号输入
+  onRoomCodeInput(e) {
+    this.setData({
+      roomCode: e.detail.value
+    })
+  },
+
+  // 确认加入房间
+  async confirmJoinRoom() {
+    const { roomCode } = this.data
+    
+    if (!roomCode || roomCode.trim() === '') {
+      wx.showToast({
+        title: '请输入房间号',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 验证房间号是否为有效数字
+    const roomId = parseInt(roomCode)
+    if (isNaN(roomId) || roomId <= 0) {
+      wx.showToast({
+        title: '请输入有效的房间号',
+        icon: 'none'
+      })
+      return
+    }
+
+    try {
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.user_id) {
+        wx.showToast({
+          title: '请先登录',
+          icon: 'none'
+        })
+        return
+      }
+
+      this.setData({ loading: true })
+      wx.showLoading({ title: '加入中...' })
+
+      const response = await api.joinRoom(userInfo.user_id, roomId)
+      
+      if (response.code === 200) {
+        console.log("加入房间响应:", response)
+        
+        // 解析data字段中的JSON字符串
+        let roomData;
+        try {
+          roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log("解析后的房间数据:", roomData)
+        } catch (error) {
+          console.error("解析房间数据失败:", error)
+          wx.hideLoading()
+          wx.showToast({
+            title: '房间数据解析失败',
+            icon: 'none'
+          })
+          return
+        }
+        
+        wx.hideLoading()
+        wx.showToast({
+          title: '加入房间成功',
+          icon: 'success'
+        })
+        
+        // 保存最近房间信息
+        wx.setStorageSync('recentRoom', roomData);
+        console.log("保存的房间数据:", roomData)
+        
+        // 隐藏浮窗
+        this.setData({
+          showJoinRoomModal: false,
+          roomCode: ''
+        })
+        
+        // 跳转到房间页面，优先使用room_id
+        setTimeout(() => {
+          wx.redirectTo({
+            url: `/pages/room/room?roomId=${roomData.room_id}`,
+          });
+        }, 1500);
+      } else {
+        wx.hideLoading()
+        
+        // 处理不同的错误情况
+        if (response.message === '房间已结算') {
+          wx.showModal({
+            title: '房间已结束',
+            content: '该房间已经结算，无法加入',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        } else if (response.message === '已在房间中') {
+          // 用户已经在房间中，直接进入房间
+          wx.showToast({
+            title: '您已在此房间中',
+            icon: 'success'
+          })
+          
+          // 解析返回的房间数据并跳转
+          let roomData;
+          try {
+            console.log("已在房间中，原始响应:", response);
+            roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            console.log("已在房间中，解析后的房间数据:", roomData);
+            
+            // 检查房间ID是否有效
+            if (!roomData.room_id || roomData.room_id === 0) {
+              console.error("房间ID无效:", roomData.room_id);
+              wx.showToast({
+                title: '房间信息异常',
+                icon: 'none'
+              });
+              return;
+            }
+            
+            // 保存最近房间信息
+            wx.setStorageSync('recentRoom', roomData);
+            
+            // 隐藏浮窗
+            this.setData({
+              showJoinRoomModal: false,
+              roomCode: ''
+            })
+            
+            // 直接跳转到房间页面
+            setTimeout(() => {
+              const roomId = roomData.room_id;
+              console.log("准备跳转到房间页面，roomId:", roomId);
+              wx.redirectTo({
+                url: `/pages/room/room?roomId=${roomId}`,
+              });
+            }, 1500);
+          } catch (error) {
+            console.error("解析房间数据失败:", error);
+            wx.showToast({
+              title: '房间信息解析失败',
+              icon: 'none'
+            });
+          }
+        } else {
+          wx.showToast({
+            title: response.message || '加入房间失败',
+            icon: 'none'
+          })
+        }
+      }
+    } catch (error) {
+      wx.hideLoading()
+      console.error('加入房间失败:', error)
+      wx.showToast({
+        title: '加入房间失败',
+        icon: 'none'
+      })
+    } finally {
+      this.setData({ loading: false })
     }
   }
 })

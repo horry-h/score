@@ -163,4 +163,42 @@
       </view>
     </view>
   </view>
+
+  <!-- 加入房间浮窗 -->
+  <view class="join-room-modal" wx:if="{{showJoinRoomModal}}" catchtap="hideJoinRoomModal">
+    <view class="join-room-modal-content" catchtap="stopPropagation">
+      <view class="join-room-header">
+        <text class="join-room-title">加入房间</text>
+        <text class="join-room-close" bindtap="hideJoinRoomModal">✕</text>
+      </view>
+      
+      <view class="join-room-body">
+        <view class="form-group">
+          <text class="form-label">房间号</text>
+          <input 
+            class="form-input" 
+            type="number" 
+            placeholder="请输入房间号" 
+            value="{{roomCode}}"
+            bindinput="onRoomCodeInput"
+          />
+        </view>
+        
+        <view class="join-room-hint">
+          <text class="hint-icon">💡</text>
+          <text class="hint-text">输入房间号即可加入房间</text>
+        </view>
+      </view>
+      
+      <view class="join-room-footer">
+        <button class="cancel-btn" bindtap="hideJoinRoomModal">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="confirm-btn" bindtap="confirmJoinRoom">
+          <text class="btn-icon">🚪</text>
+          <text class="btn-text">加入房间</text>
+        </button>
+      </view>
+    </view>
+  </view>
 </view>

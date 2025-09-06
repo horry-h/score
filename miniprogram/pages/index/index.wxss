@@ -703,3 +703,139 @@
   font-size: 24rpx;
   margin-right: 8rpx;
 }
+
+/* 加入房间浮窗样式 */
+.join-room-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.join-room-modal-content {
+  background: white;
+  border-radius: 20rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+}
+
+.join-room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 40rpx 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.join-room-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.join-room-close {
+  font-size: 40rpx;
+  color: #999;
+  padding: 10rpx;
+}
+
+.join-room-body {
+  padding: 40rpx;
+}
+
+.join-room-body .form-group {
+  margin-bottom: 30rpx;
+}
+
+.join-room-body .form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.join-room-body .form-input {
+  width: 100%;
+  padding: 24rpx 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.join-room-body .form-input:focus {
+  border-color: #07c160;
+  background: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.15);
+  outline: none;
+}
+
+.join-room-body .form-input::placeholder {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.join-room-hint {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: #666;
+  font-size: 26rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  border: 2rpx solid #e9ecef;
+}
+
+.hint-icon {
+  font-size: 28rpx;
+  color: #07c160;
+}
+
+.join-room-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 40rpx 40rpx;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.join-room-modal .cancel-btn {
+  flex: 1;
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.join-room-modal .confirm-btn {
+  flex: 1;
+  background: #07c160;
+  color: white;
+  border: none;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}

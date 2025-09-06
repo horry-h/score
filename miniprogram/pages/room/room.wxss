@@ -8,19 +8,58 @@
   box-sizing: border-box;
 }
 
-.header {
+/* 返回主页按钮 */
+.back-button {
+  position: fixed;
+  top: 60rpx;
+  left: 24rpx;
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 50rpx 24rpx 30rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
-  color: white;
-  margin: -40rpx -40rpx 24rpx -40rpx;
-  position: relative;
-  overflow: hidden;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10rpx);
+  border: 2rpx solid rgba(7, 193, 96, 0.2);
+  transition: all 0.3s ease;
 }
 
-.header::before {
+.back-button:active {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(0.95);
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.15);
+}
+
+.back-icon {
+  font-size: 28rpx;
+  color: #07c160;
+}
+
+.back-text {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #07c160;
+  letter-spacing: 1rpx;
+}
+
+/* 房间标题区域 */
+.room-header {
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
+  color: white;
+  padding: 100rpx 0 50rpx;
+  margin: 0 -40rpx 24rpx -40rpx;
+  position: relative;
+  overflow: hidden;
+  width: calc(100% + 80rpx);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-header::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -31,52 +70,91 @@
   animation: float 6s ease-in-out infinite;
 }
 
-.header-left {
+.room-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20rpx;
+  background: linear-gradient(180deg, rgba(7, 193, 96, 0.1) 0%, transparent 100%);
+}
+
+.room-title-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 20rpx;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50rpx;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  gap: 20rpx;
   position: relative;
   z-index: 2;
-}
-
-.header-left:active {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(0.95);
-}
-
-.back-icon {
-  font-size: 28rpx;
-  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
-}
-
-.back-text {
-  font-size: 26rpx;
-  font-weight: 500;
-  letter-spacing: 1rpx;
-}
-
-.title {
-  font-size: 40rpx;
-  font-weight: 700;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
-  letter-spacing: 1rpx;
-  position: relative;
-  z-index: 2;
-  flex: 1;
   text-align: center;
 }
 
-.header-right {
-  width: 80rpx; /* 占位，保持标题居中 */
-  position: relative;
-  z-index: 2;
+.room-title-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.room-icon {
+  font-size: 64rpx;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.2));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.room-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  text-shadow: 0 4rpx 8rpx rgba(0,0,0,0.2);
+  letter-spacing: 2rpx;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9f4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.room-status {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, #06ad56 0%, #05a04d 100%);
+  border-radius: 50rpx;
+  backdrop-filter: blur(10rpx);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+}
+
+.status-dot {
+  width: 16rpx;
+  height: 16rpx;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 12rpx rgba(255, 255, 255, 0.8);
+  animation: blink 2s ease-in-out infinite;
+}
+
+.status-text {
+  font-size: 26rpx;
+  font-weight: 600;
+  opacity: 0.95;
+  letter-spacing: 1rpx;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
 }
 
 .players-section {
