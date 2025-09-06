@@ -40,7 +40,8 @@ Page({
   },
 
   onShow() {
-    // 每次显示页面时刷新最近房间信息
+    // 每次显示页面时刷新用户信息和最近房间信息
+    this.loadUserInfo()
     this.loadRecentRoom()
   },
 
@@ -483,13 +484,18 @@ Page({
 
   // 显示个人信息浮窗
   showProfileModal() {
+    // 获取当前用户信息
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+    
     this.setData({
       showProfileModal: true,
       profileForm: {
-        nickname: '微信用户',
-        avatarUrl: ''
+        nickname: userInfo.nickName || userInfo.nickname || '微信用户',
+        avatarUrl: userInfo.avatarUrl || ''
       }
     })
+    
+    console.log('显示个人信息浮窗，当前用户信息:', userInfo)
   },
 
   // 隐藏个人信息浮窗
