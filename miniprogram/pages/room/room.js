@@ -421,18 +421,18 @@ Page({
       console.log('从分享按钮分享，房间ID:', roomId);
       
       return {
-        title: `房间号 ${roomId}`,
+        title: '麻将记分',
         path: `/pages/room/room?roomId=${roomId}`,
-        imageUrl: '', // 可以设置分享图片
+        imageUrl: ''
       };
     } else {
       // 从右上角菜单分享，进入加入房间页面
       console.log('从右上角菜单分享');
       
       return {
-        title: `房间号 ${this.data.roomInfo.id}`,
+        title: '麻将记分',
         path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
-        imageUrl: '', // 可以设置分享图片
+        imageUrl: ''
       };
     }
   },

@@ -157,6 +157,15 @@ App({
     }
   },
 
+  // 全局分享配置
+  onShareAppMessage() {
+    return {
+      title: '麻将记分',
+      path: '/pages/index/index',
+      imageUrl: ''
+    }
+  },
+
   globalData: {
     userInfo: null
   }
