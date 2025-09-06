@@ -120,25 +120,43 @@ Page({
             icon: 'success'
           });
           
-          // 获取房间信息并跳转
-          setTimeout(async () => {
-            try {
-              const roomResponse = await api.getRoom(roomId);
-              if (roomResponse.code === 200) {
-                let roomData;
-                try {
-                  roomData = typeof roomResponse.data === 'string' ? JSON.parse(roomResponse.data) : roomResponse.data;
-                  wx.redirectTo({
-                    url: `/pages/room/room?roomId=${roomData.id}`,
-                  });
-                } catch (error) {
-                  console.error("解析房间数据失败:", error);
+          // 解析返回的房间数据并跳转
+          let roomData;
+          try {
+            roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            console.log("已在房间中，房间数据:", roomData);
+            
+            // 保存最近房间信息
+            wx.setStorageSync('recentRoom', roomData);
+            
+            // 直接跳转到房间页面
+            setTimeout(() => {
+              wx.redirectTo({
+                url: `/pages/room/room?roomId=${roomData.id}`,
+              });
+            }, 1500);
+          } catch (error) {
+            console.error("解析房间数据失败:", error);
+            // 如果解析失败，尝试通过API获取房间信息
+            setTimeout(async () => {
+              try {
+                const roomResponse = await api.getRoom(roomId);
+                if (roomResponse.code === 200) {
+                  let roomData;
+                  try {
+                    roomData = typeof roomResponse.data === 'string' ? JSON.parse(roomResponse.data) : roomResponse.data;
+                    wx.redirectTo({
+                      url: `/pages/room/room?roomId=${roomData.id}`,
+                    });
+                  } catch (error) {
+                    console.error("解析房间数据失败:", error);
+                  }
                 }
+              } catch (error) {
+                console.error("获取房间信息失败:", error);
               }
-            } catch (error) {
-              console.error("获取房间信息失败:", error);
-            }
-          }, 1500);
+            }, 1500);
+          }
         } else {
           wx.showToast({
             title: response.message || '加入房间失败',
