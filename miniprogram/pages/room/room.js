@@ -368,9 +368,11 @@ Page({
 
   // 分享房间
   shareRoom() {
-    // 自动生成二维码
-    this.generateQRCode();
+    // 显示分享模态框
     this.setData({ showShareModal: true });
+    
+    // 在后台异步生成二维码，不阻塞分享功能
+    this.generateQRCode();
   },
 
   // 隐藏分享模态框
@@ -412,9 +414,6 @@ Page({
   onShareAppMessage(res) {
     console.log('分享事件触发:', res);
     
-    // 自动生成二维码
-    this.generateQRCode();
-    
     // 检查分享来源
     if (res.from === 'button' && res.target && res.target.dataset && res.target.dataset.roomId) {
       // 从分享按钮触发，直接进入房间
@@ -422,7 +421,7 @@ Page({
       console.log('从分享按钮分享，房间ID:', roomId);
       
       return {
-        title: `麻将记分房间 ${roomId}`,
+        title: `房间号 ${roomId}`,
         path: `/pages/room/room?roomId=${roomId}`,
         imageUrl: '', // 可以设置分享图片
       };
@@ -431,7 +430,7 @@ Page({
       console.log('从右上角菜单分享');
       
       return {
-        title: `麻将记分房间 ${this.data.roomInfo.id}`,
+        title: `房间号 ${this.data.roomInfo.id}`,
         path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
         imageUrl: '', // 可以设置分享图片
       };
