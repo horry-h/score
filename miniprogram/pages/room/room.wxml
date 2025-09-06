@@ -9,8 +9,7 @@
   <!-- 房间号区域 -->
   <view class="room-number-section">
     <view class="room-number-container">
-      <text class="room-number-label">房间号</text>
-      <text class="room-number">{{roomInfo.id}}</text>
+      <text class="room-number-label">房间号 {{roomInfo.id}}</text>
     </view>
   </view>
 
@@ -42,22 +41,11 @@
 
   <!-- 快速转移 -->
   <view class="transfer-section">
-    <view class="section-title">
-      <text class="icon">🔄</text>
-      <text>快速转移</text>
-    </view>
     <view class="transfer-hint">
       <text class="icon">👆</text>
       <text>点击上方玩家头像快速转移分数</text>
     </view>
-    <view class="transfer-actions">
-      <button class="btn btn-secondary" bindtap="goToTransfer">
-        <text class="icon">⚙️</text>
-        <text>详细转移设置</text>
-      </button>
-    </view>
   </view>
-
   <!-- 房间流水 -->
   <view class="history-section">
     <view class="section-title">
@@ -158,6 +146,59 @@
     <view class="modal-footer">
       <button class="btn btn-secondary" bindtap="hideShareModal">
         稍后分享
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- 个人信息浮窗 -->
+<view class="modal {{showProfileModal ? 'show' : ''}}" bindtap="hideProfileModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">
+        <text class="icon">👤</text>
+        <text>个人信息</text>
+      </text>
+      <text class="close-btn" bindtap="hideProfileModal">✕</text>
+    </view>
+    
+    <view class="profile-form">
+      <view class="form-group">
+        <text class="form-label">头像</text>
+        <button class="avatar-upload-btn" open-type="chooseAvatar" bindchooseavatar="onProfileChooseAvatar" hover-class="avatar-btn-hover">
+          <image 
+            wx:if="{{profileForm.avatarUrl}}" 
+            src="{{profileForm.avatarUrl}}" 
+            class="avatar-image"
+            mode="aspectFill"
+          />
+          <view wx:else class="avatar-placeholder">
+            <text class="placeholder-icon">📷</text>
+            <text class="placeholder-text">点击选择头像</text>
+          </view>
+        </button>
+        <text class="avatar-hint">点击上方按钮选择头像</text>
+      </view>
+      
+      <view class="form-group">
+        <text class="form-label">昵称</text>
+        <input 
+          class="form-input" 
+          type="nickname" 
+          placeholder="请输入昵称" 
+          value="{{profileForm.nickname}}"
+          bindinput="onNicknameInput"
+          maxlength="20"
+        />
+      </view>
+    </view>
+
+    <view class="modal-footer">
+      <button class="btn btn-secondary" bindtap="hideProfileModal">
+        取消
+      </button>
+      <button class="btn" bindtap="saveProfile">
+        保存
       </button>
     </view>
   </view>

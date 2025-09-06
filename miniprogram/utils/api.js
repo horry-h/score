@@ -158,6 +158,17 @@ class ApiService {
     });
   }
 
+  // 更新用户信息
+  async updateUserProfile(userId, profileData) {
+    return this.request('/api/v1/updateUser', {
+      method: 'POST',
+      data: {
+        user_id: userId,
+        ...profileData,
+      },
+    });
+  }
+
   // 生成房间二维码
   async generateQRCode(roomId) {
     return this.request('/api/v1/generateQRCode', {

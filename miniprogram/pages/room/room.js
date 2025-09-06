@@ -11,9 +11,14 @@ Page({
     transfers: [],
     currentUserId: null,
     showShareModal: false,
+    showProfileModal: false,
     loading: false,
     qrCodeData: null,
-    qrCodeLoading: false
+    qrCodeLoading: false,
+    profileForm: {
+      nickname: '微信用户',
+      avatarUrl: ''
+    }
   },
 
   onLoad(options) {
@@ -253,13 +258,12 @@ Page({
     const { currentUserId } = this.data;
 
     if (player.user_id === currentUserId) {
-      wx.showToast({
-        title: '不能给自己转移分数',
-        icon: 'none'
-      });
+      // 点击自己的头像，显示个人信息浮窗
+      this.showProfileModal();
       return;
     }
 
+    // 点击他人头像，显示转移分数浮窗
     try {
       const amount = await this.showTransferInput(player.user.nickname, player.current_score);
       if (!amount || amount <= 0) return;
@@ -537,6 +541,115 @@ Page({
     
     // 当前用户排在第一位，其他用户按原顺序排列
     return currentUser ? [currentUser, ...otherPlayers] : players;
+  },
+
+  // 显示个人信息浮窗
+  showProfileModal() {
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+    this.setData({
+      showProfileModal: true,
+      profileForm: {
+        nickname: userInfo.nickName || userInfo.nickname || '微信用户',
+        avatarUrl: userInfo.avatarUrl || ''
+      }
+    })
+    console.log('显示个人信息浮窗，当前用户信息:', userInfo)
+  },
+
+  // 隐藏个人信息浮窗
+  hideProfileModal() {
+    this.setData({ showProfileModal: false })
+  },
+
+  // 选择头像
+  onProfileChooseAvatar(e) {
+    const { avatarUrl } = e.detail
+    if (avatarUrl) {
+      this.setData({
+        'profileForm.avatarUrl': avatarUrl
+      })
+      console.log('选择头像成功:', avatarUrl)
+      wx.showToast({
+        title: '头像选择成功',
+        icon: 'success'
+      })
+    } else {
+      console.log('用户取消选择头像')
+    }
+  },
+
+  // 昵称输入
+  onNicknameInput(e) {
+    this.setData({
+      'profileForm.nickname': e.detail.value
+    })
+  },
+
+  // 保存个人信息
+  async saveProfile() {
+    const { nickname, avatarUrl } = this.data.profileForm
+    if (!nickname || nickname.trim() === '') {
+      wx.showToast({
+        title: '请输入昵称',
+        icon: 'none'
+      })
+      return
+    }
+
+    try {
+      wx.showLoading({ title: '保存中...' })
+      
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.user_id) {
+        wx.hideLoading()
+        wx.showToast({
+          title: '用户信息无效',
+          icon: 'none'
+        })
+        return
+      }
+
+      const response = await api.updateUserProfile(userInfo.user_id, {
+        nickname: nickname.trim(),
+        avatar_url: avatarUrl
+      })
+
+      wx.hideLoading()
+
+      if (response.code === 200) {
+        // 更新本地用户信息
+        const updatedUserInfo = {
+          ...userInfo,
+          nickName: nickname.trim(),
+          nickname: nickname.trim(),
+          avatarUrl: avatarUrl,
+          avatar_url: avatarUrl
+        }
+        
+        app.globalData.userInfo = updatedUserInfo
+        wx.setStorageSync('userInfo', updatedUserInfo)
+        
+        wx.showToast({
+          title: '保存成功',
+          icon: 'success'
+        })
+        
+        this.hideProfileModal()
+        this.loadRoomData() // 重新加载房间数据以更新显示
+      } else {
+        wx.showToast({
+          title: response.message || '保存失败',
+          icon: 'none'
+        })
+      }
+    } catch (error) {
+      wx.hideLoading()
+      console.error('保存个人信息失败:', error)
+      wx.showToast({
+        title: '保存失败',
+        icon: 'none'
+      })
+    }
   },
 
   // 返回主页

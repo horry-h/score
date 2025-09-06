@@ -652,3 +652,94 @@
   font-size: 32rpx;
   color: #07c160;
 }
+
+/* 个人信息浮窗样式 */
+.profile-form {
+  padding: 20rpx 0;
+}
+
+.form-group {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.avatar-upload-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120rpx;
+  height: 120rpx;
+  line-height: normal;
+  font-size: inherit;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120rpx;
+  height: 120rpx;
+  background: #f5f5f5;
+  border-radius: 50%;
+  border: 2rpx dashed #ddd;
+}
+
+.placeholder-icon {
+  font-size: 32rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.placeholder-text {
+  font-size: 20rpx;
+  color: #999;
+  text-align: center;
+}
+
+.avatar-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+  margin-top: 12rpx;
+}
+
+.form-input {
+  width: 100%;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #07c160;
+  outline: none;
+}
