@@ -345,15 +345,24 @@ Page({
 
   // 选择头像 - 使用微信官方组件
   onChooseAvatar(e) {
+    console.log('头像选择事件:', e)
     const { avatarUrl } = e.detail
-    this.setData({
-      'loginForm.avatarUrl': avatarUrl
-    })
-    console.log('选择的头像:', avatarUrl)
-    wx.showToast({
-      title: '头像选择成功',
-      icon: 'success'
-    })
+    if (avatarUrl) {
+      this.setData({
+        'loginForm.avatarUrl': avatarUrl
+      })
+      console.log('选择的头像:', avatarUrl)
+      wx.showToast({
+        title: '头像选择成功',
+        icon: 'success'
+      })
+    } else {
+      console.log('头像选择失败或取消')
+      wx.showToast({
+        title: '头像选择失败',
+        icon: 'none'
+      })
+    }
   },
 
   // 昵称输入完成
@@ -504,15 +513,24 @@ Page({
 
   // 选择头像 - 个人信息浮窗
   onProfileChooseAvatar(e) {
+    console.log('头像选择事件:', e)
     const { avatarUrl } = e.detail
-    this.setData({
-      'profileForm.avatarUrl': avatarUrl
-    })
-    console.log('选择的头像:', avatarUrl)
-    wx.showToast({
-      title: '头像选择成功',
-      icon: 'success'
-    })
+    if (avatarUrl) {
+      this.setData({
+        'profileForm.avatarUrl': avatarUrl
+      })
+      console.log('选择的头像:', avatarUrl)
+      wx.showToast({
+        title: '头像选择成功',
+        icon: 'success'
+      })
+    } else {
+      console.log('头像选择失败或取消')
+      wx.showToast({
+        title: '头像选择失败',
+        icon: 'none'
+      })
+    }
   },
 
   // 昵称输入 - 个人信息浮窗
