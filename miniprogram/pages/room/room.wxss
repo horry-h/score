@@ -434,6 +434,23 @@
   gap: 8rpx;
 }
 
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #667eea;
+  font-size: 24rpx;
+}
+
+.loading-indicator .icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .qr-code-display {
   display: flex;
   flex-direction: column;
