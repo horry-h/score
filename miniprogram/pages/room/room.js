@@ -656,12 +656,18 @@ Page({
         const cosUploader = require('../../utils/cos.js')
         
         // 获取当前用户信息
-        const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
-        console.log('当前用户信息:', userInfo)
-        if (!userInfo || (!userInfo.openid && !userInfo.Openid)) {
+        const globalUserInfo = app.globalData.userInfo
+        const storageUserInfo = wx.getStorageSync('userInfo')
+        const userInfo = globalUserInfo || storageUserInfo
+        
+        console.log('全局用户信息:', globalUserInfo)
+        console.log('存储用户信息:', storageUserInfo)
+        console.log('最终用户信息:', userInfo)
+        
+        if (!userInfo) {
           wx.hideLoading()
           wx.showToast({
-            title: '用户信息无效',
+            title: '用户信息为空，请重新登录',
             icon: 'none'
           })
           return
@@ -670,6 +676,15 @@ Page({
         // 获取openid，兼容不同的字段名
         const openid = userInfo.openid || userInfo.Openid
         console.log('用户openid:', openid)
+        
+        if (!openid) {
+          wx.hideLoading()
+          wx.showToast({
+            title: '用户openid缺失，请重新登录',
+            icon: 'none'
+          })
+          return
+        }
         
         // 上传头像到COS，使用openid作为文件名
         const uploadResult = await cosUploader.uploadAvatar(avatarUrl, openid)
