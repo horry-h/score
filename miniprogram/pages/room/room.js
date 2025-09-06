@@ -95,14 +95,29 @@ Page({
       console.log('getRoom响应:', roomResponse);
       
       if (roomResponse.code === 200) {
+        // 解析JSON字符串
+        let roomData;
+        try {
+          roomData = typeof roomResponse.data === 'string' ? JSON.parse(roomResponse.data) : roomResponse.data;
+          console.log('解析后的房间数据:', roomData);
+        } catch (error) {
+          console.error('解析房间数据失败:', error);
+          wx.hideLoading();
+          wx.showToast({
+            title: '房间数据解析失败',
+            icon: 'none'
+          });
+          return;
+        }
+        
         this.setData({
-          roomInfo: roomResponse.data,
+          roomInfo: roomData,
         });
         
         // 如果使用roomCode进入，需要获取roomId用于后续API调用
         if (this.data.roomCode && !this.data.roomId) {
-          this.setData({ roomId: roomResponse.data.id });
-          console.log('从roomCode获取到roomId:', roomResponse.data.id);
+          this.setData({ roomId: roomData.id });
+          console.log('从roomCode获取到roomId:', roomData.id);
         }
         
         // 现在加载玩家信息和转移记录
@@ -112,14 +127,32 @@ Page({
         ]);
         
         if (playersResponse.code === 200) {
+          // 解析玩家数据JSON字符串
+          let playersData;
+          try {
+            playersData = typeof playersResponse.data === 'string' ? JSON.parse(playersResponse.data) : playersResponse.data;
+            console.log('解析后的玩家数据:', playersData);
+          } catch (error) {
+            console.error('解析玩家数据失败:', error);
+            playersData = [];
+          }
           this.setData({
-            players: playersResponse.data,
+            players: playersData,
           });
         }
 
         if (transfersResponse.code === 200) {
+          // 解析转移记录JSON字符串
+          let transfersData;
+          try {
+            transfersData = typeof transfersResponse.data === 'string' ? JSON.parse(transfersResponse.data) : transfersResponse.data;
+            console.log('解析后的转移记录数据:', transfersData);
+          } catch (error) {
+            console.error('解析转移记录数据失败:', error);
+            transfersData = [];
+          }
           this.setData({
-            transfers: transfersResponse.data,
+            transfers: transfersData,
           });
         }
       } else {

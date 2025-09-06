@@ -42,7 +42,16 @@ Page({
       this.setData({ loading: false });
 
       if (response.code === 200) {
-        const newRooms = response.data;
+        // 解析房间列表JSON字符串
+        let newRooms;
+        try {
+          newRooms = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log('解析后的房间列表数据:', newRooms);
+        } catch (error) {
+          console.error('解析房间列表数据失败:', error);
+          newRooms = [];
+        }
+        
         const rooms = this.data.page === 1 ? newRooms : [...this.data.rooms, ...newRooms];
         
         this.setData({

@@ -62,11 +62,24 @@ Page({
       console.log('getRecentRoom响应:', response)
       
       if (response.code === 200 && response.data) {
-        console.log('最近房间数据:', response.data)
-        console.log('room_id值:', response.data.room_id, '类型:', typeof response.data.room_id)
+        console.log('最近房间原始数据:', response.data)
+        
+        // 解析JSON字符串
+        let recentRoomData;
+        try {
+          recentRoomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log('解析后的最近房间数据:', recentRoomData)
+          console.log('room_id值:', recentRoomData.room_id, '类型:', typeof recentRoomData.room_id)
+        } catch (error) {
+          console.error('解析最近房间数据失败:', error)
+          this.setData({
+            recentRoom: null
+          })
+          return
+        }
         
         this.setData({
-          recentRoom: response.data
+          recentRoom: recentRoomData
         })
       } else {
         this.setData({
@@ -103,7 +116,10 @@ Page({
       const roomId = this.data.recentRoom.room_id
       const roomCode = this.data.recentRoom.room_code
       
-      if (roomId && roomId !== 'undefined' && roomId !== 'null') {
+      console.log('提取的roomId:', roomId, '类型:', typeof roomId)
+      console.log('提取的roomCode:', roomCode, '类型:', typeof roomCode)
+      
+      if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== 0) {
         // 使用room_id进行跳转
         const url = `/pages/room/room?roomId=${roomId}`
         console.log('使用roomId跳转，URL:', url)
@@ -111,7 +127,7 @@ Page({
         wx.navigateTo({
           url: url
         })
-      } else if (roomCode && roomCode !== 'undefined' && roomCode !== 'null') {
+      } else if (roomCode && roomCode !== 'undefined' && roomCode !== 'null' && roomCode !== '') {
         // 如果没有room_id，使用room_code
         const url = `/pages/room/room?roomCode=${roomCode}`
         console.log('使用roomCode跳转，URL:', url)
