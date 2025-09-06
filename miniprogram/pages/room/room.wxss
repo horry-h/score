@@ -404,19 +404,72 @@
   gap: 10rpx;
 }
 
-.qr-code {
+.qr-code-section {
+  margin: 40rpx 0;
+}
+
+.qr-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.qr-code-header .icon {
+  margin-right: 10rpx;
+}
+
+.btn-small {
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.qr-code-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.qr-code-image {
   width: 300rpx;
   height: 300rpx;
-  background: #f0f0f0;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.qr-code-hint {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #666;
+  font-size: 28rpx;
+}
+
+.qr-code-placeholder {
+  width: 300rpx;
+  height: 300rpx;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 24rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 40rpx auto;
+  margin: 0 auto;
   color: #666;
   font-size: 28rpx;
   gap: 20rpx;
+  border: 2rpx dashed #ccc;
 }
 
 .share-actions {

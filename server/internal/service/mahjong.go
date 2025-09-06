@@ -860,3 +860,32 @@ func (s *MahjongService) calculateOptimalSettlement(players []struct {
 
 	return settlements
 }
+
+// 生成房间二维码
+func (s *MahjongService) GenerateQRCode(ctx context.Context, req *GenerateQRCodeRequest) (*Response, error) {
+	// 验证房间是否存在
+	var roomExists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM rooms WHERE id = ?)", req.RoomId).Scan(&roomExists)
+	if err != nil {
+		return &Response{Code: 500, Message: "查询房间失败: " + err.Error()}, nil
+	}
+	
+	if !roomExists {
+		return &Response{Code: 404, Message: "房间不存在"}, nil
+	}
+	
+	// 调用微信API生成小程序码
+	qrCodeData, err := s.wechatService.GenerateUnlimitedQRCode(req.RoomId)
+	if err != nil {
+		return &Response{Code: 500, Message: "生成二维码失败: " + err.Error()}, nil
+	}
+	
+	// 将二维码数据转换为base64返回
+	responseData := map[string]interface{}{
+		"room_id": req.RoomId,
+		"qr_code": qrCodeData,
+	}
+	
+	data, _ := json.Marshal(responseData)
+	return &Response{Code: 200, Message: "生成成功", Data: string(data)}, nil
+}

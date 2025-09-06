@@ -10,7 +10,9 @@ Page({
     transfers: [],
     currentUserId: null,
     showShareModal: false,
-    loading: false
+    loading: false,
+    qrCodeData: null,
+    qrCodeLoading: false
   },
 
   onLoad(options) {
@@ -364,6 +366,44 @@ Page({
       title: `麻将记分房间 ${this.data.roomInfo.id}`,
       path: `/pages/join-room/join-room?roomCode=${this.data.roomInfo.room_code}`,
     };
+  },
+
+  // 生成二维码
+  async generateQRCode() {
+    if (this.data.qrCodeLoading) {
+      return;
+    }
+
+    this.setData({ qrCodeLoading: true });
+
+    try {
+      const response = await api.generateQRCode(this.data.roomId);
+      console.log('生成二维码响应:', response);
+
+      if (response.code === 200) {
+        const qrData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        this.setData({
+          qrCodeData: qrData.qr_code
+        });
+        wx.showToast({
+          title: '二维码生成成功',
+          icon: 'success'
+        });
+      } else {
+        wx.showToast({
+          title: response.message || '生成失败',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      console.error('生成二维码失败:', error);
+      wx.showToast({
+        title: '生成失败，请重试',
+        icon: 'none'
+      });
+    } finally {
+      this.setData({ qrCodeLoading: false });
+    }
   },
 
   // 返回主页

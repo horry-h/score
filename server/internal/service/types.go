@@ -142,3 +142,7 @@ type GetRoomDetailRequest struct {
 type ValidateSessionRequest struct {
 	SessionID string `json:"session_id"`
 }
+
+type GenerateQRCodeRequest struct {
+	RoomId int64 `json:"room_id"`
+}

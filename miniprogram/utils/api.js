@@ -152,6 +152,16 @@ class ApiService {
       },
     });
   }
+
+  // 生成房间二维码
+  async generateQRCode(roomId) {
+    return this.request('/api/v1/generateQRCode', {
+      method: 'POST',
+      data: {
+        room_id: roomId,
+      },
+    });
+  }
 }
 
 // 创建单例实例

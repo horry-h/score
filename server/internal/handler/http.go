@@ -64,6 +64,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.handleHealth(w, r)
 	case r.Method == "POST" && path == "validateSession":
 		h.handleValidateSession(w, r)
+	case r.Method == "POST" && path == "generateQRCode":
+		h.handleGenerateQRCode(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -454,6 +456,24 @@ func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Reque
 	}
 
 	response, err := h.service.ValidateSession(r.Context(), req.SessionID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// 生成房间二维码
+func (h *HTTPHandler) handleGenerateQRCode(w http.ResponseWriter, r *http.Request) {
+	var req service.GenerateQRCodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	response, err := h.service.GenerateQRCode(r.Context(), &req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

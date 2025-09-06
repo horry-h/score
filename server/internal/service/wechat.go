@@ -1,11 +1,14 @@
 package service
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -146,4 +149,92 @@ func (w *WeChatService) CreateSession(openID, sessionKey, unionID string) *Sessi
 		UnionID:    unionID,
 		ExpiresAt:  time.Now().Add(24 * time.Hour), // 微信session_key有效期24小时
 	}
+}
+
+// 生成不限制的小程序码
+func (w *WeChatService) GenerateUnlimitedQRCode(roomID int64) (string, error) {
+	// 获取access_token
+	accessToken, err := w.getAccessToken()
+	if err != nil {
+		return "", fmt.Errorf("获取access_token失败: %v", err)
+	}
+	
+	// 构建请求参数
+	requestData := map[string]interface{}{
+		"page":       "pages/join-room/join-room", // 跳转到加入房间页面
+		"scene":      "roomId=" + strconv.FormatInt(roomID, 10), // 传递房间ID参数
+		"check_path": false, // 不检查页面路径
+		"env_version": "release", // 正式版
+		"width":      430, // 二维码宽度
+		"auto_color": false, // 不自动配置颜色
+		"line_color": map[string]int{"r": 0, "g": 0, "b": 0}, // 黑色线条
+		"is_hyaline": false, // 不透明底色
+	}
+	
+	// 发送请求到微信API
+	url := fmt.Sprintf("https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=%s", accessToken)
+	jsonData, _ := json.Marshal(requestData)
+	
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("请求微信API失败: %v", err)
+	}
+	defer resp.Body.Close()
+	
+	// 读取响应
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("读取响应失败: %v", err)
+	}
+	
+	// 检查是否是错误响应（JSON格式）
+	if resp.Header.Get("Content-Type") == "application/json" {
+		var errorResp struct {
+			ErrCode int    `json:"errcode"`
+			ErrMsg  string `json:"errmsg"`
+		}
+		if err := json.Unmarshal(body, &errorResp); err == nil && errorResp.ErrCode != 0 {
+			return "", fmt.Errorf("微信API错误: %d - %s", errorResp.ErrCode, errorResp.ErrMsg)
+		}
+	}
+	
+	// 将图片数据转换为base64
+	base64Data := base64.StdEncoding.EncodeToString(body)
+	return base64Data, nil
+}
+
+// 获取access_token
+func (w *WeChatService) getAccessToken() (string, error) {
+	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
+		w.appID, w.appSecret)
+	
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("请求access_token失败: %v", err)
+	}
+	defer resp.Body.Close()
+	
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("读取响应失败: %v", err)
+	}
+	
+	var result struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+		ErrCode     int    `json:"errcode"`
+		ErrMsg      string `json:"errmsg"`
+	}
+	
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", fmt.Errorf("解析响应失败: %v", err)
+	}
+	
+	if result.ErrCode != 0 {
+		return "", fmt.Errorf("获取access_token失败: %d - %s", result.ErrCode, result.ErrMsg)
+	}
+	
+	return result.AccessToken, nil
 }

@@ -9,6 +9,8 @@ Page({
   },
 
   onLoad(options) {
+    console.log('加入房间页面onLoad，接收到的参数:', options);
+    
     // 如果从分享链接进入，自动填入房间号
     if (options.roomCode) {
       this.setData({
@@ -21,6 +23,37 @@ Page({
         roomCode: options.roomId,
       });
     }
+    
+    // 处理从二维码扫描进入的情况
+    if (options.scene) {
+      console.log('从二维码扫描进入，scene参数:', options.scene);
+      // scene参数格式: "roomId=123"
+      const sceneParams = this.parseSceneParams(options.scene);
+      if (sceneParams.roomId) {
+        this.setData({
+          roomCode: sceneParams.roomId,
+        });
+        // 自动尝试加入房间
+        setTimeout(() => {
+          this.joinRoom();
+        }, 1000);
+      }
+    }
+  },
+
+  // 解析scene参数
+  parseSceneParams(scene) {
+    const params = {};
+    if (scene) {
+      const pairs = scene.split('&');
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      }
+    }
+    return params;
   },
 
   // 房间号输入
