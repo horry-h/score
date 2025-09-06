@@ -260,16 +260,24 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	var query string
 	var args []interface{}
 	
+	// 添加调试日志
+	fmt.Printf("GetRoom请求: RoomId=%d, RoomCode=%s\n", req.RoomId, req.RoomCode)
+	
 	// 优先使用room_id，如果没有则使用room_code
 	if req.RoomId > 0 {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE id = ?"
 		args = []interface{}{req.RoomId}
+		fmt.Printf("使用room_id查询: %d\n", req.RoomId)
 	} else if req.RoomCode != "" {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE room_code = ?"
 		args = []interface{}{req.RoomCode}
+		fmt.Printf("使用room_code查询: %s\n", req.RoomCode)
 	} else {
+		fmt.Printf("缺少房间标识\n")
 		return &Response{Code: 400, Message: "缺少房间标识"}, nil
 	}
+
+	fmt.Printf("执行查询: %s, 参数: %v\n", query, args)
 
 	room := &Room{}
 	var createdAt, settledAt time.Time
@@ -279,8 +287,11 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	)
 	
 	if err != nil {
+		fmt.Printf("查询错误: %v\n", err)
 		return &Response{Code: 404, Message: "房间不存在"}, nil
 	}
+	
+	fmt.Printf("查询成功: 房间ID=%d, 房间号=%s\n", room.Id, room.RoomCode)
 
 	// 转换时间戳
 	room.CreatedAt = createdAt.Unix()
