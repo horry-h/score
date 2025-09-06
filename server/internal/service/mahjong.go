@@ -162,8 +162,8 @@ func (s *MahjongService) GetUser(ctx context.Context, req *GetUserRequest) (*Res
 
 // 创建房间
 func (s *MahjongService) CreateRoom(ctx context.Context, req *CreateRoomRequest) (*Response, error) {
-	// 生成房间号
-	roomCode := s.generateRoomCode()
+	// 生成唯一的房间号（包含时间戳的字符串）
+	roomCode := s.generateUniqueRoomCode()
 	
 	// 创建房间
 	result, err := s.db.Exec(`
@@ -592,7 +592,7 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 	)
 	
 	if err == sql.ErrNoRows {
-		return &Response{Code: 404, Message: "没有最近房间"}, nil
+		return &Response{Code: 200, Message: "没有最近房间"}, nil
 	} else if err != nil {
 		return &Response{Code: 500, Message: "查询最近房间失败"}, nil
 	}
@@ -603,9 +603,31 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 
 // 辅助方法
 
-func (s *MahjongService) generateRoomCode() string {
+// 生成唯一的房间号（包含时间戳的字符串）
+func (s *MahjongService) generateUniqueRoomCode() string {
+	// 获取当前时间戳（毫秒）
+	timestamp := time.Now().UnixMilli()
+	
+	// 生成随机数（0-999）
 	rand.Seed(time.Now().UnixNano())
-	return fmt.Sprintf("%06d", rand.Intn(900000)+100000)
+	randomPart := rand.Intn(1000)
+	
+	// 组合时间戳和随机数，确保唯一性
+	// 格式：时间戳(13位) + 随机数(3位) = 16位数字字符串
+	roomCode := fmt.Sprintf("%d%03d", timestamp, randomPart)
+	
+	// 检查房间号是否已存在，如果存在则重新生成
+	for {
+		var exists int
+		err := s.db.QueryRow("SELECT COUNT(*) FROM rooms WHERE room_code = ?", roomCode).Scan(&exists)
+		if err != nil || exists == 0 {
+			break
+		}
+		// 如果房间号已存在，重新生成
+		roomCode = fmt.Sprintf("%d%03d", timestamp, rand.Intn(1000))
+	}
+	
+	return roomCode
 }
 
 func (s *MahjongService) updateRecentRoom(userID, roomID int64) {

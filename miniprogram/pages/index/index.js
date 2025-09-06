@@ -59,11 +59,17 @@ Page({
       this.setData({ loading: true })
       const response = await api.getRecentRoom(userInfo.user_id)
       
+      console.log('getRecentRoom响应:', response)
+      
       if (response.code === 200 && response.data) {
+        console.log('最近房间数据:', response.data)
+        console.log('room_id值:', response.data.room_id, '类型:', typeof response.data.room_id)
+        
         this.setData({
           recentRoom: response.data
         })
       } else {
+        console.log('没有最近房间数据')
         this.setData({
           recentRoom: null
         })
@@ -87,9 +93,21 @@ Page({
 
   // 进入最近房间
   enterRecentRoom() {
+    console.log('enterRecentRoom被调用，recentRoom:', this.data.recentRoom)
+    
     if (this.data.recentRoom) {
+      console.log('准备跳转，room_id:', this.data.recentRoom.room_id)
+      const url = `/pages/room/room?roomId=${this.data.recentRoom.room_id}`
+      console.log('跳转URL:', url)
+      
       wx.navigateTo({
-        url: `/pages/room/room?roomId=${this.data.recentRoom.room_id}`
+        url: url
+      })
+    } else {
+      console.error('recentRoom为空，无法跳转')
+      wx.showToast({
+        title: '没有最近房间',
+        icon: 'none'
       })
     }
   },

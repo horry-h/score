@@ -15,9 +15,30 @@ Page({
 
   onLoad(options) {
     const { roomId } = options;
+    console.log('房间页面onLoad，接收到的参数:', options);
+    console.log('roomId值:', roomId, '类型:', typeof roomId);
+    
     if (roomId) {
-      this.setData({ roomId: parseInt(roomId) });
+      const parsedRoomId = parseInt(roomId);
+      console.log('解析后的roomId:', parsedRoomId);
+      
+      if (isNaN(parsedRoomId)) {
+        console.error('roomId解析失败，不是有效数字:', roomId);
+        wx.showToast({
+          title: '房间ID无效',
+          icon: 'none'
+        });
+        return;
+      }
+      
+      this.setData({ roomId: parsedRoomId });
       this.loadRoomData();
+    } else {
+      console.error('未接收到roomId参数');
+      wx.showToast({
+        title: '缺少房间ID',
+        icon: 'none'
+      });
     }
   },
 
@@ -30,10 +51,21 @@ Page({
   // 加载房间数据
   async loadRoomData() {
     try {
+      console.log('loadRoomData开始，当前roomId:', this.data.roomId);
+      
       const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
       if (!userInfo || !userInfo.user_id) {
         wx.showToast({
           title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      if (!this.data.roomId || isNaN(this.data.roomId)) {
+        console.error('roomId无效:', this.data.roomId);
+        wx.showToast({
+          title: '房间ID无效',
           icon: 'none'
         });
         return;
@@ -45,6 +77,8 @@ Page({
       });
 
       wx.showLoading({ title: '加载中...' });
+      
+      console.log('开始加载房间数据，roomId:', this.data.roomId);
       
       // 并行加载房间信息、玩家信息和转移记录
       const [roomResponse, playersResponse, transfersResponse] = await Promise.all([

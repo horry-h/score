@@ -17,7 +17,7 @@ CREATE TABLE users (
 -- 房间表
 CREATE TABLE rooms (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    room_code VARCHAR(6) NOT NULL UNIQUE COMMENT '房间号',
+    room_code VARCHAR(20) NOT NULL UNIQUE COMMENT '房间号（包含时间戳的唯一字符串）',
     room_name VARCHAR(100) DEFAULT '' COMMENT '房间名称',
     creator_id BIGINT NOT NULL COMMENT '创建者ID',
     status TINYINT NOT NULL DEFAULT 1 COMMENT '房间状态：1-进行中，2-已结算',
