@@ -280,7 +280,8 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	fmt.Printf("执行查询: %s, 参数: %v\n", query, args)
 
 	room := &Room{}
-	var createdAt, settledAt time.Time
+	var createdAt time.Time
+	var settledAt sql.NullTime
 	err := s.db.QueryRow(query, args...).Scan(
 		&room.Id, &room.RoomCode, &room.RoomName, &room.CreatorId, 
 		&room.Status, &createdAt, &settledAt,
@@ -295,8 +296,8 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 
 	// 转换时间戳
 	room.CreatedAt = createdAt.Unix()
-	if !settledAt.IsZero() {
-		room.SettledAt = settledAt.Unix()
+	if settledAt.Valid {
+		room.SettledAt = settledAt.Time.Unix()
 	}
 
 	// 获取房间玩家
