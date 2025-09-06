@@ -112,8 +112,26 @@ echo "11. 获取SSL证书..."
 echo "正在获取SSL证书，请稍等..."
 certbot certonly --webroot -w /var/www/html -d www.aipaint.cloud -d aipaint.cloud --non-interactive --agree-tos --email admin@aipaint.cloud
 
-# 12. 配置正式Nginx
-echo "12. 配置正式Nginx..."
+# 12. 配置Apple ATS合规的SSL
+echo "12. 配置Apple ATS合规的SSL..."
+
+# 生成更强的DH参数文件（如果不存在）
+if [ ! -f "/etc/ssl/certs/dhparam.pem" ]; then
+    echo "生成2048位DH参数文件（这可能需要几分钟）..."
+    openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+else
+    echo "检查现有DH参数文件强度..."
+    DH_BITS=$(openssl dhparam -in /etc/ssl/certs/dhparam.pem -text -noout 2>/dev/null | grep "DH Parameters" | grep -o '[0-9]*' | head -1)
+    if [ "$DH_BITS" -lt 2048 ]; then
+        echo "当前DH参数文件强度不足，重新生成2048位..."
+        openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+    else
+        echo "DH参数文件强度足够（$DH_BITS位）"
+    fi
+fi
+
+# 13. 配置正式Nginx（Apple ATS合规版本）
+echo "13. 配置正式Nginx（Apple ATS合规版本）..."
 cat > /etc/nginx/sites-available/aipaint.cloud << 'EOF'
 server {
     listen 80;
@@ -131,18 +149,29 @@ server {
     ssl_certificate /etc/letsencrypt/live/www.aipaint.cloud/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/www.aipaint.cloud/privkey.pem;
     
-    # SSL安全配置
+    # Apple ATS规范要求的SSL配置
+    # 1. 只支持TLS 1.2和TLS 1.3
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
-    ssl_prefer_server_ciphers on;
+    
+    # 2. 使用强加密套件，符合ATS要求
+    ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256';
+    ssl_prefer_server_ciphers off;
+    
+    # 3. 启用完美前向保密(PFS)
+    ssl_ecdh_curve secp384r1;
+    ssl_dhparam /etc/ssl/certs/dhparam.pem;
+    
+    # 4. 会话配置
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
+    ssl_session_tickets off;
     
-    # 安全头
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    # 5. 安全头 - 符合ATS要求
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
     add_header X-Frame-Options DENY always;
     add_header X-Content-Type-Options nosniff always;
     add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     
     # 反向代理到Go应用
     location / {
@@ -172,21 +201,21 @@ server {
 }
 EOF
 
-# 13. 更新站点配置
-echo "13. 更新站点配置..."
+# 14. 更新站点配置
+echo "14. 更新站点配置..."
 ln -sf /etc/nginx/sites-available/aipaint.cloud /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/temp
 
-# 14. 测试Nginx配置
-echo "14. 测试Nginx配置..."
+# 15. 测试Nginx配置
+echo "15. 测试Nginx配置..."
 nginx -t
 
-# 15. 重启Nginx
-echo "15. 重启Nginx..."
+# 16. 重启Nginx
+echo "16. 重启Nginx..."
 systemctl restart nginx
 
-# 16. 检查服务状态
-echo "16. 检查服务状态..."
+# 17. 检查服务状态
+echo "17. 检查服务状态..."
 sleep 3
 echo "Go服务状态:"
 systemctl status mahjong-server --no-pager
@@ -194,14 +223,47 @@ echo ""
 echo "Nginx服务状态:"
 systemctl status nginx --no-pager
 
-# 17. 测试HTTPS
-echo "17. 测试HTTPS..."
+# 18. 测试HTTPS和Apple ATS合规性
+echo "18. 测试HTTPS和Apple ATS合规性..."
 sleep 2
+
+# 测试HTTPS连接
 if curl -k -s https://www.aipaint.cloud/health > /dev/null; then
-    echo "HTTPS服务测试成功！"
+    echo "✅ HTTPS服务测试成功！"
 else
-    echo "HTTPS服务测试失败，请检查配置"
+    echo "❌ HTTPS服务测试失败，请检查配置"
 fi
+
+# 测试TLS 1.2连接
+echo "测试TLS 1.2连接:"
+if echo | openssl s_client -connect www.aipaint.cloud:443 -servername www.aipaint.cloud -tls1_2 2>/dev/null | grep -q "Protocol.*TLSv1.2"; then
+    echo "✅ TLS 1.2连接成功"
+else
+    echo "❌ TLS 1.2连接失败"
+fi
+
+# 测试TLS 1.3连接
+echo "测试TLS 1.3连接:"
+if echo | openssl s_client -connect www.aipaint.cloud:443 -servername www.aipaint.cloud -tls1_3 2>/dev/null | grep -q "Protocol.*TLSv1.3"; then
+    echo "✅ TLS 1.3连接成功"
+else
+    echo "❌ TLS 1.3连接失败"
+fi
+
+# 检查HSTS头
+echo "检查HSTS安全头:"
+if curl -I https://www.aipaint.cloud/health 2>/dev/null | grep -q "Strict-Transport-Security"; then
+    echo "✅ HSTS安全头已配置"
+else
+    echo "❌ HSTS安全头未配置"
+fi
+
+echo ""
+echo "🎉 Apple ATS合规性配置完成！"
+echo "📋 建议访问以下链接验证配置："
+echo "   - MySSL检测: https://myssl.com/www.aipaint.cloud"
+echo "   - SSL Labs检测: https://www.ssllabs.com/ssltest/analyze.html?d=www.aipaint.cloud"
+echo ""
 
 echo ""
 echo "自动化部署完成！"
