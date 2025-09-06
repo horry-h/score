@@ -77,4 +77,40 @@
       </button>
     </view>
   </view>
+
+  <!-- 登录浮窗 -->
+  <view class="login-modal" wx:if="{{showLoginModal}}" catchtap="hideLoginModal">
+    <view class="login-modal-content" catchtap="stopPropagation">
+      <view class="login-header">
+        <text class="login-title">完善个人信息</text>
+        <text class="login-close" bindtap="hideLoginModal">✕</text>
+      </view>
+      
+      <view class="login-form">
+        <view class="form-item">
+          <text class="form-label">昵称</text>
+          <input class="form-input" placeholder="请输入昵称" value="{{loginForm.nickname}}" bindinput="onNicknameInput" />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">头像</text>
+          <view class="avatar-upload" bindtap="chooseAvatar">
+            <image class="avatar-preview" src="{{loginForm.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+            <text class="upload-hint">点击更换头像</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="login-actions">
+        <button class="login-btn wechat" bindtap="authorizeWeChat">
+          <text class="btn-icon">🔐</text>
+          <text class="btn-text">授权微信信息</text>
+        </button>
+        <button class="login-btn save" bindtap="saveUserInfo">
+          <text class="btn-icon">💾</text>
+          <text class="btn-text">保存信息</text>
+        </button>
+      </view>
+    </view>
+  </view>
 </view>

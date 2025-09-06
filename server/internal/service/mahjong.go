@@ -43,14 +43,18 @@ func (s *MahjongService) Login(ctx context.Context, req *LoginRequest) (*Respons
 
 	// 获取用户信息
 	user := &User{}
+	var createdAt, updatedAt time.Time
 	err = s.db.QueryRow(`
 		SELECT id, openid, nickname, avatar_url, created_at, updated_at 
 		FROM users WHERE id = ?
-	`, userID).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &user.CreatedAt, &user.UpdatedAt)
+	`, userID).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &createdAt, &updatedAt)
 	
 	if err != nil {
 		return &Response{Code: 500, Message: "获取用户信息失败"}, nil
 	}
+	
+	user.CreatedAt = createdAt.Unix()
+	user.UpdatedAt = updatedAt.Unix()
 
 	userData, _ := json.Marshal(user)
 	return &Response{Code: 200, Message: "登录成功", Data: string(userData)}, nil
@@ -73,14 +77,18 @@ func (s *MahjongService) UpdateUser(ctx context.Context, req *UpdateUserRequest)
 // 获取用户信息
 func (s *MahjongService) GetUser(ctx context.Context, req *GetUserRequest) (*Response, error) {
 	user := &User{}
+	var createdAt, updatedAt time.Time
 	err := s.db.QueryRow(`
 		SELECT id, openid, nickname, avatar_url, created_at, updated_at 
 		FROM users WHERE id = ?
-	`, req.UserId).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &user.CreatedAt, &user.UpdatedAt)
+	`, req.UserId).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &createdAt, &updatedAt)
 	
 	if err != nil {
 		return &Response{Code: 404, Message: "用户不存在"}, nil
 	}
+	
+	user.CreatedAt = createdAt.Unix()
+	user.UpdatedAt = updatedAt.Unix()
 
 	userData, _ := json.Marshal(user)
 	return &Response{Code: 200, Message: "获取成功", Data: string(userData)}, nil

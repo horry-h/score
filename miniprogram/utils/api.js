@@ -1,5 +1,5 @@
 // API服务模块
-const API_BASE_URL = 'http://localhost:8080'; // 后端服务地址
+const API_BASE_URL = 'http://124.156.196.117:8080'; // 后端服务地址
 
 class ApiService {
   constructor() {
@@ -10,28 +10,30 @@ class ApiService {
   async request(url, options = {}) {
     const defaultOptions = {
       method: 'GET',
-      headers: {
+      header: {
         'Content-Type': 'application/json',
       },
     };
 
     const finalOptions = { ...defaultOptions, ...options };
     
-    try {
-      const response = await wx.request({
+    return new Promise((resolve, reject) => {
+      wx.request({
         url: `${this.baseURL}${url}`,
         ...finalOptions,
+        success: (response) => {
+          if (response.statusCode === 200) {
+            resolve(response.data);
+          } else {
+            reject(new Error(`请求失败: ${response.statusCode}`));
+          }
+        },
+        fail: (error) => {
+          console.error('API请求错误:', error);
+          reject(error);
+        }
       });
-
-      if (response.statusCode === 200) {
-        return response.data;
-      } else {
-        throw new Error(`请求失败: ${response.statusCode}`);
-      }
-    } catch (error) {
-      console.error('API请求错误:', error);
-      throw error;
-    }
+    });
   }
 
   // 用户相关API

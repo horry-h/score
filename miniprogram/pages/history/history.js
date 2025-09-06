@@ -1,6 +1,6 @@
 // history.js
-const apiService = require('../../utils/api');
-const { showLoading, hideLoading, showError, formatTimestamp, formatScore } = require('../../utils/util');
+const api = require('../../utils/api');
+const app = getApp();
 
 Page({
   data: {
@@ -20,26 +20,29 @@ Page({
     if (this.data.loading) return;
 
     try {
-      const userInfo = wx.getStorageSync('userInfo');
-      if (!userInfo) {
-        showError('请先登录');
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.user_id) {
+        wx.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
         return;
       }
 
       this.setData({ loading: true });
-      showLoading('加载中...');
+      wx.showLoading({ title: '加载中...' });
 
-      const response = await apiService.getUserRooms(
-        userInfo.id,
+      const response = await api.getUserRooms(
+        userInfo.user_id,
         this.data.page,
         this.data.pageSize
       );
 
-      hideLoading();
+      wx.hideLoading();
       this.setData({ loading: false });
 
       if (response.code === 200) {
-        const newRooms = JSON.parse(response.data);
+        const newRooms = response.data;
         const rooms = this.data.page === 1 ? newRooms : [...this.data.rooms, ...newRooms];
         
         this.setData({
@@ -47,13 +50,19 @@ Page({
           hasMore: newRooms.length === this.data.pageSize,
         });
       } else {
-        showError(response.message || '加载房间列表失败');
+        wx.showToast({
+          title: response.message || '加载房间列表失败',
+          icon: 'none'
+        });
       }
     } catch (error) {
-      hideLoading();
+      wx.hideLoading();
       this.setData({ loading: false });
       console.error('加载房间列表失败:', error);
-      showError('加载房间列表失败');
+      wx.showToast({
+        title: '加载房间列表失败',
+        icon: 'none'
+      });
     }
   },
 

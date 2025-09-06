@@ -253,3 +253,130 @@
 .action-btn .btn-text {
   font-size: 28rpx;
 }
+
+/* 登录浮窗样式 */
+.login-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.login-modal-content {
+  background: white;
+  border-radius: 24rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40rpx 40rpx 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.login-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.login-close {
+  font-size: 40rpx;
+  color: #999;
+  padding: 10rpx;
+}
+
+.login-form {
+  padding: 40rpx;
+}
+
+.form-item {
+  margin-bottom: 40rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 24rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  background: #fafafa;
+}
+
+.form-input:focus {
+  border-color: #07c160;
+  background: white;
+}
+
+.avatar-upload {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border: 2rpx dashed #e0e0e0;
+  border-radius: 12rpx;
+  background: #fafafa;
+}
+
+.avatar-preview {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.upload-hint {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.login-actions {
+  padding: 0 40rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.login-btn {
+  border: none;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-btn.wechat {
+  background: #07c160;
+  color: white;
+}
+
+.login-btn.save {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.login-btn .btn-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}

@@ -1,6 +1,6 @@
 // room.js
-const apiService = require('../../utils/api');
-const { showLoading, hideLoading, showSuccess, showError, showConfirm, copyToClipboard, formatTimestamp, formatScore } = require('../../utils/util');
+const api = require('../../utils/api');
+const app = getApp();
 
 Page({
   data: {
@@ -10,6 +10,7 @@ Page({
     transfers: [],
     currentUserId: null,
     showShareModal: false,
+    loading: false
   },
 
   onLoad(options) {
@@ -29,46 +30,57 @@ Page({
   // 加载房间数据
   async loadRoomData() {
     try {
-      const userInfo = wx.getStorageSync('userInfo');
-      if (!userInfo) {
-        showError('请先登录');
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.user_id) {
+        wx.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
         return;
       }
 
-      this.setData({ currentUserId: userInfo.id });
+      this.setData({ 
+        currentUserId: userInfo.user_id,
+        loading: true 
+      });
 
-      showLoading('加载中...');
+      wx.showLoading({ title: '加载中...' });
       
       // 并行加载房间信息、玩家信息和转移记录
       const [roomResponse, playersResponse, transfersResponse] = await Promise.all([
-        apiService.getRoom(this.data.roomId),
-        apiService.getRoomPlayers(this.data.roomId),
-        apiService.getRoomTransfers(this.data.roomId),
+        api.getRoom(this.data.roomId),
+        api.getRoomPlayers(this.data.roomId),
+        api.getRoomTransfers(this.data.roomId),
       ]);
 
-      hideLoading();
+      wx.hideLoading();
 
       if (roomResponse.code === 200) {
         this.setData({
-          roomInfo: JSON.parse(roomResponse.data),
+          roomInfo: roomResponse.data,
         });
       }
 
       if (playersResponse.code === 200) {
         this.setData({
-          players: JSON.parse(playersResponse.data),
+          players: playersResponse.data,
         });
       }
 
       if (transfersResponse.code === 200) {
         this.setData({
-          transfers: JSON.parse(transfersResponse.data),
+          transfers: transfersResponse.data,
         });
       }
     } catch (error) {
-      hideLoading();
+      wx.hideLoading();
       console.error('加载房间数据失败:', error);
-      showError('加载房间数据失败');
+      wx.showToast({
+        title: '加载房间数据失败',
+        icon: 'none'
+      });
+    } finally {
+      this.setData({ loading: false });
     }
   },
 
@@ -78,7 +90,10 @@ Page({
     const { currentUserId } = this.data;
 
     if (player.user_id === currentUserId) {
-      showError('不能给自己转移分数');
+      wx.showToast({
+        title: '不能给自己转移分数',
+        icon: 'none'
+      });
       return;
     }
 
@@ -86,25 +101,34 @@ Page({
       const amount = await this.showTransferInput(player.user.nickname, player.current_score);
       if (!amount || amount <= 0) return;
 
-      showLoading('转移中...');
-      const response = await apiService.transferScore(
+      wx.showLoading({ title: '转移中...' });
+      const response = await api.transferScore(
         this.data.roomId,
         currentUserId,
         player.user_id,
         amount
       );
-      hideLoading();
+      wx.hideLoading();
 
       if (response.code === 200) {
-        showSuccess('转移成功');
+        wx.showToast({
+          title: '转移成功',
+          icon: 'success'
+        });
         this.loadRoomData(); // 重新加载数据
       } else {
-        showError(response.message || '转移失败');
+        wx.showToast({
+          title: response.message || '转移失败',
+          icon: 'none'
+        });
       }
     } catch (error) {
-      hideLoading();
+      wx.hideLoading();
       console.error('转移分数失败:', error);
-      showError('转移失败');
+      wx.showToast({
+        title: '转移失败',
+        icon: 'none'
+      });
     }
   },
 
@@ -113,14 +137,17 @@ Page({
     return new Promise((resolve) => {
       wx.showModal({
         title: '转移分数',
-        content: `向 ${playerName} 转移分数\n当前分数：${formatScore(currentScore)}\n请输入转移分数：`,
+        content: `向 ${playerName} 转移分数\n当前分数：${currentScore}\n请输入转移分数：`,
         editable: true,
         placeholderText: '50',
         success: (res) => {
           if (res.confirm && res.content) {
             const amount = parseInt(res.content);
             if (isNaN(amount) || amount <= 0) {
-              showError('请输入有效的分数');
+              wx.showToast({
+                title: '请输入有效的分数',
+                icon: 'none'
+              });
               resolve(null);
             } else {
               resolve(amount);
@@ -145,24 +172,45 @@ Page({
 
   // 结算房间
   async settleRoom() {
-    const confirmed = await showConfirm('确定要结算房间吗？结算后房间将结束，无法再进行分数转移。', '确认结算');
+    const confirmed = await new Promise((resolve) => {
+      wx.showModal({
+        title: '确认结算',
+        content: '确定要结算房间吗？结算后房间将结束，无法再进行分数转移。',
+        success: (res) => {
+          resolve(res.confirm);
+        },
+        fail: () => {
+          resolve(false);
+        }
+      });
+    });
+    
     if (!confirmed) return;
 
     try {
-      showLoading('结算中...');
-      const response = await apiService.settleRoom(this.data.roomId, this.data.currentUserId);
-      hideLoading();
+      wx.showLoading({ title: '结算中...' });
+      const response = await api.settleRoom(this.data.roomId, this.data.currentUserId);
+      wx.hideLoading();
 
       if (response.code === 200) {
-        showSuccess('结算成功');
+        wx.showToast({
+          title: '结算成功',
+          icon: 'success'
+        });
         this.loadRoomData(); // 重新加载数据
       } else {
-        showError(response.message || '结算失败');
+        wx.showToast({
+          title: response.message || '结算失败',
+          icon: 'none'
+        });
       }
     } catch (error) {
-      hideLoading();
+      wx.hideLoading();
       console.error('结算房间失败:', error);
-      showError('结算失败');
+      wx.showToast({
+        title: '结算失败',
+        icon: 'none'
+      });
     }
   },
 
@@ -187,7 +235,10 @@ Page({
       withShareTicket: true,
       menus: ['shareAppMessage', 'shareTimeline'],
     });
-    showSuccess('请使用右上角分享功能');
+    wx.showToast({
+      title: '请使用右上角分享功能',
+      icon: 'success'
+    });
     this.hideShareModal();
   },
 
@@ -195,8 +246,16 @@ Page({
   copyRoomCode() {
     const roomCode = this.data.roomInfo.room_code;
     if (roomCode) {
-      copyToClipboard(roomCode);
-      this.hideShareModal();
+      wx.setClipboardData({
+        data: roomCode,
+        success: () => {
+          wx.showToast({
+            title: '房间号已复制',
+            icon: 'success'
+          });
+          this.hideShareModal();
+        }
+      });
     }
   },
 

@@ -1,11 +1,25 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/profile/profile",
+    "pages/create-room/create-room",
+    "pages/join-room/join-room",
+    "pages/room/room",
+    "pages/room-detail/room-detail",
+    "pages/transfer/transfer",
+    "pages/settlement/settlement",
+    "pages/history/history",
     "pages/logs/logs"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationStyle": "custom"
+    "navigationStyle": "custom",
+    "backgroundColor": "#f5f5f5"
+  },
+  "permission": {
+    "scope.userInfo": {
+      "desc": "用于完善用户资料"
+    }
   },
   "style": "v2",
   "renderer": "skyline",
