@@ -42,8 +42,8 @@ func Load() *Config {
 			Port: 8080,
 		},
 		WeChat: WeChatConfig{
-			AppID:     "your_wechat_appid",
-			AppSecret: "your_wechat_appsecret",
+			AppID:     "wx367870ff70acb37b",
+			AppSecret: "7127a700e080747019e13a01ec48816f",
 		},
 	}
 }

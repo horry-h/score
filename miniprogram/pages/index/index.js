@@ -245,12 +245,16 @@ Page({
         // 更新本地用户信息
         const updatedUserInfo = {
           ...loginRes,
+          user_id: loginRes.id, // 添加user_id字段，使用后端返回的id
           nickname: nickname,
           avatarUrl: avatarUrl
         }
         
         wx.setStorageSync('userInfo', updatedUserInfo)
         app.globalData.userInfo = updatedUserInfo
+        
+        // 清除欢迎弹窗标记，因为用户已经登录
+        wx.removeStorageSync('hasShownWelcome')
         
         this.setData({
           userInfo: updatedUserInfo,

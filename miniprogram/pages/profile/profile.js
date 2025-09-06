@@ -149,9 +149,16 @@ Page({
       if (response.code === 200) {
         if (isNewUser) {
           // 保存用户信息到本地
-          const newUserInfo = response.data;
+          const newUserInfo = {
+            ...response.data,
+            user_id: response.data.id // 添加user_id字段，使用后端返回的id
+          };
           wx.setStorageSync('userInfo', newUserInfo);
           app.globalData.userInfo = newUserInfo;
+          
+          // 清除欢迎弹窗标记，因为用户已经登录
+          wx.removeStorageSync('hasShownWelcome');
+          
           this.setData({
             userInfo: newUserInfo,
             isNewUser: false,

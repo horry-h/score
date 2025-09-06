@@ -11,7 +11,7 @@ App({
     // 初始化用户信息
     this.initUserInfo()
     
-    // 检查是否需要引导用户登录
+    // 检查是否需要引导用户登录（只在首次启动时检查）
     this.checkUserLogin()
   },
 
@@ -39,6 +39,7 @@ App({
         // 保存用户信息到本地存储和全局数据
         const userData = {
           ...response.data,
+          user_id: response.data.id, // 添加user_id字段，使用后端返回的id
           nickName: nickname,
           avatarUrl: avatarUrl
         }
@@ -90,15 +91,24 @@ App({
   // 检查用户登录状态
   checkUserLogin() {
     const userInfo = this.globalData.userInfo || wx.getStorageSync('userInfo')
-    if (!userInfo || !userInfo.user_id) {
-      // 用户未登录，延迟显示引导提示
+    const hasShownWelcome = wx.getStorageSync('hasShownWelcome')
+    
+    if ((!userInfo || !userInfo.user_id) && !hasShownWelcome) {
+      // 用户未登录且未显示过欢迎弹窗，延迟显示引导提示
       setTimeout(() => {
         wx.showModal({
           title: '欢迎使用麻将记分',
           content: '请先完善个人信息，然后就可以开始创建房间或加入房间了',
           confirmText: '知道了',
           cancelText: '稍后',
-          showCancel: false
+          showCancel: false,
+          success: (res) => {
+            if (res.confirm) {
+              // 用户点击"知道了"，标记已显示过欢迎弹窗
+              wx.setStorageSync('hasShownWelcome', true)
+              console.log('用户已了解需要完善个人信息')
+            }
+          }
         })
       }, 1000) // 延迟1秒显示，让首页先加载完成
     }
