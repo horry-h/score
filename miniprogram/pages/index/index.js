@@ -97,7 +97,20 @@ Page({
     
     if (this.data.recentRoom) {
       console.log('准备跳转，room_id:', this.data.recentRoom.room_id)
-      const url = `/pages/room/room?roomId=${this.data.recentRoom.room_id}`
+      console.log('准备跳转，room_code:', this.data.recentRoom.room_code)
+      
+      // 使用room_code进行跳转，因为它是包含时间戳的唯一字符串
+      const roomCode = this.data.recentRoom.room_code
+      if (!roomCode) {
+        console.error('room_code为空，无法跳转')
+        wx.showToast({
+          title: '房间号无效',
+          icon: 'none'
+        })
+        return
+      }
+      
+      const url = `/pages/room/room?roomCode=${roomCode}`
       console.log('跳转URL:', url)
       
       wx.navigateTo({

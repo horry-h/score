@@ -8,8 +8,7 @@
     "pages/room-detail/room-detail",
     "pages/transfer/transfer",
     "pages/settlement/settlement",
-    "pages/history/history",
-    "pages/logs/logs"
+    "pages/history/history"
   ],
   "window": {
     "navigationBarTextStyle": "black",

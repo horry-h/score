@@ -53,7 +53,7 @@ Page({
         // 跳转到房间页面
         setTimeout(() => {
           wx.redirectTo({
-            url: `/pages/room/room?roomId=${response.data.room_id}`,
+            url: `/pages/room/room?roomCode=${response.data.room_code}`,
           });
         }, 1500);
       } else {

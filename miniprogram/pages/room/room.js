@@ -14,11 +14,17 @@ Page({
   },
 
   onLoad(options) {
-    const { roomId } = options;
+    const { roomId, roomCode } = options;
     console.log('房间页面onLoad，接收到的参数:', options);
     console.log('roomId值:', roomId, '类型:', typeof roomId);
+    console.log('roomCode值:', roomCode, '类型:', typeof roomCode);
     
-    if (roomId) {
+    // 优先使用roomCode，如果没有则使用roomId
+    if (roomCode) {
+      console.log('使用roomCode进入房间:', roomCode);
+      this.setData({ roomCode: roomCode });
+      this.loadRoomData();
+    } else if (roomId) {
       const parsedRoomId = parseInt(roomId);
       console.log('解析后的roomId:', parsedRoomId);
       
@@ -34,9 +40,9 @@ Page({
       this.setData({ roomId: parsedRoomId });
       this.loadRoomData();
     } else {
-      console.error('未接收到roomId参数');
+      console.error('未接收到roomId或roomCode参数');
       wx.showToast({
-        title: '缺少房间ID',
+        title: '缺少房间信息',
         icon: 'none'
       });
     }
@@ -52,6 +58,7 @@ Page({
   async loadRoomData() {
     try {
       console.log('loadRoomData开始，当前roomId:', this.data.roomId);
+      console.log('loadRoomData开始，当前roomCode:', this.data.roomCode);
       
       const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
       if (!userInfo || !userInfo.user_id) {
@@ -62,10 +69,11 @@ Page({
         return;
       }
 
-      if (!this.data.roomId || isNaN(this.data.roomId)) {
-        console.error('roomId无效:', this.data.roomId);
+      // 检查是否有有效的房间标识
+      if (!this.data.roomId && !this.data.roomCode) {
+        console.error('房间标识无效，roomId:', this.data.roomId, 'roomCode:', this.data.roomCode);
         wx.showToast({
-          title: '房间ID无效',
+          title: '房间信息无效',
           icon: 'none'
         });
         return;
@@ -78,34 +86,48 @@ Page({
 
       wx.showLoading({ title: '加载中...' });
       
-      console.log('开始加载房间数据，roomId:', this.data.roomId);
+      console.log('开始加载房间数据，roomId:', this.data.roomId, 'roomCode:', this.data.roomCode);
       
-      // 并行加载房间信息、玩家信息和转移记录
-      const [roomResponse, playersResponse, transfersResponse] = await Promise.all([
-        api.getRoom(this.data.roomId),
-        api.getRoomPlayers(this.data.roomId),
-        api.getRoomTransfers(this.data.roomId),
-      ]);
-
-      wx.hideLoading();
-
+      // 先获取房间信息
+      const roomResponse = await api.getRoom(this.data.roomId, this.data.roomCode);
+      
       if (roomResponse.code === 200) {
         this.setData({
           roomInfo: roomResponse.data,
         });
+        
+        // 如果使用roomCode进入，需要获取roomId用于后续API调用
+        if (this.data.roomCode && !this.data.roomId) {
+          this.setData({ roomId: roomResponse.data.id });
+        }
+        
+        // 现在加载玩家信息和转移记录
+        const [playersResponse, transfersResponse] = await Promise.all([
+          api.getRoomPlayers(this.data.roomId),
+          api.getRoomTransfers(this.data.roomId),
+        ]);
+        
+        if (playersResponse.code === 200) {
+          this.setData({
+            players: playersResponse.data,
+          });
+        }
+
+        if (transfersResponse.code === 200) {
+          this.setData({
+            transfers: transfersResponse.data,
+          });
+        }
+      } else {
+        wx.hideLoading();
+        wx.showToast({
+          title: roomResponse.message || '加载房间信息失败',
+          icon: 'none'
+        });
+        return;
       }
 
-      if (playersResponse.code === 200) {
-        this.setData({
-          players: playersResponse.data,
-        });
-      }
-
-      if (transfersResponse.code === 200) {
-        this.setData({
-          transfers: transfersResponse.data,
-        });
-      }
+      wx.hideLoading();
     } catch (error) {
       wx.hideLoading();
       console.error('加载房间数据失败:', error);
