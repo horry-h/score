@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/md5"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -76,7 +77,7 @@ func (s *MahjongService) AutoLogin(ctx context.Context, req *AutoLoginRequest) (
 	}
 	
 	// 生成session
-	sessionID := generateSessionID()
+	sessionID := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d_%s_%d", user.Id, user.Openid, time.Now().UnixNano()))))
 	expiresAt := time.Now().Add(24 * time.Hour)
 	
 	// 保存session到数据库
