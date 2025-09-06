@@ -69,10 +69,10 @@ Page({
         console.log("保存的房间数据:", roomData)
         console.log("房间号:", roomData.room_code)
         
-        // 跳转到房间页面
+        // 跳转到房间页面，优先使用room_id
         setTimeout(() => {
           wx.redirectTo({
-            url: `/pages/room/room?roomCode=${roomData.room_code}`,
+            url: `/pages/room/room?roomId=${roomData.room_id}`,
           });
         }, 1500);
       } else {

@@ -19,12 +19,8 @@ Page({
     console.log('roomId值:', roomId, '类型:', typeof roomId);
     console.log('roomCode值:', roomCode, '类型:', typeof roomCode);
     
-    // 优先使用roomCode，如果没有则使用roomId
-    if (roomCode && roomCode !== 'undefined' && roomCode !== 'null' && roomCode.trim() !== '') {
-      console.log('使用roomCode进入房间:', roomCode);
-      this.setData({ roomCode: roomCode });
-      this.loadRoomData();
-    } else if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId.trim() !== '') {
+    // 优先使用roomId，如果没有则使用roomCode
+    if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId.trim() !== '') {
       const parsedRoomId = parseInt(roomId);
       console.log('解析后的roomId:', parsedRoomId);
       
@@ -37,7 +33,12 @@ Page({
         return;
       }
       
+      console.log('使用roomId进入房间:', parsedRoomId);
       this.setData({ roomId: parsedRoomId });
+      this.loadRoomData();
+    } else if (roomCode && roomCode !== 'undefined' && roomCode !== 'null' && roomCode.trim() !== '') {
+      console.log('使用roomCode进入房间:', roomCode);
+      this.setData({ roomCode: roomCode });
       this.loadRoomData();
     } else {
       console.error('未接收到有效的roomId或roomCode参数:', { roomId, roomCode });
@@ -89,7 +90,9 @@ Page({
       console.log('开始加载房间数据，roomId:', this.data.roomId, 'roomCode:', this.data.roomCode);
       
       // 先获取房间信息
+      console.log('调用api.getRoom，参数:', { roomId: this.data.roomId, roomCode: this.data.roomCode });
       const roomResponse = await api.getRoom(this.data.roomId, this.data.roomCode);
+      console.log('getRoom响应:', roomResponse);
       
       if (roomResponse.code === 200) {
         this.setData({
@@ -99,6 +102,7 @@ Page({
         // 如果使用roomCode进入，需要获取roomId用于后续API调用
         if (this.data.roomCode && !this.data.roomId) {
           this.setData({ roomId: roomResponse.data.id });
+          console.log('从roomCode获取到roomId:', roomResponse.data.id);
         }
         
         // 现在加载玩家信息和转移记录

@@ -260,12 +260,15 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	var query string
 	var args []interface{}
 	
+	// 优先使用room_id，如果没有则使用room_code
 	if req.RoomId > 0 {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE id = ?"
 		args = []interface{}{req.RoomId}
-	} else {
+	} else if req.RoomCode != "" {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE room_code = ?"
 		args = []interface{}{req.RoomCode}
+	} else {
+		return &Response{Code: 400, Message: "缺少房间标识"}, nil
 	}
 
 	room := &Room{}

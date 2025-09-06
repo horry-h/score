@@ -92,8 +92,11 @@ class ApiService {
   }
 
   async getRoom(roomId, roomCode) {
+    // 优先使用roomId，如果没有则使用roomCode
     const params = roomId ? `room_id=${roomId}` : `room_code=${roomCode}`;
-    return this.request(`/api/v1/getRoom?${params}`);
+    const url = `/api/v1/getRoom?${params}`;
+    console.log('getRoom API调用:', { roomId, roomCode, params, url });
+    return this.request(url);
   }
 
   async getRoomPlayers(roomId) {

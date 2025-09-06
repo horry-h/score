@@ -81,9 +81,9 @@ Page({
     const room = e.currentTarget.dataset.room;
     
     if (room.status === 1) {
-      // 进行中的房间，直接进入
+      // 进行中的房间，直接进入，优先使用room_id
       wx.navigateTo({
-        url: `/pages/room/room?roomCode=${room.room_code}`,
+        url: `/pages/room/room?roomId=${room.room_id}`,
       });
     } else {
       // 已结算的房间，查看详情

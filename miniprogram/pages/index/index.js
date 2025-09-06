@@ -58,6 +58,7 @@ Page({
     try {
       this.setData({ loading: true })
       const response = await api.getRecentRoom(userInfo.user_id)
+      console.log("最近的房间：",response)
       
       console.log('getRecentRoom响应:', response)
       
@@ -100,28 +101,28 @@ Page({
       console.log('准备跳转，room_code:', this.data.recentRoom.room_code)
       console.log('recentRoom完整数据:', JSON.stringify(this.data.recentRoom))
       
-      // 优先使用room_code，如果没有则使用room_id
-      const roomCode = this.data.recentRoom.room_code
+      // 优先使用room_id，如果没有则使用room_code
       const roomId = this.data.recentRoom.room_id
+      const roomCode = this.data.recentRoom.room_code
       
-      if (roomCode && roomCode !== 'undefined' && roomCode !== 'null') {
-        // 使用room_code进行跳转
-        const url = `/pages/room/room?roomCode=${roomCode}`
-        console.log('使用roomCode跳转，URL:', url)
-        
-        wx.navigateTo({
-          url: url
-        })
-      } else if (roomId) {
-        // 如果没有room_code，使用room_id
+      if (roomId && roomId !== 'undefined' && roomId !== 'null') {
+        // 使用room_id进行跳转
         const url = `/pages/room/room?roomId=${roomId}`
         console.log('使用roomId跳转，URL:', url)
         
         wx.navigateTo({
           url: url
         })
+      } else if (roomCode && roomCode !== 'undefined' && roomCode !== 'null') {
+        // 如果没有room_id，使用room_code
+        const url = `/pages/room/room?roomCode=${roomCode}`
+        console.log('使用roomCode跳转，URL:', url)
+        
+        wx.navigateTo({
+          url: url
+        })
       } else {
-        console.error('room_code和room_id都无效:', { roomCode, roomId })
+        console.error('room_id和room_code都无效:', { roomId, roomCode })
         wx.showToast({
           title: '房间信息无效',
           icon: 'none'
