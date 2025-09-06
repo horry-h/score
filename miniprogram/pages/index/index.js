@@ -58,7 +58,6 @@ Page({
     try {
       this.setData({ loading: true })
       const response = await api.getRecentRoom(userInfo.user_id)
-      console.log("最近的房间：",response)
       
       console.log('getRecentRoom响应:', response)
       
@@ -70,7 +69,6 @@ Page({
           recentRoom: response.data
         })
       } else {
-        console.log('没有最近房间数据')
         this.setData({
           recentRoom: null
         })

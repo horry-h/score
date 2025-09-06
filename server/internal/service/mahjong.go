@@ -272,13 +272,20 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	}
 
 	room := &Room{}
+	var createdAt, settledAt time.Time
 	err := s.db.QueryRow(query, args...).Scan(
 		&room.Id, &room.RoomCode, &room.RoomName, &room.CreatorId, 
-		&room.Status, &room.CreatedAt, &room.SettledAt,
+		&room.Status, &createdAt, &settledAt,
 	)
 	
 	if err != nil {
 		return &Response{Code: 404, Message: "房间不存在"}, nil
+	}
+
+	// 转换时间戳
+	room.CreatedAt = createdAt.Unix()
+	if !settledAt.IsZero() {
+		room.SettledAt = settledAt.Unix()
 	}
 
 	// 获取房间玩家
