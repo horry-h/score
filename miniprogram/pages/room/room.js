@@ -21,6 +21,12 @@ Page({
     console.log('- options.scene:', options.scene, '类型:', typeof options.scene);
     console.log('- options.roomId:', options.roomId, '类型:', typeof options.roomId);
     console.log('- options.roomCode:', options.roomCode, '类型:', typeof options.roomCode);
+    console.log('- options.shareTicket:', options.shareTicket, '类型:', typeof options.shareTicket);
+    
+    // 处理私密消息验证
+    if (options.shareTicket) {
+      this.verifyPrivateMessage(options.shareTicket);
+    }
     
     let roomId = null;
     let roomCode = null;
@@ -384,16 +390,119 @@ Page({
   },
 
   // 分享给微信好友
-  shareToWeChat() {
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline'],
+  async shareToWeChat() {
+    try {
+      // 创建活动ID用于私密消息
+      const activityId = await this.createActivityId();
+      
+      // 设置私密消息分享
+      wx.updateShareMenu({
+        withShareTicket: true,
+        isPrivateMessage: true,
+        activityId: activityId,
+        success: () => {
+          console.log('私密消息设置成功:', activityId);
+          wx.showToast({
+            title: '请使用右上角分享功能',
+            icon: 'success'
+          });
+          this.hideShareModal();
+        },
+        fail: (error) => {
+          console.error('设置私密消息失败:', error);
+          // 降级到普通分享
+          wx.showShareMenu({
+            withShareTicket: true,
+            menus: ['shareAppMessage', 'shareTimeline'],
+          });
+          wx.showToast({
+            title: '请使用右上角分享功能',
+            icon: 'success'
+          });
+          this.hideShareModal();
+        }
+      });
+    } catch (error) {
+      console.error('分享设置失败:', error);
+      // 降级到普通分享
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline'],
+      });
+      wx.showToast({
+        title: '请使用右上角分享功能',
+        icon: 'success'
+      });
+      this.hideShareModal();
+    }
+  },
+
+  // 创建活动ID
+  async createActivityId() {
+    return new Promise((resolve, reject) => {
+      wx.createActivityId({
+        success: (res) => {
+          console.log('创建活动ID成功:', res.activityId);
+          resolve(res.activityId);
+        },
+        fail: (error) => {
+          console.error('创建活动ID失败:', error);
+          reject(error);
+        }
+      });
     });
-    wx.showToast({
-      title: '请使用右上角分享功能',
-      icon: 'success'
-    });
-    this.hideShareModal();
+  },
+
+  // 验证私密消息
+  async verifyPrivateMessage(shareTicket) {
+    try {
+      console.log('开始验证私密消息，shareTicket:', shareTicket);
+      
+      // 先登录获取session_key
+      const loginRes = await new Promise((resolve, reject) => {
+        wx.login({
+          success: resolve,
+          fail: reject
+        });
+      });
+      
+      if (!loginRes.code) {
+        console.error('登录失败，无法验证私密消息');
+        return;
+      }
+      
+      // 验证私密消息
+      wx.authPrivateMessage({
+        shareTicket: shareTicket,
+        success: (res) => {
+          console.log('私密消息验证结果:', res);
+          if (res.valid) {
+            console.log('私密消息验证通过');
+            wx.showToast({
+              title: '欢迎加入房间！',
+              icon: 'success'
+            });
+            // 可以在这里处理验证通过后的逻辑
+            // 比如自动加入房间等
+          } else {
+            console.log('私密消息验证失败');
+            wx.showToast({
+              title: '分享链接无效',
+              icon: 'none'
+            });
+          }
+        },
+        fail: (error) => {
+          console.error('私密消息验证失败:', error);
+          wx.showToast({
+            title: '验证失败',
+            icon: 'none'
+          });
+        }
+      });
+    } catch (error) {
+      console.error('验证私密消息时发生错误:', error);
+    }
   },
 
   // 复制房间号
@@ -420,14 +529,26 @@ Page({
   },
 
   // 分享
-  onShareAppMessage() {
+  onShareAppMessage(res) {
     // 自动生成二维码
     this.generateQRCode();
     
-    return {
-      title: `麻将记分房间 ${this.data.roomInfo.id}`,
-      path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
-    };
+    // 检查是否是私密消息分享
+    if (res.from === 'button' && res.target && res.target.dataset && res.target.dataset.privateMessage) {
+      // 私密消息分享，直接进入房间
+      return {
+        title: `麻将记分房间 ${this.data.roomInfo.id}`,
+        path: `/pages/room/room?roomId=${this.data.roomInfo.id}`,
+        imageUrl: '', // 可以设置分享图片
+      };
+    } else {
+      // 普通分享，进入加入房间页面
+      return {
+        title: `麻将记分房间 ${this.data.roomInfo.id}`,
+        path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`,
+        imageUrl: '', // 可以设置分享图片
+      };
+    }
   },
 
   // 生成二维码

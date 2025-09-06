@@ -150,7 +150,7 @@
     </view>
 
     <view class="share-actions">
-      <button class="btn" bindtap="shareToWeChat">
+      <button class="btn" bindtap="shareToWeChat" open-type="share" data-private-message="true">
         <text class="icon">💬</text>
         <text>分享给好友</text>
       </button>

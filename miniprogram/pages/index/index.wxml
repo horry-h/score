@@ -81,7 +81,7 @@
       </button>
       <button class="action-btn secondary" bindtap="joinRoom">
         <text class="btn-icon">📱</text>
-        <text class="btn-text">扫码加入</text>
+        <text class="btn-text">加入房间</text>
       </button>
     </view>
   </view>
