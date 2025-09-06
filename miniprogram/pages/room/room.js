@@ -31,11 +31,18 @@ Page({
     let roomId = null;
     let roomCode = null;
     
-    // 处理从二维码扫描进入的情况
+    // 处理从二维码扫描或分享进入的情况
     if (options.scene) {
-      console.log('从二维码扫描进入，scene参数:', options.scene);
+      console.log('从二维码扫描或分享进入，scene参数:', options.scene);
       console.log('scene参数长度:', options.scene.length);
       console.log('scene参数内容:', JSON.stringify(options.scene));
+      
+      // 显示进入提示
+      wx.showToast({
+        title: '正在进入房间...',
+        icon: 'loading',
+        duration: 1500
+      });
       
       // 尝试直接处理URL编码的scene参数
       let decodedScene = options.scene;
@@ -213,23 +220,67 @@ Page({
             playersData = [];
           }
           
-          // 确保当前用户在玩家列表中
+          // 检查当前用户是否在玩家列表中
           const currentUserInList = playersData.find(player => player.user_id === userInfo.user_id);
           if (!currentUserInList) {
-            // 如果当前用户不在列表中，添加当前用户
-            const currentUserPlayer = {
-              id: Date.now(), // 临时ID
-              user_id: userInfo.user_id,
-              room_id: this.data.roomId,
-              current_score: 0,
-              user: {
-                id: userInfo.user_id,
-                nickname: userInfo.nickName || userInfo.nickname || '微信用户',
-                avatar_url: userInfo.avatarUrl || userInfo.avatar_url || ''
+            console.log('当前用户不在房间中，尝试自动加入房间...');
+            try {
+              // 自动加入房间
+              const joinResponse = await api.joinRoom(userInfo.user_id, this.data.roomId);
+              console.log('自动加入房间响应:', joinResponse);
+              
+              if (joinResponse.code === 200) {
+                console.log('自动加入房间成功');
+                wx.showToast({
+                  title: '欢迎加入房间！',
+                  icon: 'success',
+                  duration: 2000
+                });
+                
+                // 重新获取玩家列表
+                const updatedPlayersResponse = await api.getRoomPlayers(this.data.roomId);
+                if (updatedPlayersResponse.code === 200) {
+                  let updatedPlayersData;
+                  try {
+                    updatedPlayersData = typeof updatedPlayersResponse.data === 'string' ? JSON.parse(updatedPlayersResponse.data) : updatedPlayersResponse.data;
+                  } catch (error) {
+                    console.error('解析更新后的玩家数据失败:', error);
+                    updatedPlayersData = playersData;
+                  }
+                  playersData = updatedPlayersData || playersData;
+                }
+              } else if (joinResponse.code === 400 && joinResponse.message === '房间已结算') {
+                console.log('房间已结算，无法加入');
+                wx.showToast({
+                  title: '房间已结束',
+                  icon: 'none'
+                });
+                return;
+              } else if (joinResponse.code === 404) {
+                console.log('房间不存在');
+                wx.showToast({
+                  title: '房间不存在',
+                  icon: 'none'
+                });
+                return;
+              } else {
+                console.log('自动加入房间失败:', joinResponse.message);
+                wx.showToast({
+                  title: joinResponse.message || '加入房间失败',
+                  icon: 'none'
+                });
+                return;
               }
-            };
-            playersData.unshift(currentUserPlayer);
-            console.log('当前用户不在玩家列表中，已添加:', currentUserPlayer);
+            } catch (error) {
+              console.error('自动加入房间时发生错误:', error);
+              wx.showToast({
+                title: '加入房间失败',
+                icon: 'none'
+              });
+              return;
+            }
+          } else {
+            console.log('当前用户已在房间中');
           }
           
           // 排序玩家：当前用户始终在第一个位置
