@@ -3,7 +3,7 @@ const api = require('./utils/api')
 const eventBus = require('./utils/eventBus')
 
 App({
-  onLaunch() {
+  async onLaunch() {
     // 展示本地存储能力
     const logs = wx.getStorageSync('logs') || []
     logs.unshift(Date.now())
@@ -12,8 +12,8 @@ App({
     // 初始化用户信息
     this.initUserInfo()
     
-    // 检查是否需要引导用户登录（只在首次启动时检查）
-    this.checkUserLogin()
+    // 静默自动登录
+    await this.silentAutoLogin()
   },
 
   // 初始化用户信息
@@ -99,33 +99,28 @@ App({
     })
   },
 
-  // 检查用户登录状态
-  checkUserLogin() {
-    const userInfo = this.globalData.userInfo || wx.getStorageSync('userInfo')
-    const hasShownWelcome = wx.getStorageSync('hasShownWelcome')
-    
-    if ((!userInfo || !userInfo.user_id) && !hasShownWelcome) {
-      // 用户未登录且未显示过欢迎弹窗，延迟显示引导提示
-      setTimeout(() => {
-        wx.showModal({
-          title: '欢迎使用麻将记分',
-          content: '请先完善个人信息，然后就可以开始创建房间或加入房间了',
-          confirmText: '知道了',
-          cancelText: '稍后',
-          showCancel: false,
-          success: (res) => {
-            if (res.confirm) {
-              // 用户点击"知道了"，标记已显示过欢迎弹窗
-              wx.setStorageSync('hasShownWelcome', true)
-              console.log('用户已了解需要完善个人信息')
-              
-              // 立即显示个人信息浮窗让用户填写昵称和头像
-              // 通过全局事件通知首页显示个人信息浮窗
-              eventBus.emit('showProfileModal')
-            }
-          }
-        })
-      }, 1000) // 延迟1秒显示，让首页先加载完成
+  // 静默自动登录
+  async silentAutoLogin() {
+    try {
+      // 检查是否已经有用户信息
+      const existingUserInfo = this.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (existingUserInfo && existingUserInfo.user_id) {
+        console.log('用户已登录，跳过静默自动登录')
+        return
+      }
+
+      console.log('开始静默自动登录...')
+      
+      // 静默调用自动登录
+      const userInfo = await this.autoLogin()
+      console.log('静默自动登录成功:', userInfo)
+      
+      // 标记已显示过欢迎弹窗，避免后续弹窗
+      wx.setStorageSync('hasShownWelcome', true)
+      
+    } catch (error) {
+      console.error('静默自动登录失败:', error)
+      // 静默失败，不显示任何提示，让用户正常使用
     }
   },
 

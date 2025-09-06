@@ -26,8 +26,24 @@ Page({
   },
 
   async onLoad() {
-    // 首先尝试自动登录
-    await this.autoLogin()
+    // 检查用户信息，如果app.js已经静默登录成功，直接使用
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    if (userInfo && userInfo.user_id) {
+      console.log('使用已有的用户信息')
+      this.setData({
+        userInfo: {
+          user_id: userInfo.user_id,
+          nickName: userInfo.nickName,
+          avatarUrl: userInfo.avatarUrl,
+          openid: userInfo.openid || userInfo.Openid,
+          nickname: userInfo.nickname,
+          avatar_url: userInfo.avatar_url
+        }
+      })
+    } else {
+      // 如果没有用户信息，尝试自动登录
+      await this.autoLogin()
+    }
     
     // 然后加载用户信息和最近房间
     this.loadUserInfo()

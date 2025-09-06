@@ -9,23 +9,28 @@ Page({
   },
 
   async onLoad() {
-    // 立即调用wx.login获取用户openid，确保用户信息可用
-    try {
-      console.log('开始获取用户登录信息...');
-      const userInfo = await app.autoLogin();
-      console.log('获取用户信息成功:', userInfo);
-      
-      // 保存到全局数据
-      app.globalData.userInfo = userInfo;
-      wx.setStorageSync('userInfo', userInfo);
-      
-    } catch (error) {
-      console.error('获取用户登录信息失败:', error);
-      wx.showToast({
-        title: '登录失败，请重试',
-        icon: 'none'
-      });
-      return;
+    // 检查用户信息，如果app.js已经静默登录成功，直接使用
+    let userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+    if (!userInfo || !userInfo.user_id) {
+      try {
+        console.log('开始获取用户登录信息...');
+        userInfo = await app.autoLogin();
+        console.log('获取用户信息成功:', userInfo);
+        
+        // 保存到全局数据
+        app.globalData.userInfo = userInfo;
+        wx.setStorageSync('userInfo', userInfo);
+        
+      } catch (error) {
+        console.error('获取用户登录信息失败:', error);
+        wx.showToast({
+          title: '登录失败，请重试',
+          icon: 'none'
+        });
+        return;
+      }
+    } else {
+      console.log('使用已有的用户信息');
     }
   },
 
