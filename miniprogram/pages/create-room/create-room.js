@@ -40,9 +40,7 @@ Page({
 
       const response = await api.createRoom(userInfo.user_id, this.data.roomName);
       
-      if (response.code === 200) {
-        console.log("新房间响应:", response)
-        
+      if (response.code === 200) {        
         // 解析data字段中的JSON字符串
         let roomData;
         try {
@@ -67,7 +65,6 @@ Page({
         // 保存最近房间信息
         wx.setStorageSync('recentRoom', roomData);
         console.log("保存的房间数据:", roomData)
-        console.log("房间号:", roomData.room_code)
         
         // 跳转到房间页面，优先使用room_id
         setTimeout(() => {

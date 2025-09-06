@@ -583,6 +583,7 @@ func (s *MahjongService) GetRoomDetail(ctx context.Context, req *GetRoomDetailRe
 // 获取最近房间
 func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest) (*Response, error) {
 	var recentRoom RecentRoom
+	var lastAccessedAt time.Time
 	err := s.db.QueryRow(`
 		SELECT r.id, r.room_code, r.room_name, r.status, urr.last_accessed_at,
 		       rp.current_score,
@@ -596,7 +597,7 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 		LIMIT 1
 	`, req.UserId).Scan(
 		&recentRoom.RoomId, &recentRoom.RoomCode, &recentRoom.RoomName, &recentRoom.Status,
-		&recentRoom.LastAccessedAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
+		&lastAccessedAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
 	)
 	
 	if err == sql.ErrNoRows {
@@ -604,6 +605,9 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 	} else if err != nil {
 		return &Response{Code: 500, Message: "查询最近房间失败"}, nil
 	}
+
+	// 转换时间戳
+	recentRoom.LastAccessedAt = lastAccessedAt.Unix()
 
 	recentRoomData, _ := json.Marshal(recentRoom)
 	return &Response{Code: 200, Message: "获取成功", Data: string(recentRoomData)}, nil
