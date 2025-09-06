@@ -149,7 +149,7 @@
         <view class="form-group">
           <text class="form-label">头像</text>
           <view class="avatar-section">
-            <button class="avatar-upload-btn" open-type="chooseAvatar" bindchooseavatar="onProfileChooseAvatar">
+            <button class="avatar-upload-btn" open-type="chooseAvatar" bindchooseavatar="onProfileChooseAvatar" hover-class="avatar-btn-hover">
               <image 
                 wx:if="{{profileForm.avatarUrl}}" 
                 src="{{profileForm.avatarUrl}}" 
@@ -161,6 +161,7 @@
                 <text class="placeholder-text">点击选择头像</text>
               </view>
             </button>
+            <text class="avatar-hint">点击上方按钮选择头像</text>
           </view>
         </view>
       </view>

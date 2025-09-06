@@ -496,6 +496,7 @@ Page({
     })
     
     console.log('显示个人信息浮窗，当前用户信息:', userInfo)
+    console.log('profileForm数据:', this.data.profileForm)
   },
 
   // 隐藏个人信息浮窗
