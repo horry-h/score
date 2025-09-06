@@ -239,43 +239,32 @@ Page({
     try {
       wx.showLoading({ title: '保存中...' })
       
-      // 调用登录API
-      const loginRes = await app.login()
+      // 调用登录API，传入昵称和头像URL
+      const loginRes = await app.login(nickname, avatarUrl)
       if (loginRes) {
-        // 更新用户信息
-        const response = await api.updateUser(loginRes.user_id, nickname, avatarUrl)
-        
-        if (response.code === 200) {
-          // 更新本地用户信息
-          const updatedUserInfo = {
-            ...loginRes,
-            nickname: nickname,
-            avatarUrl: avatarUrl
-          }
-          
-          wx.setStorageSync('userInfo', updatedUserInfo)
-          app.globalData.userInfo = updatedUserInfo
-          
-          this.setData({
-            userInfo: updatedUserInfo,
-            showLoginModal: false
-          })
-          
-          wx.hideLoading()
-          wx.showToast({
-            title: '保存成功',
-            icon: 'success'
-          })
-          
-          // 重新加载最近房间
-          this.loadRecentRoom()
-        } else {
-          wx.hideLoading()
-          wx.showToast({
-            title: response.message || '保存失败',
-            icon: 'none'
-          })
+        // 更新本地用户信息
+        const updatedUserInfo = {
+          ...loginRes,
+          nickname: nickname,
+          avatarUrl: avatarUrl
         }
+        
+        wx.setStorageSync('userInfo', updatedUserInfo)
+        app.globalData.userInfo = updatedUserInfo
+        
+        this.setData({
+          userInfo: updatedUserInfo,
+          showLoginModal: false
+        })
+        
+        wx.hideLoading()
+        wx.showToast({
+          title: '保存成功',
+          icon: 'success'
+        })
+        
+        // 重新加载最近房间
+        this.loadRecentRoom()
       } else {
         wx.hideLoading()
         wx.showToast({

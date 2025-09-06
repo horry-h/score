@@ -132,8 +132,8 @@ Page({
       
       let response;
       if (isNewUser) {
-        // 新用户登录
-        const loginRes = await app.login();
+        // 新用户登录，传入昵称和头像URL
+        const loginRes = await app.login(userInfo.nickname, userInfo.avatar_url);
         if (loginRes) {
           response = { code: 200, data: loginRes };
         } else {

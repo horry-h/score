@@ -23,27 +23,24 @@ App({
     }
   },
 
-  // 用户登录
-  async login() {
+  // 用户登录（不包含微信授权）
+  async login(nickname = '微信用户', avatarUrl = '') {
     try {
       // 获取微信登录code
       const loginRes = await this.wxLogin()
       if (!loginRes.code) {
         throw new Error('获取微信登录code失败')
       }
-
-      // 获取用户信息
-      const userInfo = await this.getUserInfo()
       
       // 调用后端登录接口
-      const response = await api.login(loginRes.code, userInfo.nickName, userInfo.avatarUrl)
+      const response = await api.login(loginRes.code, nickname, avatarUrl)
       
       if (response.code === 200) {
         // 保存用户信息到本地存储和全局数据
         const userData = {
           ...response.data,
-          nickName: userInfo.nickName,
-          avatarUrl: userInfo.avatarUrl
+          nickName: nickname,
+          avatarUrl: avatarUrl
         }
         
         wx.setStorageSync('userInfo', userData)
