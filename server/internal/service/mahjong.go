@@ -242,24 +242,15 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 			return &Response{Code: 500, Message: "获取房间信息失败"}, nil
 		}
 		
-		room := &Room{
-			Id:        roomID,
-			RoomCode:  roomCode,
-			RoomName:  roomName,
-			CreatorId: creatorId,
-			Status:    int32(status),
-			CreatedAt: createdAt.Unix(),
-			SettledAt: 0,
+		// 返回与正常加入房间相同的数据结构
+		roomData := map[string]interface{}{
+			"room_id":   roomID,
+			"room_code": roomCode,
 		}
 		
-		// 处理settled_at字段
-		if settledAt.Valid {
-			room.SettledAt = settledAt.Time.Unix()
-		}
-		
-		roomData, _ := json.Marshal(room)
-		fmt.Printf("已在房间中，返回房间数据: %s\n", string(roomData))
-		return &Response{Code: 200, Message: "已在房间中", Data: string(roomData)}, nil
+		data, _ := json.Marshal(roomData)
+		fmt.Printf("已在房间中，返回房间数据: %s\n", string(data))
+		return &Response{Code: 200, Message: "已在房间中", Data: string(data)}, nil
 	}
 
 	// 加入房间

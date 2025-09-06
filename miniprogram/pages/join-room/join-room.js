@@ -129,11 +129,11 @@ Page({
             
             roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
             console.log("已在房间中，解析后的房间数据:", roomData);
-            console.log("房间ID:", roomData.id, "类型:", typeof roomData.id);
+            console.log("房间ID:", roomData.room_id, "类型:", typeof roomData.room_id);
             
             // 检查房间ID是否有效
-            if (!roomData.id || roomData.id === 0) {
-              console.error("房间ID无效:", roomData.id);
+            if (!roomData.room_id || roomData.room_id === 0) {
+              console.error("房间ID无效:", roomData.room_id);
               wx.showToast({
                 title: '房间信息异常',
                 icon: 'none'
@@ -146,7 +146,7 @@ Page({
             
             // 直接跳转到房间页面
             setTimeout(() => {
-              const roomId = roomData.id;
+              const roomId = roomData.room_id;
               console.log("准备跳转到房间页面，roomId:", roomId);
               wx.redirectTo({
                 url: `/pages/room/room?roomId=${roomId}`,
