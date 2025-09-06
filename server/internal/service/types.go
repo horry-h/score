@@ -138,3 +138,7 @@ type GetRoomDetailRequest struct {
 	RoomId int64 `json:"room_id"`
 	UserId int64 `json:"user_id"`
 }
+
+type ValidateSessionRequest struct {
+	SessionID string `json:"session_id"`
+}

@@ -5,18 +5,18 @@
   </view>
 
   <view class="avatar-section">
-    <view class="avatar" bindtap="changeAvatar">
+    <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
       <image wx:if="{{userInfo.avatar_url}}" src="{{userInfo.avatar_url}}" class="avatar-image" mode="aspectFill"></image>
       <view wx:else class="avatar-placeholder">
         <text class="icon">👤</text>
       </view>
-    </view>
+    </button>
     <text class="avatar-hint">点击头像更换</text>
   </view>
 
   <view class="input-group">
     <label>昵称</label>
-    <input type="text" placeholder="请输入昵称" value="{{userInfo.nickname}}" bindinput="onNicknameInput" />
+    <input type="nickname" placeholder="请输入昵称" value="{{userInfo.nickname}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
   </view>
 
   <view class="input-group">

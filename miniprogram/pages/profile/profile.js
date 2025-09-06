@@ -54,35 +54,26 @@ Page({
     });
   },
 
-  // 更换头像
-  async changeAvatar() {
-    try {
-      const res = await new Promise((resolve, reject) => {
-        wx.chooseImage({
-          count: 1,
-          sizeType: ['compressed'],
-          sourceType: ['album', 'camera'],
-          success: resolve,
-          fail: reject
-        });
-      });
-      
-      // 这里应该上传图片到服务器，简化处理直接设置
-      this.setData({
-        'userInfo.avatar_url': res.tempFilePaths[0],
-      });
-      
-      wx.showToast({
-        title: '头像更新成功',
-        icon: 'success'
-      });
-    } catch (error) {
-      console.error('选择头像失败:', error);
-      wx.showToast({
-        title: '选择头像失败',
-        icon: 'none'
-      });
-    }
+  // 选择头像 - 使用微信官方组件
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail
+    this.setData({
+      'userInfo.avatar_url': avatarUrl
+    })
+    console.log('选择的头像:', avatarUrl)
+    wx.showToast({
+      title: '头像更新成功',
+      icon: 'success'
+    })
+  },
+
+  // 昵称输入完成
+  onNicknameBlur(e) {
+    const nickname = e.detail.value
+    this.setData({
+      'userInfo.nickname': nickname
+    })
+    console.log('输入的昵称:', nickname)
   },
 
   // 授权微信信息

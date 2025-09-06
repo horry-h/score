@@ -11,21 +11,33 @@ import (
 )
 
 type MahjongService struct {
-	db *sql.DB
+	db          *sql.DB
+	wechatService *WeChatService
 }
 
-func NewMahjongService(db *sql.DB) *MahjongService {
-	return &MahjongService{db: db}
+func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService {
+	return &MahjongService{
+		db:            db,
+		wechatService: wechatService,
+	}
 }
 
 // 用户登录
 func (s *MahjongService) Login(ctx context.Context, req *LoginRequest) (*Response, error) {
-	// 这里应该调用微信API获取openid，简化处理
-	openid := "mock_openid_" + strconv.Itoa(rand.Intn(10000))
+	// 通过微信code获取openid
+	wechatResp, err := s.wechatService.GetOpenID(req.Code)
+	if err != nil {
+		return &Response{Code: 500, Message: "获取微信用户信息失败: " + err.Error()}, nil
+	}
+	
+	openid := wechatResp.OpenID
+	if openid == "" {
+		return &Response{Code: 500, Message: "获取openid失败"}, nil
+	}
 	
 	// 检查用户是否存在
 	var userID int64
-	err := s.db.QueryRow("SELECT id FROM users WHERE openid = ?", openid).Scan(&userID)
+	err = s.db.QueryRow("SELECT id FROM users WHERE openid = ?", openid).Scan(&userID)
 	
 	if err == sql.ErrNoRows {
 		// 创建新用户
@@ -39,6 +51,15 @@ func (s *MahjongService) Login(ctx context.Context, req *LoginRequest) (*Respons
 		userID, _ = result.LastInsertId()
 	} else if err != nil {
 		return &Response{Code: 500, Message: "查询用户失败"}, nil
+	} else {
+		// 用户已存在，更新用户信息
+		_, err = s.db.Exec(`
+			UPDATE users SET nickname = ?, avatar_url = ?, updated_at = NOW() 
+			WHERE id = ?
+		`, req.Nickname, req.AvatarUrl, userID)
+		if err != nil {
+			return &Response{Code: 500, Message: "更新用户信息失败"}, nil
+		}
 	}
 
 	// 获取用户信息
@@ -56,7 +77,17 @@ func (s *MahjongService) Login(ctx context.Context, req *LoginRequest) (*Respons
 	user.CreatedAt = createdAt.Unix()
 	user.UpdatedAt = updatedAt.Unix()
 
-	userData, _ := json.Marshal(user)
+	// 生成自定义登录态
+	customSession := s.wechatService.GenerateCustomSession(userID, openid)
+	
+	// 创建登录响应数据
+	loginData := map[string]interface{}{
+		"user":       user,
+		"session_id": customSession.SessionID,
+		"expires_at": customSession.ExpiresAt.Unix(),
+	}
+	
+	userData, _ := json.Marshal(loginData)
 	return &Response{Code: 200, Message: "登录成功", Data: string(userData)}, nil
 }
 
@@ -72,6 +103,42 @@ func (s *MahjongService) UpdateUser(ctx context.Context, req *UpdateUserRequest)
 	}
 
 	return &Response{Code: 200, Message: "更新成功"}, nil
+}
+
+// 验证登录态
+func (s *MahjongService) ValidateSession(ctx context.Context, sessionID string) (*Response, error) {
+	if sessionID == "" {
+		return &Response{Code: 401, Message: "未登录"}, nil
+	}
+	
+	// 验证自定义登录态
+	customSession, err := s.wechatService.ValidateCustomSession(sessionID)
+	if err != nil {
+		return &Response{Code: 401, Message: "登录态无效"}, nil
+	}
+	
+	// 检查是否过期
+	if time.Now().After(customSession.ExpiresAt) {
+		return &Response{Code: 401, Message: "登录态已过期"}, nil
+	}
+	
+	// 获取用户信息
+	user := &User{}
+	var createdAt, updatedAt time.Time
+	err = s.db.QueryRow(`
+		SELECT id, openid, nickname, avatar_url, created_at, updated_at 
+		FROM users WHERE id = ?
+	`, customSession.UserID).Scan(&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, &createdAt, &updatedAt)
+	
+	if err != nil {
+		return &Response{Code: 404, Message: "用户不存在"}, nil
+	}
+	
+	user.CreatedAt = createdAt.Unix()
+	user.UpdatedAt = updatedAt.Unix()
+	
+	userData, _ := json.Marshal(user)
+	return &Response{Code: 200, Message: "验证成功", Data: string(userData)}, nil
 }
 
 // 获取用户信息

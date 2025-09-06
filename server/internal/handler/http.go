@@ -14,9 +14,9 @@ type HTTPHandler struct {
 	service *service.MahjongService
 }
 
-func NewHTTPHandler(db *sql.DB) *HTTPHandler {
+func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandler {
 	return &HTTPHandler{
-		service: service.NewMahjongService(db),
+		service: service.NewMahjongService(db, wechatService),
 	}
 }
 
@@ -56,6 +56,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.handleGetRecentRoom(w, r)
 	case r.Method == "GET" && path == "health":
 		h.handleHealth(w, r)
+	case r.Method == "POST" && path == "validateSession":
+		h.handleValidateSession(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -426,6 +428,24 @@ func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
 			"timestamp":  "2025-09-05T01:25:00Z",
 		},
 	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// 验证登录态
+func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Request) {
+	var req service.ValidateSessionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	response, err := h.service.ValidateSession(r.Context(), req.SessionID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }

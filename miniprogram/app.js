@@ -1,5 +1,6 @@
 // app.js
 const api = require('./utils/api')
+const eventBus = require('./utils/eventBus')
 
 App({
   onLaunch() {
@@ -36,15 +37,24 @@ App({
       const response = await api.login(loginRes.code, nickname, avatarUrl)
       
       if (response.code === 200) {
+        // 解析登录响应数据
+        const loginData = JSON.parse(response.data)
+        const user = loginData.user
+        const sessionID = loginData.session_id
+        const expiresAt = loginData.expires_at
+        
         // 保存用户信息到本地存储和全局数据
         const userData = {
-          ...response.data,
-          user_id: response.data.id, // 添加user_id字段，使用后端返回的id
+          ...user,
+          user_id: user.id, // 添加user_id字段，使用后端返回的id
           nickName: nickname,
-          avatarUrl: avatarUrl
+          avatarUrl: avatarUrl,
+          session_id: sessionID,
+          expires_at: expiresAt
         }
         
         wx.setStorageSync('userInfo', userData)
+        wx.setStorageSync('sessionID', sessionID)
         this.globalData.userInfo = userData
         
         return userData
@@ -107,10 +117,42 @@ App({
               // 用户点击"知道了"，标记已显示过欢迎弹窗
               wx.setStorageSync('hasShownWelcome', true)
               console.log('用户已了解需要完善个人信息')
+              
+              // 立即显示个人信息浮窗让用户填写昵称和头像
+              // 通过全局事件通知首页显示个人信息浮窗
+              eventBus.emit('showProfileModal')
             }
           }
         })
       }, 1000) // 延迟1秒显示，让首页先加载完成
+    }
+  },
+
+  // 验证登录态
+  async validateSession() {
+    try {
+      const sessionID = wx.getStorageSync('sessionID')
+      if (!sessionID) {
+        return false
+      }
+      
+      const response = await api.validateSession(sessionID)
+      if (response.code === 200) {
+        // 更新用户信息
+        const userData = JSON.parse(response.data)
+        this.globalData.userInfo = userData
+        wx.setStorageSync('userInfo', userData)
+        return true
+      } else {
+        // 登录态无效，清除本地数据
+        wx.removeStorageSync('sessionID')
+        wx.removeStorageSync('userInfo')
+        this.globalData.userInfo = null
+        return false
+      }
+    } catch (error) {
+      console.error('验证登录态失败:', error)
+      return false
     }
   },
 

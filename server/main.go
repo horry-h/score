@@ -9,6 +9,7 @@ import (
 	"mahjong-server/internal/config"
 	"mahjong-server/internal/database"
 	"mahjong-server/internal/handler"
+	"mahjong-server/internal/service"
 )
 
 func main() {
@@ -22,8 +23,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// 创建微信服务
+	wechatService := service.NewWeChatService(cfg.WeChat.AppID, cfg.WeChat.AppSecret)
+
 	// 创建HTTP处理器
-	httpHandler := handler.NewHTTPHandler(db)
+	httpHandler := handler.NewHTTPHandler(db, wechatService)
 
 	// 添加CORS支持
 	corsHandler := func(h http.Handler) http.Handler {

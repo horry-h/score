@@ -29,6 +29,26 @@
   overflow: hidden;
 }
 
+.avatar-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20rpx;
+  overflow: hidden;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
 .avatar-image {
   width: 100%;
   height: 100%;

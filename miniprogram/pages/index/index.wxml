@@ -89,15 +89,15 @@
       <view class="login-form">
         <view class="form-item">
           <text class="form-label">昵称</text>
-          <input class="form-input" placeholder="请输入昵称" value="{{loginForm.nickname}}" bindinput="onNicknameInput" />
+          <input class="form-input" type="nickname" placeholder="请输入昵称" value="{{loginForm.nickname}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
         </view>
         
         <view class="form-item">
           <text class="form-label">头像</text>
-          <view class="avatar-upload" bindtap="chooseAvatar">
+          <button class="avatar-upload-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
             <image class="avatar-preview" src="{{loginForm.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
-            <text class="upload-hint">点击更换头像</text>
-          </view>
+            <text class="upload-hint">点击选择头像</text>
+          </button>
         </view>
       </view>
       
@@ -107,6 +107,56 @@
           <text class="btn-text">授权微信信息</text>
         </button>
         <button class="login-btn save" bindtap="saveUserInfo">
+          <text class="btn-icon">💾</text>
+          <text class="btn-text">保存信息</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 个人信息浮窗 -->
+  <view class="profile-modal" wx:if="{{showProfileModal}}">
+    <view class="profile-modal-content" catchtap="stopPropagation">
+      <view class="profile-modal-header">
+        <text class="profile-modal-title">完善个人信息</text>
+        <view class="profile-modal-close" catchtap="hideProfileModal">
+          <text class="close-icon">×</text>
+        </view>
+      </view>
+      
+      <view class="profile-modal-body">
+        <view class="form-group">
+          <text class="form-label">昵称</text>
+          <input 
+            class="form-input" 
+            type="nickname" 
+            placeholder="请输入昵称" 
+            value="{{profileForm.nickname}}"
+            bindinput="onProfileNicknameInput"
+            bindblur="onProfileNicknameBlur"
+          />
+        </view>
+        
+        <view class="form-group">
+          <text class="form-label">头像</text>
+          <view class="avatar-section">
+            <button class="avatar-upload-btn" open-type="chooseAvatar" bind:chooseavatar="onProfileChooseAvatar">
+              <image 
+                wx:if="{{profileForm.avatarUrl}}" 
+                src="{{profileForm.avatarUrl}}" 
+                class="avatar-image"
+              />
+              <text wx:else class="avatar-placeholder">点击选择头像</text>
+            </button>
+          </view>
+        </view>
+      </view>
+      
+      <view class="profile-modal-footer">
+        <button class="cancel-btn" catchtap="hideProfileModal">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="save-btn" catchtap="saveProfileInfo">
           <text class="btn-icon">💾</text>
           <text class="btn-text">保存信息</text>
         </button>

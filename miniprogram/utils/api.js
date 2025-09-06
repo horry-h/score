@@ -133,6 +133,15 @@ class ApiService {
   async getRecentRoom(userId) {
     return this.request(`/api/v1/getRecentRoom?user_id=${userId}`);
   }
+
+  async validateSession(sessionID) {
+    return this.request('/api/v1/validateSession', {
+      method: 'POST',
+      data: {
+        session_id: sessionID,
+      },
+    });
+  }
 }
 
 // 创建单例实例
