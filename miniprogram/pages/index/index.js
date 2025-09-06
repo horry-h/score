@@ -489,20 +489,64 @@ Page({
   },
 
   // 显示个人信息浮窗
-  showProfileModal() {
-    // 获取当前用户信息
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
-    
-    this.setData({
-      showProfileModal: true,
-      profileForm: {
-        nickname: userInfo.nickName || userInfo.nickname || '微信用户',
-        avatarUrl: userInfo.avatarUrl || ''
+  async showProfileModal() {
+    try {
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+      console.log('本地用户信息:', userInfo)
+      
+      // 从后端获取完整的用户信息（包含openid）
+      if (userInfo.user_id) {
+        wx.showLoading({ title: '加载中...' })
+        const response = await api.getUser(userInfo.user_id)
+        wx.hideLoading()
+        
+        if (response.code === 200) {
+          const fullUserInfo = JSON.parse(response.data)
+          console.log('从后端获取的完整用户信息:', fullUserInfo)
+          
+          // 更新本地存储的用户信息
+          const updatedUserInfo = {
+            ...userInfo,
+            ...fullUserInfo,
+            openid: fullUserInfo.openid || fullUserInfo.Openid
+          }
+          app.globalData.userInfo = updatedUserInfo
+          wx.setStorageSync('userInfo', updatedUserInfo)
+          
+          this.setData({
+            showProfileModal: true,
+            profileForm: {
+              nickname: fullUserInfo.nickname || '微信用户',
+              avatarUrl: fullUserInfo.avatar_url || ''
+            }
+          })
+          return
+        }
       }
-    })
-    
-    console.log('显示个人信息浮窗，当前用户信息:', userInfo)
-    console.log('profileForm数据:', this.data.profileForm)
+      
+      // 如果无法从后端获取，使用本地信息
+      this.setData({
+        showProfileModal: true,
+        profileForm: {
+          nickname: userInfo.nickName || userInfo.nickname || '微信用户',
+          avatarUrl: userInfo.avatarUrl || ''
+        }
+      })
+      console.log('使用本地用户信息显示浮窗:', userInfo)
+    } catch (error) {
+      wx.hideLoading()
+      console.error('获取用户信息失败:', error)
+      
+      // 出错时使用本地信息
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+      this.setData({
+        showProfileModal: true,
+        profileForm: {
+          nickname: userInfo.nickName || userInfo.nickname || '微信用户',
+          avatarUrl: userInfo.avatarUrl || ''
+        }
+      })
+    }
   },
 
   // 隐藏个人信息浮窗
