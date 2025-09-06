@@ -605,14 +605,21 @@ Page({
   },
 
   // 昵称输入
-  onNicknameInput(e) {
+  onProfileNicknameInput(e) {
+    this.setData({
+      'profileForm.nickname': e.detail.value
+    })
+  },
+
+  // 昵称失焦
+  onProfileNicknameBlur(e) {
     this.setData({
       'profileForm.nickname': e.detail.value
     })
   },
 
   // 保存个人信息
-  async saveProfile() {
+  async saveProfileInfo() {
     const { nickname, avatarUrl } = this.data.profileForm
     if (!nickname || nickname.trim() === '') {
       wx.showToast({
