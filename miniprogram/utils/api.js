@@ -55,6 +55,12 @@ class ApiService {
     });
   }
 
+  async getUserInfo(userId) {
+    return this.request(`/api/v1/getUser?user_id=${userId}`, {
+      method: 'GET',
+    });
+  }
+
   async updateUser(userId, nickname, avatarUrl) {
     return this.request('/api/v1/updateUser', {
       method: 'POST',

@@ -41,12 +41,83 @@ Page({
   },
 
   // 加载用户信息
-  loadUserInfo() {
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
-    if (userInfo) {
-      this.setData({
-        userInfo: userInfo
-      })
+  async loadUserInfo() {
+    try {
+      // 首先尝试从本地存储获取用户ID
+      const localUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      
+      if (localUserInfo && localUserInfo.user_id) {
+        // 从数据库获取最新的用户信息
+        const response = await api.getUserInfo(localUserInfo.user_id)
+        
+        if (response.code === 200 && response.data) {
+          let userData;
+          try {
+            userData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          } catch (error) {
+            console.error('解析用户数据失败:', error)
+            userData = response.data;
+          }
+          
+          // 使用数据库中的信息，如果没有则使用默认值
+          const updatedUserInfo = {
+            user_id: localUserInfo.user_id,
+            nickName: userData.nickname || '微信用户',
+            avatarUrl: userData.avatar_url || '/images/default-avatar.png'
+          }
+          
+          // 更新本地存储和全局数据
+          app.globalData.userInfo = updatedUserInfo
+          wx.setStorageSync('userInfo', updatedUserInfo)
+          
+          this.setData({
+            userInfo: updatedUserInfo
+          })
+          
+          console.log('从数据库加载用户信息成功:', updatedUserInfo)
+          return
+        }
+      }
+      
+      // 如果数据库中没有数据，使用本地存储的信息或默认值
+      if (localUserInfo) {
+        this.setData({
+          userInfo: {
+            user_id: localUserInfo.user_id,
+            nickName: localUserInfo.nickName || '微信用户',
+            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png'
+          }
+        })
+      } else {
+        // 完全没有用户信息，显示默认值
+        this.setData({
+          userInfo: {
+            nickName: '微信用户',
+            avatarUrl: '/images/default-avatar.png'
+          }
+        })
+      }
+    } catch (error) {
+      console.error('加载用户信息失败:', error)
+      
+      // 出错时使用本地存储的信息或默认值
+      const localUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      if (localUserInfo) {
+        this.setData({
+          userInfo: {
+            user_id: localUserInfo.user_id,
+            nickName: localUserInfo.nickName || '微信用户',
+            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png'
+          }
+        })
+      } else {
+        this.setData({
+          userInfo: {
+            nickName: '微信用户',
+            avatarUrl: '/images/default-avatar.png'
+          }
+        })
+      }
     }
   },
 
@@ -106,10 +177,14 @@ Page({
     }
   },
 
-  // 跳转到个人信息页面
+  // 显示个人信息浮窗
   goToProfile() {
-    wx.navigateTo({
-      url: '/pages/profile/profile'
+    this.setData({
+      showProfileModal: true,
+      profileForm: {
+        nickname: this.data.userInfo.nickName || '微信用户',
+        avatarUrl: this.data.userInfo.avatarUrl || ''
+      }
     })
   },
 
