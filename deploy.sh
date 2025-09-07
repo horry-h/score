@@ -1,295 +1,202 @@
 #!/bin/bash
 
-# 麻将记分小程序一键部署脚本
-# 腾讯云服务器: 124.156.196.117
-# 使用方法: ./deploy.sh
+# 麻将记分服务一键部署脚本
+# 自动安装所有依赖并启动服务
 
 set -e
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+echo "=== 麻将记分服务一键部署 ==="
 
-# 配置
-SERVER_IP="124.156.196.117"
-PROJECT_DIR="/root/horry/score"
-SERVICE_NAME="score-server"
-DB_NAME="mahjong_score"
-DB_USER="root"
-DB_PASS="123456"
-
-echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  麻将记分小程序一键部署${NC}"
-echo -e "${BLUE}  服务器: ${SERVER_IP}${NC}"
-echo -e "${BLUE}========================================${NC}"
-
-# 检查root权限
+# 检查是否以root权限运行
 if [ "$EUID" -ne 0 ]; then
-    echo -e "${RED}请使用root用户运行此脚本${NC}"
+    echo "请以root权限运行此脚本"
     exit 1
 fi
 
-# 检查是否在正确的项目目录
-if [ ! -f "deploy.sh" ] || [ ! -d "server" ]; then
-    echo -e "${RED}错误: 请在项目根目录运行此脚本${NC}"
-    echo -e "${YELLOW}当前目录: $(pwd)${NC}"
-    echo -e "${YELLOW}请确保目录包含 deploy.sh 和 server/ 目录${NC}"
-    exit 1
-fi
+# 1. 更新系统包
+echo "1. 更新系统包..."
+apt update -y
 
-echo -e "${GREEN}检测到项目目录: $(pwd)${NC}"
-
-# 1. 更新系统并安装必要软件
-echo -e "${YELLOW}[1/5] 检查并安装必要软件...${NC}"
-
-# 检查并安装git
-if ! command -v git &> /dev/null; then
-    echo -e "${BLUE}安装git...${NC}"
-    apt update -y
-    apt install -y git
-else
-    echo -e "${GREEN}git已安装${NC}"
-fi
-
-# 检查并安装MySQL
-if ! command -v mysql &> /dev/null; then
-    echo -e "${BLUE}安装MySQL...${NC}"
-    apt update -y
-    apt install -y mysql-server
-else
-    echo -e "${GREEN}MySQL已安装${NC}"
-fi
-
-# 2. 安装Go
-echo -e "${YELLOW}[2/5] 检查并安装Go环境...${NC}"
+# 2. 安装Go环境
+echo "2. 安装Go环境..."
 if ! command -v go &> /dev/null; then
-    echo -e "${BLUE}安装Go 1.21.5...${NC}"
-    cd /tmp
+    echo "安装Go 1.21..."
     wget -q https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
     tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
     export PATH=$PATH:/usr/local/go/bin
     rm go1.21.5.linux-amd64.tar.gz
-    cd - > /dev/null  # 返回原目录
-    echo -e "${GREEN}Go安装完成${NC}"
+    echo "✅ Go安装完成"
 else
-    echo -e "${GREEN}Go已安装: $(go version)${NC}"
+    GO_VERSION=$(go version | awk '{print $3}' | sed 's/go//')
+    echo "✅ Go已安装，版本: $GO_VERSION"
 fi
 
-# 3. 配置MySQL
-echo -e "${YELLOW}[3/5] 配置数据库...${NC}"
-
-# 启动MySQL服务
-systemctl start mysql
-systemctl enable mysql
-
-# 检查数据库是否已存在
-DB_EXISTS=$(mysql -u ${DB_USER} -p${DB_PASS} -e "SHOW DATABASES LIKE '${DB_NAME}';" 2>/dev/null | grep -c "${DB_NAME}" || echo "0")
-
-if [ "$DB_EXISTS" -eq 0 ]; then
-    echo -e "${BLUE}创建数据库...${NC}"
-    mysql -u ${DB_USER} -p${DB_PASS} -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
-    echo -e "${GREEN}数据库创建完成${NC}"
+# 3. 安装MySQL
+echo "3. 安装MySQL..."
+if ! command -v mysql &> /dev/null; then
+    echo "安装MySQL..."
+    apt install -y mysql-server
+    systemctl start mysql
+    systemctl enable mysql
+    
+    # 配置MySQL root密码
+    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';"
+    mysql -e "FLUSH PRIVILEGES;"
+    echo "✅ MySQL安装完成"
 else
-    echo -e "${GREEN}数据库已存在${NC}"
+    echo "✅ MySQL已安装"
 fi
 
-# 4. 配置环境变量
-echo -e "${YELLOW}[4/5] 配置环境变量...${NC}"
-
-# 检查.env文件是否已存在
-if [ -f ".env" ]; then
-    echo -e "${GREEN}环境配置文件已存在，跳过创建${NC}"
+# 4. 安装Nginx
+echo "4. 安装Nginx..."
+if ! command -v nginx &> /dev/null; then
+    echo "安装Nginx..."
+    apt install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+    echo "✅ Nginx安装完成"
 else
-    echo -e "${BLUE}创建环境配置文件...${NC}"
-    cat > .env << EOF
-# 数据库配置
-DB_HOST=localhost
-DB_PORT=3306
-DB_USERNAME=${DB_USER}
-DB_PASSWORD=${DB_PASS}
-DB_DATABASE=${DB_NAME}
+    echo "✅ Nginx已安装"
+fi
 
-# 服务端口配置
-HTTP_PORT=8080
-SERVER_HOST=0.0.0.0
-SERVER_PUBLIC_IP=${SERVER_IP}
+# 5. 安装其他依赖
+echo "5. 安装其他依赖..."
+apt install -y curl wget net-tools
 
-# 微信小程序配置
-WECHAT_APPID=your_wechat_appid
-WECHAT_APPSECRET=your_wechat_appsecret
+# 6. 配置MySQL数据持久化
+echo "6. 配置MySQL数据持久化..."
+cat >> /etc/mysql/mysql.conf.d/mysqld.cnf << 'EOF'
 
-# 环境配置
-ENV=production
+# 数据持久化配置
+[mysqld]
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method = O_DIRECT
+sync_binlog = 1
+innodb_file_per_table = 1
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+default-time-zone = '+8:00'
 EOF
-    echo -e "${GREEN}环境配置文件创建完成${NC}"
-fi
 
-# 5. 构建和部署应用
-echo -e "${YELLOW}[5/5] 构建和部署应用...${NC}"
+systemctl restart mysql
+echo "✅ MySQL配置完成"
 
-# 进入server目录
+# 7. 创建数据库
+echo "7. 创建数据库..."
+mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS mahjong_score DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
+    echo "❌ 数据库创建失败，请检查MySQL配置"
+    exit 1
+}
+mysql -u root -p123456 mahjong_score < server/database.sql
+echo "✅ 数据库创建完成"
+
+# 8. 配置Nginx
+echo "8. 配置Nginx..."
+cat > /etc/nginx/sites-available/aipaint.cloud << 'EOF'
+server {
+    listen 80;
+    server_name www.aipaint.cloud aipaint.cloud;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name www.aipaint.cloud aipaint.cloud;
+
+    # SSL证书配置（需要手动上传证书文件）
+    ssl_certificate /etc/ssl/certs/aipaint.cloud.crt;
+    ssl_certificate_key /etc/ssl/private/aipaint.cloud.key;
+    
+    # SSL配置
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # 反向代理到Go服务
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+ln -sf /etc/nginx/sites-available/aipaint.cloud /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+echo "✅ Nginx配置完成"
+
+# 9. 构建Go应用
+echo "9. 构建Go应用..."
 cd server
-
-# 下载依赖
-export PATH=$PATH:/usr/local/go/bin
-echo -e "${BLUE}更新Go依赖...${NC}"
 go mod tidy
+go build -o mahjong-server .
+cp mahjong-server /usr/local/bin/
+chmod +x /usr/local/bin/mahjong-server
+echo "✅ Go应用构建完成"
 
-# 构建应用
-echo -e "${BLUE}构建应用...${NC}"
-go build -o mahjong-server main.go
-
-# 初始化数据库（只在首次部署时执行）
-if [ -f "database.sql" ]; then
-    echo -e "${BLUE}检查数据库表结构...${NC}"
-    TABLE_COUNT=$(mysql -u ${DB_USER} -p${DB_PASS} ${DB_NAME} -e "SHOW TABLES;" 2>/dev/null | wc -l || echo "0")
-    if [ "$TABLE_COUNT" -le 1 ]; then
-        echo -e "${BLUE}初始化数据库表结构...${NC}"
-        mysql -u ${DB_USER} -p${DB_PASS} ${DB_NAME} < database.sql 2>/dev/null || true
-        echo -e "${GREEN}数据库表结构初始化完成${NC}"
-    else
-        echo -e "${GREEN}数据库表结构已存在，跳过初始化${NC}"
-    fi
-fi
-
-# 返回项目根目录
-cd ..
-
-# 创建或更新systemd服务
-echo -e "${BLUE}配置系统服务...${NC}"
-cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
+# 10. 配置systemd服务
+echo "10. 配置systemd服务..."
+cat > /etc/systemd/system/mahjong-server.service << 'EOF'
 [Unit]
-Description=Score Server
+Description=Mahjong Score Server
 After=network.target mysql.service
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=$(pwd)/server
-ExecStart=$(pwd)/server/mahjong-server
+WorkingDirectory=/root/horry/score/server
+ExecStart=/usr/local/bin/mahjong-server
 Restart=always
 RestartSec=5
-Environment=ENV=production
+Environment=GIN_MODE=release
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# 重载systemd配置并启动服务
 systemctl daemon-reload
-systemctl enable ${SERVICE_NAME}
+systemctl enable mahjong-server
+echo "✅ systemd服务配置完成"
 
-# 检查服务是否已在运行
-if systemctl is-active --quiet ${SERVICE_NAME}; then
-    echo -e "${GREEN}服务已在运行，重启服务...${NC}"
-    systemctl restart ${SERVICE_NAME}
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}服务重启成功${NC}"
-    else
-        echo -e "${RED}服务重启失败${NC}"
-        echo -e "${BLUE}查看错误日志:${NC}"
-        journalctl -u ${SERVICE_NAME} -n 10 --no-pager
-        exit 1
-    fi
+# 11. 启动服务
+echo "11. 启动服务..."
+systemctl start mahjong-server
+sleep 3
+
+if systemctl is-active --quiet mahjong-server; then
+    echo "✅ 服务启动成功"
 else
-    echo -e "${BLUE}启动服务...${NC}"
-    systemctl start ${SERVICE_NAME}
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}服务启动成功${NC}"
-    else
-        echo -e "${RED}服务启动失败${NC}"
-        echo -e "${BLUE}查看错误日志:${NC}"
-        journalctl -u ${SERVICE_NAME} -n 10 --no-pager
-        exit 1
-    fi
-fi
-
-# 配置防火墙（只在首次部署时配置）
-echo -e "${BLUE}配置防火墙...${NC}"
-if command -v ufw &> /dev/null; then
-    if ! ufw status | grep -q "8080"; then
-        ufw allow 22 2>/dev/null || true
-        ufw allow 80 2>/dev/null || true
-        ufw allow 8080 2>/dev/null || true
-        ufw --force enable 2>/dev/null || true
-        echo -e "${GREEN}UFW防火墙配置完成${NC}"
-    else
-        echo -e "${GREEN}UFW防火墙已配置，跳过${NC}"
-    fi
-else
-    echo -e "${YELLOW}UFW未安装，尝试使用iptables配置防火墙...${NC}"
-    # 使用iptables配置防火墙
-    iptables -I INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null || true
-    iptables -I INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || true
-    iptables -I INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null || true
-    echo -e "${GREEN}iptables防火墙配置完成${NC}"
-fi
-
-# 等待服务启动
-echo -e "${BLUE}等待服务启动...${NC}"
-sleep 5
-
-# 验证部署
-echo -e "${BLUE}验证部署结果...${NC}"
-
-# 检查服务状态
-if systemctl is-active --quiet ${SERVICE_NAME}; then
-    echo -e "${GREEN}✅ 服务运行状态正常${NC}"
-else
-    echo -e "${RED}❌ 服务未运行${NC}"
-    echo -e "${BLUE}服务状态:${NC}"
-    systemctl status ${SERVICE_NAME} --no-pager
-    echo -e "${BLUE}查看详细日志:${NC}"
-    journalctl -u ${SERVICE_NAME} -n 20 --no-pager
+    echo "❌ 服务启动失败"
+    systemctl status mahjong-server --no-pager
     exit 1
 fi
 
-# 检查端口监听
-echo -e "${BLUE}检查端口监听...${NC}"
-if ss -tuln | grep ":8080" &> /dev/null; then
-    echo -e "${GREEN}✅ 端口8080正在监听${NC}"
+# 12. 测试服务
+echo "12. 测试服务..."
+sleep 2
+if curl -s http://127.0.0.1:8080/health > /dev/null; then
+    echo "✅ 服务健康检查通过"
 else
-    echo -e "${RED}❌ 端口8080未监听${NC}"
-    echo -e "${BLUE}当前监听的端口:${NC}"
-    ss -tuln | grep LISTEN
-    echo -e "${BLUE}查看服务日志:${NC}"
-    journalctl -u ${SERVICE_NAME} -n 10 --no-pager
-    exit 1
+    echo "⚠️  服务健康检查失败，但服务可能仍在启动中"
 fi
 
-# 测试健康检查
-echo -e "${BLUE}测试API健康检查...${NC}"
-HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/health)
-if [ "$HEALTH_RESPONSE" -eq 200 ]; then
-    echo -e "${GREEN}✅ API健康检查通过 (HTTP $HEALTH_RESPONSE)${NC}"
-    echo -e "${BLUE}API响应内容:${NC}"
-    curl -s http://localhost:8080/api/v1/health | head -3
-    
-    echo -e "${GREEN}========================================${NC}"
-    echo -e "${GREEN}  部署成功！${NC}"
-    echo -e "${GREEN}========================================${NC}"
-    echo -e "${BLUE}服务信息：${NC}"
-    echo -e "  API地址: http://${SERVER_IP}:8080"
-    echo -e "  健康检查: http://${SERVER_IP}:8080/api/v1/health"
-    echo -e "  服务状态: $(systemctl is-active ${SERVICE_NAME})"
-    echo -e "  项目目录: $(pwd)"
-    echo -e ""
-    echo -e "${BLUE}常用命令：${NC}"
-    echo -e "  查看状态: systemctl status ${SERVICE_NAME}"
-    echo -e "  查看日志: journalctl -u ${SERVICE_NAME} -f"
-    echo -e "  重启服务: systemctl restart ${SERVICE_NAME}"
-    echo -e "  更新代码: cd $(pwd) && git pull && systemctl restart ${SERVICE_NAME}"
-else
-    echo -e "${RED}❌ API健康检查失败 (HTTP $HEALTH_RESPONSE)${NC}"
-    echo -e "${BLUE}尝试获取错误信息:${NC}"
-    curl -v http://localhost:8080/api/v1/health 2>&1 | head -10
-    echo -e "${BLUE}查看服务日志:${NC}"
-    journalctl -u ${SERVICE_NAME} -n 10 --no-pager
-    exit 1
-fi
-
-echo -e "${GREEN}部署完成！${NC}"
+echo ""
+echo "=== 部署完成 ==="
+echo "✅ 麻将记分服务部署成功"
+echo "📊 服务地址: https://www.aipaint.cloud"
+echo "📝 日志目录: /root/horry/score/server/logs"
+echo ""
+echo "⚠️  注意: 需要手动配置SSL证书文件:"
+echo "   - 证书文件: /etc/ssl/certs/aipaint.cloud.crt"
+echo "   - 私钥文件: /etc/ssl/private/aipaint.cloud.key"
+echo ""
+echo "🔧 管理命令:"
+echo "   - 重启服务: ./restart.sh"
+echo "   - 停止服务: ./stop.sh"
+echo "   - 查看日志: tail -f /root/horry/score/server/logs/log_*.log"
