@@ -256,16 +256,16 @@ if [ ! -f "/etc/systemd/system/mahjong-server.service" ]; then
     SERVICE_USER=$(grep "^SERVICE_USER=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "root")
     SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
     
-    cat > /etc/systemd/system/$SERVICE_NAME.service << EOF
+    cat > /etc/systemd/system/$SERVICE_NAME.service << 'EOF'
 [Unit]
 Description=Mahjong Score Server
 After=network.target mysql.service
 
 [Service]
 Type=simple
-User=$SERVICE_USER
-WorkingDirectory=$SERVICE_WORK_DIR
-ExecStart=/usr/local/bin/$SERVICE_NAME
+User=ROOT_USER
+WorkingDirectory=WORK_DIR
+ExecStart=/usr/local/bin/SERVICE_NAME
 Restart=always
 RestartSec=5
 Environment=GIN_MODE=release
@@ -273,6 +273,12 @@ Environment=GIN_MODE=release
 [Install]
 WantedBy=multi-user.target
 EOF
+    
+    # 替换占位符
+    sed -i.bak "s/SERVICE_NAME/$SERVICE_NAME/g" /etc/systemd/system/$SERVICE_NAME.service
+    sed -i.bak "s/ROOT_USER/$SERVICE_USER/g" /etc/systemd/system/$SERVICE_NAME.service
+    sed -i.bak "s|WORK_DIR|$SERVICE_WORK_DIR|g" /etc/systemd/system/$SERVICE_NAME.service
+    rm -f /etc/systemd/system/$SERVICE_NAME.service.bak
     echo "✅ systemd服务配置创建完成"
 else
     echo "✅ systemd服务配置已存在，跳过创建"
