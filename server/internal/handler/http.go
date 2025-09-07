@@ -87,6 +87,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// WebSocket连接处理
 	if r.URL.Path == "/ws" {
+		logger.Info("匹配到WebSocket路由", "path", r.URL.Path)
 		// WebSocket升级需要直接使用原始的ResponseWriter，不能使用包装器
 		h.wsHandler.HandleWebSocket(w, r)
 		return

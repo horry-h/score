@@ -159,6 +159,9 @@ func NewWebSocketHandler(hub *Hub) *WebSocketHandler {
 func (h *WebSocketHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	logger.Info("WebSocket连接请求", "path", r.URL.Path, "query", r.URL.RawQuery)
 	
+	// 检查ResponseWriter类型
+	logger.Info("ResponseWriter类型", "type", fmt.Sprintf("%T", w))
+	
 	// 从查询参数获取房间ID和用户ID
 	roomIDStr := r.URL.Query().Get("room_id")
 	userIDStr := r.URL.Query().Get("user_id")
