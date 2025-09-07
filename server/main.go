@@ -77,6 +77,12 @@ func main() {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 			
+			// WebSocket请求跳过CORS处理
+			if r.URL.Path == "/ws" {
+				h.ServeHTTP(w, r)
+				return
+			}
+			
 			// 设置CORS头
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
