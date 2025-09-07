@@ -174,6 +174,9 @@ Page({
   onUnload() {
     // 断开WebSocket连接
     this.disconnectWebSocket();
+    
+    // 清理缓存，释放内存
+    this.cleanupCache();
   },
 
   // 加载房间数据
@@ -372,6 +375,14 @@ Page({
             transfersData = [];
           }
           
+          // 使用缓存管理函数限制记录数量
+          const maxCacheSize = 100;
+          if (transfersData && transfersData.length > maxCacheSize) {
+            // 保留最新的100条记录
+            transfersData = transfersData.slice(-maxCacheSize);
+            console.log('全量获取时限制缓存为', maxCacheSize, '条记录');
+          }
+          
           // 更新lastTransferId，用于后续增量更新
           let lastTransferId = 0;
           if (transfersData && transfersData.length > 0) {
@@ -405,6 +416,47 @@ Page({
     }
   },
 
+  // 清理缓存
+  cleanupCache() {
+    console.log('清理缓存数据');
+    this.setData({
+      transfers: [],
+      lastTransferId: 0,
+    });
+  },
+
+  // 缓存管理：合并流水记录并限制缓存大小
+  mergeAndLimitTransfers(currentTransfers, newTransfers, maxCacheSize = 100) {
+    // 合并所有记录
+    const allTransfers = [...currentTransfers, ...newTransfers];
+    
+    // 去重：基于ID去重，保留最新的记录
+    const uniqueTransfers = [];
+    const seenIds = new Set();
+    
+    // 按ID降序排序，确保最新的记录在前面
+    allTransfers.sort((a, b) => b.id - a.id);
+    
+    for (const transfer of allTransfers) {
+      if (!seenIds.has(transfer.id)) {
+        seenIds.add(transfer.id);
+        uniqueTransfers.push(transfer);
+      }
+    }
+    
+    // 限制缓存大小，保留最新的记录
+    let finalTransfers = uniqueTransfers;
+    if (uniqueTransfers.length > maxCacheSize) {
+      finalTransfers = uniqueTransfers.slice(0, maxCacheSize);
+      console.log('缓存已满，保留最新', maxCacheSize, '条记录');
+    }
+    
+    // 按ID升序排序，确保显示顺序正确（最新的在底部）
+    finalTransfers.sort((a, b) => a.id - b.id);
+    
+    return finalTransfers;
+  },
+
   // 增量更新流水记录
   async updateTransfersIncremental() {
     if (!this.data.roomId || !this.data.lastTransferId) {
@@ -427,12 +479,14 @@ Page({
         if (newTransfers && newTransfers.length > 0) {
           console.log('获取到新的流水记录:', newTransfers.length, '条');
           
-          // 合并新的流水记录到现有列表中
+          // 使用缓存管理函数合并和限制记录
           const currentTransfers = this.data.transfers || [];
-          const updatedTransfers = [...currentTransfers, ...newTransfers];
+          const updatedTransfers = this.mergeAndLimitTransfers(currentTransfers, newTransfers);
           
           // 更新lastTransferId
-          const newLastTransferId = Math.max(...newTransfers.map(t => t.id));
+          const newLastTransferId = updatedTransfers.length > 0 
+            ? Math.max(...updatedTransfers.map(t => t.id))
+            : this.data.lastTransferId;
           
           this.setData({
             transfers: updatedTransfers,
