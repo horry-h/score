@@ -114,9 +114,38 @@
   font-size: 28rpx;
 }
 
+.room-info {
+  margin: 30rpx 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .icon {
+  font-size: 32rpx;
+  width: 40rpx;
+  text-align: center;
+}
+
 .btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10rpx;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  background: #ccc !important;
 }

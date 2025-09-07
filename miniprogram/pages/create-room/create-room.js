@@ -4,7 +4,6 @@ const app = getApp();
 
 Page({
   data: {
-    roomName: '',
     loading: false
   },
 
@@ -34,22 +33,8 @@ Page({
     }
   },
 
-  // 房间名称输入
-  onRoomNameInput(e) {
-    this.setData({
-      roomName: e.detail.value,
-    });
-  },
-
   // 创建房间
   async createRoom() {
-    if (!this.data.roomName.trim()) {
-      wx.showToast({
-        title: '请输入房间名称',
-        icon: 'none'
-      });
-      return;
-    }
 
     try {
       const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
@@ -64,7 +49,9 @@ Page({
       this.setData({ loading: true });
       wx.showLoading({ title: '创建中...' });
 
-      const response = await api.createRoom(userInfo.user_id, this.data.roomName);
+      // 使用默认房间名称
+      const defaultRoomName = `麻将房间_${new Date().getTime()}`;
+      const response = await api.createRoom(userInfo.user_id, defaultRoomName);
       
       if (response.code === 200) {        
         // 解析data字段中的JSON字符串

@@ -232,7 +232,7 @@
     
     <view class="settlement-modal-body">
       <view class="settlement-summary">
-        <text class="summary-text">最优转账方案（{{settlementData.length}}笔转账）</text>
+        <text class="summary-text">结算方案（{{settlementData.length}}笔转移）</text>
       </view>
       
       <view class="settlement-list">
@@ -255,12 +255,6 @@
           <view class="settlement-number">{{index + 1}}</view>
         </view>
       </view>
-      
-      <view class="settlement-hint">
-        <text class="icon">💡</text>
-        <text>请按照以上顺序进行微信转账</text>
-      </view>
-    </view>
     
     <view class="settlement-modal-footer">
       <button class="confirm-btn" catchtap="hideSettlementModal">
