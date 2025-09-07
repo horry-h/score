@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"time"
 
 	"mahjong-server/internal/logger"
@@ -28,6 +29,23 @@ func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService
 // SetHub 设置WebSocket Hub（避免循环依赖）
 func (s *MahjongService) SetHub(hub interface{}) {
 	s.hub = hub
+}
+
+// broadcastToRoom 向房间广播消息
+func (s *MahjongService) broadcastToRoom(roomID int64, eventType string, data interface{}) {
+	if s.hub != nil {
+		// 使用反射调用Hub的BroadcastToRoom方法
+		hubValue := reflect.ValueOf(s.hub)
+		method := hubValue.MethodByName("BroadcastToRoom")
+		if method.IsValid() {
+			method.Call([]reflect.Value{
+				reflect.ValueOf(roomID),
+				reflect.ValueOf(eventType),
+				reflect.ValueOf(data),
+			})
+			logger.Info("已广播房间事件", "room_id", roomID, "event_type", eventType)
+		}
+	}
 }
 
 // 自动登录（只获取openid，查询或创建用户记录）
@@ -300,6 +318,32 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	var roomCode string
 	s.db.QueryRow("SELECT room_code FROM rooms WHERE id = ?", roomID).Scan(&roomCode)
 
+	// 获取新加入玩家的信息用于广播
+	var userID int64
+	var nickname, avatarUrl string
+	var currentScore, finalScore int32
+	err = s.db.QueryRow(`
+		SELECT u.id, u.nickname, u.avatar_url, rp.current_score, rp.final_score
+		FROM users u
+		JOIN room_players rp ON u.id = rp.user_id
+		WHERE rp.room_id = ? AND rp.user_id = ?
+	`, roomID, req.UserId).Scan(
+		&userID, &nickname, &avatarUrl, &currentScore, &finalScore,
+	)
+	
+	if err == nil {
+		// 广播玩家加入事件
+		s.broadcastToRoom(roomID, "player_joined", map[string]interface{}{
+			"player": map[string]interface{}{
+				"user_id":       userID,
+				"nickname":      nickname,
+				"avatar_url":    avatarUrl,
+				"current_score": currentScore,
+				"final_score":   finalScore,
+			},
+		})
+	}
+
 	roomData := map[string]interface{}{
 		"room_id":   roomID,
 		"room_code": roomCode,
@@ -471,6 +515,22 @@ func (s *MahjongService) TransferScore(ctx context.Context, req *TransferScoreRe
 		return &Response{Code: 500, Message: "提交事务失败"}, nil
 	}
 
+	// 获取转移双方的昵称用于广播
+	var fromUserName, toUserName string
+	s.db.QueryRow("SELECT nickname FROM users WHERE id = ?", req.FromUserId).Scan(&fromUserName)
+	s.db.QueryRow("SELECT nickname FROM users WHERE id = ?", req.ToUserId).Scan(&toUserName)
+
+	// 广播分数转移事件
+	s.broadcastToRoom(req.RoomId, "score_transfer", map[string]interface{}{
+		"transfer": map[string]interface{}{
+			"from_user_id":   req.FromUserId,
+			"to_user_id":     req.ToUserId,
+			"from_user_name": fromUserName,
+			"to_user_name":   toUserName,
+			"amount":         req.Amount,
+		},
+	})
+
 	return &Response{Code: 200, Message: "转移成功"}, nil
 }
 
@@ -551,6 +611,12 @@ func (s *MahjongService) SettleRoom(ctx context.Context, req *SettleRoomRequest)
 	if err = tx.Commit(); err != nil {
 		return &Response{Code: 500, Message: "提交事务失败"}, nil
 	}
+
+	// 广播房间结算事件
+	s.broadcastToRoom(req.RoomId, "room_settled", map[string]interface{}{
+		"settlements": settlements,
+		"players":     players,
+	})
 
 	settlementsData, _ := json.Marshal(settlements)
 	return &Response{Code: 200, Message: "结算成功", Data: string(settlementsData)}, nil
