@@ -158,6 +158,7 @@ func NewWebSocketHandler(hub *Hub) *WebSocketHandler {
 // HandleWebSocket 处理WebSocket连接请求
 func (h *WebSocketHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	logger.Info("WebSocket连接请求", "path", r.URL.Path, "query", r.URL.RawQuery)
+	logger.Info("WebSocket处理器被调用", "method", r.Method, "remote_addr", r.RemoteAddr)
 	
 	// 检查ResponseWriter类型
 	logger.Info("ResponseWriter类型", "type", fmt.Sprintf("%T", w))
