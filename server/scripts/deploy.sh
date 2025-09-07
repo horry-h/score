@@ -164,9 +164,9 @@ fi
 
 # 7. 创建数据库
 echo "7. 创建数据库..."
-# 从环境变量文件读取数据库配置
-DB_PASSWORD=$(grep "^DB_PASSWORD=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "123456")
-DB_NAME=$(grep "^DB_NAME=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong_score")
+# 从环境变量文件读取数据库配置（注意：此时在server目录下）
+DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2 || echo "123456")
+DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong_score")
 
 mysql -u root -p$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $DB_NAME DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
     echo "❌ 数据库创建失败，请检查MySQL配置"
@@ -251,10 +251,10 @@ echo "✅ Go应用构建完成"
 echo "10. 配置systemd服务..."
 if [ ! -f "/etc/systemd/system/mahjong-server.service" ]; then
     echo "创建systemd服务配置..."
-    # 从环境变量文件读取服务配置
-    SERVICE_NAME=$(grep "^SERVICE_NAME=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
-    SERVICE_USER=$(grep "^SERVICE_USER=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "root")
-    SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
+    # 从环境变量文件读取服务配置（注意：此时在server目录下）
+    SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+    SERVICE_USER=$(grep "^SERVICE_USER=" server.env 2>/dev/null | cut -d'=' -f2 || echo "root")
+    SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" server.env 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
     
     cat > /etc/systemd/system/$SERVICE_NAME.service << 'EOF'
 [Unit]
@@ -285,8 +285,8 @@ else
 fi
 
 systemctl daemon-reload
-# 从环境变量文件读取服务名
-SERVICE_NAME=$(grep "^SERVICE_NAME=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+# 从环境变量文件读取服务名（注意：此时在server目录下）
+SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
 systemctl enable $SERVICE_NAME
 echo "✅ systemd服务配置完成"
 
