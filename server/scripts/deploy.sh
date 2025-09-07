@@ -15,10 +15,10 @@ fi
 
 # 检查配置文件
 echo "🔍 检查配置文件..."
-if [ ! -f "server.env" ]; then
+if [ ! -f "../server.env" ]; then
     echo "❌ server.env文件不存在"
     echo "   请创建server.env文件并配置所有必需的参数"
-    echo "   参考server.env.example文件"
+    echo "   文件位置: server/server.env"
     exit 1
 fi
 
@@ -27,9 +27,9 @@ REQUIRED_VARS=("WECHAT_APP_ID" "WECHAT_APP_SECRET" "COS_BUCKET" "COS_REGION" "CO
 MISSING_VARS=()
 
 for var in "${REQUIRED_VARS[@]}"; do
-    if ! grep -q "^${var}=" server.env; then
+    if ! grep -q "^${var}=" ../server.env; then
         MISSING_VARS+=("$var")
-    elif [ -z "$(grep "^${var}=" server.env | cut -d'=' -f2)" ]; then
+    elif [ -z "$(grep "^${var}=" ../server.env | cut -d'=' -f2)" ]; then
         MISSING_VARS+=("$var")
     fi
 done
@@ -40,7 +40,7 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
         echo "   - $var"
     done
     echo ""
-    echo "请在server.env文件中设置这些配置项"
+    echo "请在server/server.env文件中设置这些配置项"
     exit 1
 fi
 
