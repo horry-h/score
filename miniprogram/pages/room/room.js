@@ -681,11 +681,11 @@ Page({
     // 当前用户排在第一位，其他用户按原顺序排列
     const sortedPlayers = currentUser ? [currentUser, ...otherPlayers] : players;
     
-    // 处理昵称显示：限制为前5个字
+    // 处理昵称显示：限制为前6个字，2个英文字母算1个字
     const processedPlayers = sortedPlayers.map(player => {
       if (player.user && player.user.nickname) {
         const nickname = player.user.nickname;
-        player.user.displayName = nickname.length > 5 ? nickname.substring(0, 5) + '...' : nickname;
+        player.user.displayName = this.truncateNickname(nickname, 6);
       }
       return player;
     });
@@ -693,6 +693,38 @@ Page({
     console.log('sortPlayers: 排序后的玩家列表:', processedPlayers);
     
     return processedPlayers;
+  },
+
+  // 截断昵称：2个英文字母算1个字
+  truncateNickname(nickname, maxLength) {
+    if (!nickname) return '';
+    
+    let charCount = 0;
+    let result = '';
+    
+    for (let i = 0; i < nickname.length; i++) {
+      const char = nickname[i];
+      
+      // 判断是否为英文字母
+      if (/[a-zA-Z]/.test(char)) {
+        charCount += 0.5; // 2个英文字母算1个字
+      } else {
+        charCount += 1; // 中文字符和其他字符算1个字
+      }
+      
+      result += char;
+      
+      // 如果达到最大长度，截断并添加省略号
+      if (charCount >= maxLength) {
+        if (i < nickname.length - 1) {
+          result += '...';
+        }
+        break;
+      }
+    }
+    
+    console.log(`昵称截断: "${nickname}" -> "${result}" (字符数: ${charCount})`);
+    return result;
   },
 
   // 显示个人信息浮窗
