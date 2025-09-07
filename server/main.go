@@ -34,7 +34,15 @@ func main() {
 	logger.Info("麻将记分服务启动", "version", "1.0.0", "pid", os.Getpid())
 
 	// 加载配置
-	cfg := config.Load()
+	var cfg *config.Config
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Fatal("配置加载失败", "error", r)
+			}
+		}()
+		cfg = config.Load()
+	}()
 	logger.Info("配置加载完成", "http_port", cfg.HTTP.Port, "database_host", cfg.Database.Host)
 
 	// 初始化数据库

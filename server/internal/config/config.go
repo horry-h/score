@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -66,14 +67,14 @@ func Load() *Config {
 			KeyFile:  getEnv("SSL_KEY_FILE", "/etc/ssl/private/aipaint.cloud.key"),
 		},
 		WeChat: WeChatConfig{
-			AppID:     getEnv("WECHAT_APP_ID", "wx367870ff70acb37b"),
-			AppSecret: getEnv("WECHAT_APP_SECRET", "7127a700e080747019e13a01ec48816f"),
+			AppID:     getEnvRequired("WECHAT_APP_ID"),
+			AppSecret: getEnvRequired("WECHAT_APP_SECRET"),
 		},
 		COS: COSConfig{
-			Bucket:    getEnv("COS_BUCKET", "avatar-1251760642"),
-			Region:    getEnv("COS_REGION", "ap-guangzhou"),
-			SecretID:  getEnv("COS_SECRET_ID", "AKIDiV6Zrww476xcCUPL8kAMWY1NXURHwPfl"),
-			SecretKey: getEnv("COS_SECRET_KEY", "ykKgtJoIbhdXHqCMJ3bx62wieVAfx2vc"),
+			Bucket:    getEnvRequired("COS_BUCKET"),
+			Region:    getEnvRequired("COS_REGION"),
+			SecretID:  getEnvRequired("COS_SECRET_ID"),
+			SecretKey: getEnvRequired("COS_SECRET_KEY"),
 		},
 		Log: LogConfig{
 			Level: getEnv("LOG_LEVEL", "INFO"),
@@ -101,4 +102,12 @@ func getEnvAsInt(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func getEnvRequired(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		panic(fmt.Sprintf("Required environment variable %s is not set", key))
+	}
+	return value
 }

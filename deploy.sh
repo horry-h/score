@@ -13,6 +13,39 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# 检查配置文件
+echo "🔍 检查配置文件..."
+if [ ! -f "server.env" ]; then
+    echo "❌ server.env文件不存在"
+    echo "   请创建server.env文件并配置所有必需的参数"
+    echo "   参考server.env.example文件"
+    exit 1
+fi
+
+# 检查必需的环境变量
+REQUIRED_VARS=("WECHAT_APP_ID" "WECHAT_APP_SECRET" "COS_BUCKET" "COS_REGION" "COS_SECRET_ID" "COS_SECRET_KEY")
+MISSING_VARS=()
+
+for var in "${REQUIRED_VARS[@]}"; do
+    if ! grep -q "^${var}=" server.env; then
+        MISSING_VARS+=("$var")
+    elif [ -z "$(grep "^${var}=" server.env | cut -d'=' -f2)" ]; then
+        MISSING_VARS+=("$var")
+    fi
+done
+
+if [ ${#MISSING_VARS[@]} -gt 0 ]; then
+    echo "❌ 以下必需配置项缺失或为空:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "   - $var"
+    done
+    echo ""
+    echo "请在server.env文件中设置这些配置项"
+    exit 1
+fi
+
+echo "✅ 配置文件检查通过"
+
 # 预检查已安装的组件
 echo "🔍 预检查已安装的组件..."
 EXISTING_COMPONENTS=""
