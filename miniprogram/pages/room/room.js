@@ -436,7 +436,7 @@ Page({
     return new Promise((resolve) => {
       wx.showModal({
         title: '转移分数',
-        content: `向 ${playerName} 转移分数\n当前分数：${currentScore}\n请输入转移分数：`,
+        content: '请输入转移分数：',
         editable: true,
         placeholderText: '50',
         success: (res) => {
