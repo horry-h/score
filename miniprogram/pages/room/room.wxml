@@ -36,7 +36,7 @@
             <text class="avatar-icon">👤</text>
           </view>
         </view>
-        <view class="player-name">{{item.user.nickname}}</view>
+        <view class="player-name">{{item.user.displayName || item.user.nickname}}</view>
         <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
           {{item.current_score | formatScore}}
         </view>

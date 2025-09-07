@@ -680,9 +680,19 @@ Page({
     
     // 当前用户排在第一位，其他用户按原顺序排列
     const sortedPlayers = currentUser ? [currentUser, ...otherPlayers] : players;
-    console.log('sortPlayers: 排序后的玩家列表:', sortedPlayers);
     
-    return sortedPlayers;
+    // 处理昵称显示：限制为前5个字
+    const processedPlayers = sortedPlayers.map(player => {
+      if (player.user && player.user.nickname) {
+        const nickname = player.user.nickname;
+        player.user.displayName = nickname.length > 5 ? nickname.substring(0, 5) + '...' : nickname;
+      }
+      return player;
+    });
+    
+    console.log('sortPlayers: 排序后的玩家列表:', processedPlayers);
+    
+    return processedPlayers;
   },
 
   // 显示个人信息浮窗
