@@ -380,8 +380,20 @@ func (h *HTTPHandler) handleGetRoomTransfers(w *ResponseRecorder, r *http.Reques
 		return
 	}
 
+	// 获取lastTransferId参数，用于增量更新
+	lastTransferIdStr := r.URL.Query().Get("last_transfer_id")
+	var lastTransferId int64 = 0
+	if lastTransferIdStr != "" {
+		lastTransferId, err = strconv.ParseInt(lastTransferIdStr, 10, 64)
+		if err != nil {
+			h.writeError(w, 400, "Invalid last_transfer_id")
+			return
+		}
+	}
+
 	response, err := h.service.GetRoomTransfers(r.Context(), &service.GetRoomTransfersRequest{
-		RoomId: roomId,
+		RoomId:         roomId,
+		LastTransferId: lastTransferId,
 	})
 	
 	if err != nil {

@@ -114,7 +114,8 @@ type GetRoomPlayersRequest struct {
 }
 
 type GetRoomTransfersRequest struct {
-	RoomId int64 `json:"room_id"`
+	RoomId         int64 `json:"room_id"`
+	LastTransferId int64 `json:"last_transfer_id,omitempty"` // 用于增量更新，0表示全量获取
 }
 
 type TransferScoreRequest struct {

@@ -424,16 +424,39 @@ func (s *MahjongService) GetRoomPlayers(ctx context.Context, req *GetRoomPlayers
 
 // 获取房间转移记录
 func (s *MahjongService) GetRoomTransfers(ctx context.Context, req *GetRoomTransfersRequest) (*Response, error) {
-	rows, err := s.db.Query(`
-		SELECT st.id, st.room_id, st.from_user_id, st.to_user_id, st.amount, st.created_at,
-		       u1.nickname as from_user_name, u2.nickname as to_user_name
-		FROM score_transfers st
-		LEFT JOIN users u1 ON st.from_user_id = u1.id
-		LEFT JOIN users u2 ON st.to_user_id = u2.id
-		WHERE st.room_id = ?
-		ORDER BY st.created_at DESC
-	`, req.RoomId)
+	var query string
+	var args []interface{}
 	
+	// 构建查询语句，支持增量更新
+	if req.LastTransferId > 0 {
+		// 增量更新：获取ID大于lastTransferId的记录
+		query = `
+			SELECT st.id, st.room_id, st.from_user_id, st.to_user_id, st.amount, st.created_at,
+			       u1.nickname as from_user_name, u2.nickname as to_user_name
+			FROM score_transfers st
+			LEFT JOIN users u1 ON st.from_user_id = u1.id
+			LEFT JOIN users u2 ON st.to_user_id = u2.id
+			WHERE st.room_id = ? AND st.id > ?
+			ORDER BY st.id ASC
+			LIMIT 100
+		`
+		args = []interface{}{req.RoomId, req.LastTransferId}
+	} else {
+		// 全量获取：获取最新的100条记录
+		query = `
+			SELECT st.id, st.room_id, st.from_user_id, st.to_user_id, st.amount, st.created_at,
+			       u1.nickname as from_user_name, u2.nickname as to_user_name
+			FROM score_transfers st
+			LEFT JOIN users u1 ON st.from_user_id = u1.id
+			LEFT JOIN users u2 ON st.to_user_id = u2.id
+			WHERE st.room_id = ?
+			ORDER BY st.id DESC
+			LIMIT 2
+		`
+		args = []interface{}{req.RoomId}
+	}
+	
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return &Response{Code: 500, Message: "查询转移记录失败"}, nil
 	}
@@ -450,6 +473,13 @@ func (s *MahjongService) GetRoomTransfers(ctx context.Context, req *GetRoomTrans
 			continue
 		}
 		transfers = append(transfers, transfer)
+	}
+
+	// 如果是全量获取，需要反转数组顺序（因为查询时是DESC，但前端期望ASC）
+	if req.LastTransferId == 0 {
+		for i, j := 0, len(transfers)-1; i < j; i, j = i+1, j-1 {
+			transfers[i], transfers[j] = transfers[j], transfers[i]
+		}
 	}
 
 	transfersData, _ := json.Marshal(transfers)

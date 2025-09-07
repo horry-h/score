@@ -108,8 +108,11 @@ class ApiService {
     return this.request(`/api/v1/getRoomPlayers?room_id=${roomId}`);
   }
 
-  async getRoomTransfers(roomId) {
-    return this.request(`/api/v1/getRoomTransfers?room_id=${roomId}`);
+  async getRoomTransfers(roomId, lastTransferId = 0) {
+    const url = lastTransferId > 0 
+      ? `/api/v1/getRoomTransfers?room_id=${roomId}&last_transfer_id=${lastTransferId}`
+      : `/api/v1/getRoomTransfers?room_id=${roomId}`;
+    return this.request(url);
   }
 
   // 分数转移API

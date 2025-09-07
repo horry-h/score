@@ -257,7 +257,7 @@ Page({
         // 现在加载玩家信息和转移记录
         const [playersResponse, transfersResponse] = await Promise.all([
           api.getRoomPlayers(this.data.roomId),
-          api.getRoomTransfers(this.data.roomId),
+          api.getRoomTransfers(this.data.roomId, 0), // 0表示全量获取
         ]);
         
         console.log('getRoomPlayers响应:', playersResponse);
@@ -371,8 +371,16 @@ Page({
             console.error('解析转移记录数据失败:', error);
             transfersData = [];
           }
+          
+          // 更新lastTransferId，用于后续增量更新
+          let lastTransferId = 0;
+          if (transfersData && transfersData.length > 0) {
+            lastTransferId = Math.max(...transfersData.map(t => t.id));
+          }
+          
           this.setData({
             transfers: transfersData,
+            lastTransferId: lastTransferId,
           });
         }
       } else {
@@ -394,6 +402,48 @@ Page({
       });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  // 增量更新流水记录
+  async updateTransfersIncremental() {
+    if (!this.data.roomId || !this.data.lastTransferId) {
+      return;
+    }
+
+    try {
+      console.log('开始增量更新流水，lastTransferId:', this.data.lastTransferId);
+      const response = await api.getRoomTransfers(this.data.roomId, this.data.lastTransferId);
+      
+      if (response.code === 200 && response.data) {
+        let newTransfers;
+        try {
+          newTransfers = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        } catch (error) {
+          console.error('解析增量流水数据失败:', error);
+          return;
+        }
+
+        if (newTransfers && newTransfers.length > 0) {
+          console.log('获取到新的流水记录:', newTransfers.length, '条');
+          
+          // 合并新的流水记录到现有列表中
+          const currentTransfers = this.data.transfers || [];
+          const updatedTransfers = [...currentTransfers, ...newTransfers];
+          
+          // 更新lastTransferId
+          const newLastTransferId = Math.max(...newTransfers.map(t => t.id));
+          
+          this.setData({
+            transfers: updatedTransfers,
+            lastTransferId: newLastTransferId,
+          });
+          
+          console.log('流水记录已更新，总数:', updatedTransfers.length);
+        }
+      }
+    } catch (error) {
+      console.error('增量更新流水失败:', error);
     }
   },
 
@@ -1186,7 +1236,10 @@ Page({
 
   // 处理分数转移事件
   handleScoreTransfer(data) {
-    // 重新加载房间数据以获取最新的分数和转移记录
+    // 使用增量更新获取新的流水记录
+    this.updateTransfersIncremental();
+    
+    // 重新加载玩家数据以获取最新分数
     this.loadRoomData();
     
     // 显示转移消息
