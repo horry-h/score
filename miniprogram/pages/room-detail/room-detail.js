@@ -30,7 +30,7 @@ Page({
       }
 
       showLoading('加载中...');
-      const response = await apiService.getRoomDetail(this.data.roomId, userInfo.id);
+      const response = await apiService.getRoomDetail(this.data.roomId, userInfo.user_id);
       hideLoading();
 
       if (response.code === 200) {

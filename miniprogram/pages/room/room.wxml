@@ -10,16 +10,26 @@
   <view class="room-number-section">
     <view class="room-number-container">
       <text class="room-number-label">房间号 {{roomInfo.id}}</text>
+      <view wx:if="{{roomInfo.status === 2}}" class="room-status settled">
+        <text class="status-icon">🏁</text>
+        <text class="status-text">已结算</text>
+      </view>
     </view>
   </view>
 
   <!-- 玩家信息区域 -->
   <view class="players-section">
+    <!-- 已结算房间提示 -->
+    <view wx:if="{{roomInfo.status === 2}}" class="settled-room-notice">
+      <text class="notice-icon">📊</text>
+      <text class="notice-text">房间已结算，显示最终分数</text>
+    </view>
+    
     <view wx:if="{{sortedPlayers.length > 0}}" class="players-grid">
       <view 
         wx:for="{{sortedPlayers}}" 
         wx:key="id" 
-        class="player-card {{item.user_id === currentUserId ? 'current-player' : ''}}"
+        class="player-card {{item.user_id === currentUserId ? 'current-player' : ''}} {{roomInfo.status === 2 ? 'settled-room' : ''}}"
         bindtap="quickTransfer"
         data-player="{{item}}"
       >
@@ -77,15 +87,16 @@
     </view>
     <view wx:else class="empty-state">
       <text class="icon">📝</text>
-      <text>暂无转移记录</text>
+      <text>{{roomInfo.status === 2 ? '暂无转移记录' : '暂无转移记录'}}</text>
+      <text wx:if="{{roomInfo.status === 2}}" class="empty-hint">房间已结算，显示完整流水</text>
     </view>
   </view>
 
   <!-- 操作按钮 -->
   <view class="action-buttons">
     <button class="btn" bindtap="settleRoom">
-      <text class="icon">🧮</text>
-      <text>结算房间</text>
+      <text class="icon">{{roomInfo.status === 2 ? '📊' : '🧮'}}</text>
+      <text>{{roomInfo.status === 2 ? '查看结算信息' : '结算房间'}}</text>
     </button>
     <button class="btn btn-secondary" bindtap="shareRoom">
       <text class="icon">📤</text>
@@ -248,7 +259,7 @@
               <text class="to-user">{{item.toUserName}}</text>
             </view>
             <view class="settlement-amount">
-              <text class="amount-label">转账金额：</text>
+              <text class="amount-label">转账分数：</text>
               <text class="amount-value">{{item.amount}}</text>
             </view>
           </view>
@@ -266,6 +277,32 @@
       <button class="confirm-btn" catchtap="hideSettlementModal">
         <text class="btn-icon">✅</text>
         <text class="btn-text">我知道了</text>
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- 已结算房间提示浮窗 -->
+<view class="modal {{showSettledRoomModal ? 'show' : ''}}" bindtap="closeSettledRoomModal">
+  <view class="modal-content settled-room-modal" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">
+        <text class="icon">🏁</text>
+        <text>房间已结算</text>
+      </text>
+    </view>
+    
+    <view class="modal-body">
+      <view class="settled-room-info">
+        <text class="info-text">该房间已经结算完成</text>
+        <text class="info-detail">您可以查看最终分数和完整流水记录</text>
+        <text class="info-hint">点击"查看结算信息"了解详细结果</text>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="closeSettledRoomModal">
+        <text>开始查看</text>
       </button>
     </view>
   </view>

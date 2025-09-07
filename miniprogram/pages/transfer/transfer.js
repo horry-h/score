@@ -35,7 +35,7 @@ Page({
 
       if (response.code === 200) {
         const players = JSON.parse(response.data);
-        const currentUser = players.find(p => p.user_id === userInfo.id);
+        const currentUser = players.find(p => p.user_id === userInfo.user_id);
         
         this.setData({
           players,

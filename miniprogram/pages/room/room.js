@@ -14,6 +14,7 @@ Page({
     showShareModal: false,
     showProfileModal: false,
     showSettlementModal: false,
+    showSettledRoomModal: false,
     settlementData: [],
     loading: false,
     qrCodeData: null,
@@ -251,6 +252,12 @@ Page({
           roomInfo: roomData,
         });
         
+        // 检查房间状态，如果已结算则显示提示
+        if (roomData.status === 2) {
+          console.log('房间已结算，显示提示浮窗');
+          this.setData({ showSettledRoomModal: true });
+        }
+        
         // 如果使用roomCode进入，需要获取roomId用于后续API调用
         if (this.data.roomCode && !this.data.roomId) {
           this.setData({ roomId: roomData.id });
@@ -416,6 +423,7 @@ Page({
           
           // 使用缓存管理函数合并和限制记录
           const currentTransfers = this.data.transfers || [];
+          console.log('loadRoomData合并前 - currentTransfers:', currentTransfers, 'newTransfers:', newTransfers);
           const updatedTransfers = this.mergeAndLimitTransfers(currentTransfers, newTransfers);
           
           // 更新lastTransferId，用于后续增量更新
@@ -548,8 +556,21 @@ Page({
 
   // 缓存管理：合并流水记录并限制缓存大小
   mergeAndLimitTransfers(currentTransfers, newTransfers, maxCacheSize = 100) {
+    console.log('mergeAndLimitTransfers调用 - currentTransfers:', currentTransfers, 'newTransfers:', newTransfers);
+    
+    // 确保参数不为null或undefined
+    const current = currentTransfers || [];
+    const newData = newTransfers || [];
+    
+    console.log('处理后 - current:', current, 'newData:', newData);
+    
     // 合并所有记录
-    const allTransfers = [...currentTransfers, ...newTransfers];
+    const allTransfers = [...current, ...newData];
+    
+    // 如果没有记录，直接返回空数组
+    if (allTransfers.length === 0) {
+      return [];
+    }
     
     // 去重：基于ID去重，保留最新的记录
     const uniqueTransfers = [];
@@ -664,6 +685,15 @@ Page({
     const player = e.currentTarget.dataset.player;
     const { currentUserId } = this.data;
 
+    // 检查房间状态，如果已结算则不允许转移
+    if (this.data.roomInfo.status === 2) {
+      wx.showToast({
+        title: '房间已结算，无法转移分数',
+        icon: 'none'
+      });
+      return;
+    }
+
     if (player.user_id === currentUserId) {
       // 点击自己的头像，显示个人信息浮窗
       this.showProfileModal();
@@ -746,8 +776,16 @@ Page({
     });
   },
 
-  // 结算房间
+  // 结算房间或查看结算信息
   async settleRoom() {
+    // 检查房间状态
+    if (this.data.roomInfo.status === 2) {
+      // 房间已结算，显示结算信息
+      this.showSettlementInfo();
+      return;
+    }
+
+    // 房间未结算，执行结算操作
     const confirmed = await new Promise((resolve) => {
       wx.showModal({
         title: '确认结算',
@@ -797,6 +835,55 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  // 显示结算信息
+  async showSettlementInfo() {
+    try {
+      wx.showLoading({ title: '加载结算信息...' });
+      
+      // 获取房间详情（包含结算信息）
+      const response = await api.getRoomDetail(this.data.roomId, this.data.currentUserId);
+      wx.hideLoading();
+      
+      if (response.code === 200) {
+        const detail = JSON.parse(response.data);
+        const { settlements } = detail;
+        
+        if (settlements && settlements.length > 0) {
+          // 处理结算数据，添加用户昵称
+          const processedSettlementData = await this.processSettlementData(settlements);
+          
+          // 显示结算浮窗
+          this.setData({
+            showSettlementModal: true,
+            settlementData: processedSettlementData
+          });
+        } else {
+          wx.showToast({
+            title: '暂无结算信息',
+            icon: 'none'
+          });
+        }
+      } else {
+        wx.showToast({
+          title: response.message || '获取结算信息失败',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error('获取结算信息失败:', error);
+      wx.showToast({
+        title: '获取结算信息失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 关闭已结算房间提示浮窗
+  closeSettledRoomModal() {
+    this.setData({ showSettledRoomModal: false });
   },
 
   // 分享房间

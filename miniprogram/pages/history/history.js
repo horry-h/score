@@ -95,9 +95,9 @@ Page({
         url: `/pages/room/room?roomId=${room.room_id}`,
       });
     } else {
-      // 已结算的房间，查看详情
+      // 已结算的房间，也跳转到room页面，但会显示已结算状态
       wx.navigateTo({
-        url: `/pages/room-detail/room-detail?roomId=${room.room_id}`,
+        url: `/pages/room/room?roomId=${room.room_id}`,
       });
     }
   },

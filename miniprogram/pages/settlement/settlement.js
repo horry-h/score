@@ -57,7 +57,7 @@ Page({
       }
 
       showLoading('结算中...');
-      const response = await apiService.settleRoom(this.data.roomId, userInfo.id);
+      const response = await apiService.settleRoom(this.data.roomId, userInfo.user_id);
       hideLoading();
 
       if (response.code === 200) {
