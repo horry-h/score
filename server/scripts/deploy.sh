@@ -168,19 +168,24 @@ echo "7. 创建数据库..."
 DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2 || echo "123456")
 DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong_score")
 
-mysql -u root -p$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $DB_NAME DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
-    echo "❌ 数据库创建失败，请检查MySQL配置"
-    exit 1
+# 使用mysql_config_editor或直接使用密码
+mysql -u root -p$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || {
+    echo "尝试使用默认密码连接MySQL..."
+    mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
+        echo "❌ 数据库创建失败，请检查MySQL配置"
+        echo "   请确保MySQL root密码正确配置"
+        exit 1
+    }
 }
 
 # 检查数据库是否已有表
-TABLE_COUNT=$(mysql -u root -p$DB_PASSWORD -D $DB_NAME -e "SHOW TABLES;" 2>/dev/null | wc -l)
+TABLE_COUNT=$(mysql -u root -p$DB_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l || mysql -u root -p123456 -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l)
 if [ "$TABLE_COUNT" -gt 0 ]; then
     echo "✅ 数据库已存在表结构，跳过表创建以避免数据丢失"
     echo "   现有表数量: $((TABLE_COUNT - 1))"
 else
     echo "创建数据库表结构..."
-    mysql -u root -p$DB_PASSWORD $DB_NAME < server/database.sql
+    mysql -u root -p$DB_PASSWORD $DB_NAME < database.sql 2>/dev/null || mysql -u root -p123456 $DB_NAME < database.sql
     echo "✅ 数据库表结构创建完成"
 fi
 
@@ -325,7 +330,7 @@ echo "📝 日志目录: /root/horry/score/server/logs"
 echo ""
 echo "📋 部署总结:"
 echo "   - 已安装组件:$EXISTING_COMPONENTS"
-echo "   - 数据库表: $(mysql -u root -p$DB_PASSWORD -D $DB_NAME -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
+echo "   - 数据库表: $(mysql -u root -p$DB_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}' || mysql -u root -p123456 -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
 echo "   - 服务状态: $(systemctl is-active $SERVICE_NAME)"
 echo ""
 echo "⚠️  注意: 需要手动配置SSL证书文件:"
