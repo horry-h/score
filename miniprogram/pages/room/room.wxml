@@ -258,7 +258,7 @@
       
       <view class="settlement-hint">
         <text class="icon">💡</text>
-        <text>请按照以上顺序进行微信转账</text>
+        <text>请按照以上顺序进行转移</text>
       </view>
     </view>
     

@@ -299,7 +299,7 @@ Page({
   },
 
   // 创建房间
-  createRoom() {
+  async createRoom() {
     // 检查用户是否已登录
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
     if (!userInfo || !userInfo.user_id) {
@@ -307,9 +307,64 @@ Page({
       return
     }
     
-    wx.navigateTo({
-      url: '/pages/create-room/create-room'
-    })
+    try {
+      wx.showLoading({ title: '创建中...' })
+      
+      // 自动生成房间名称
+      const defaultRoomName = `麻将房间_${new Date().getTime()}`
+      
+      // 调用创建房间API
+      const response = await api.createRoom(userInfo.user_id, defaultRoomName)
+      
+      if (response.code === 200) {
+        console.log('创建房间响应:', response)
+        
+        // 解析返回的房间数据
+        let roomData;
+        try {
+          roomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log('解析后的房间数据:', roomData)
+        } catch (error) {
+          console.error('解析房间数据失败:', error)
+          wx.hideLoading()
+          wx.showToast({
+            title: '房间数据解析失败',
+            icon: 'none'
+          })
+          return
+        }
+        
+        wx.hideLoading()
+        wx.showToast({
+          title: '房间创建成功',
+          icon: 'success'
+        })
+        
+        // 保存最近房间信息
+        wx.setStorageSync('recentRoom', roomData);
+        console.log('保存的房间数据:', roomData)
+        
+        // 直接跳转到房间页面
+        setTimeout(() => {
+          wx.redirectTo({
+            url: `/pages/room/room?roomId=${roomData.room_id}`,
+          });
+        }, 1500);
+      } else {
+        wx.hideLoading()
+        wx.showToast({
+          title: response.message || '创建房间失败',
+          icon: 'none'
+        })
+      }
+    } catch (error) {
+      wx.hideLoading()
+      console.error('创建房间失败:', error)
+      wx.showToast({
+        title: '创建房间失败',
+        icon: 'none'
+      })
+    }
   },
 
   // 加入房间
