@@ -21,8 +21,11 @@ import (
 
 func main() {
 	// 加载环境变量文件
-	if err := loadEnvFile("../server.env"); err != nil {
-		log.Printf("Warning: Failed to load server.env: %v", err)
+	if err := loadEnvFile("server.env"); err != nil {
+		// 尝试从上级目录加载
+		if err2 := loadEnvFile("../server.env"); err2 != nil {
+			log.Printf("Warning: Failed to load server.env: %v", err2)
+		}
 	}
 
 	// 初始化日志系统

@@ -54,6 +54,7 @@ go mod tidy
 go build -o mahjong-server .
 cp mahjong-server /usr/local/bin/
 chmod +x /usr/local/bin/mahjong-server
+cd ..
 
 systemctl start $SERVICE_NAME
 sleep 3
