@@ -224,6 +224,10 @@ class WebSocketManager {
       if (this.roomId && this.userId) {
         this.connect(this.roomId, this.userId).catch(error => {
           console.error('WebSocket重连失败:', error)
+          // 如果重连次数达到上限，触发错误事件
+          if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            this.emit('error', error)
+          }
         })
       }
     }, this.reconnectInterval)

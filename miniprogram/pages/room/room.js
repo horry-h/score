@@ -1221,24 +1221,18 @@ Page({
     // 监听连接状态变化
     wsManager.on('connected', () => {
       console.log('WebSocket连接已建立');
-      wx.showToast({
-        title: '实时连接已建立',
-        icon: 'success',
-        duration: 1500
-      });
+      // 移除连接成功的弹窗提示，避免打扰用户
     });
 
     wsManager.on('disconnected', () => {
       console.log('WebSocket连接已断开');
-      wx.showToast({
-        title: '实时连接已断开',
-        icon: 'none',
-        duration: 1500
-      });
+      // 移除断开连接的弹窗提示，避免打扰用户
     });
 
     wsManager.on('error', (error) => {
       console.error('WebSocket连接错误:', error);
+      // 连接错误时显示友好的错误提示
+      this.handleWebSocketError(error);
     });
   },
 
@@ -1254,6 +1248,8 @@ Page({
       console.log('WebSocket连接成功');
     } catch (error) {
       console.error('WebSocket连接失败:', error);
+      // 连接失败时显示友好的错误提示
+      this.handleWebSocketError(error);
     }
   },
 
@@ -1261,6 +1257,49 @@ Page({
   disconnectWebSocket() {
     wsManager.disconnect();
     console.log('WebSocket连接已断开');
+  },
+
+  // 处理WebSocket连接错误
+  handleWebSocketError(error) {
+    console.error('WebSocket连接失败，显示错误提示:', error);
+    
+    wx.showModal({
+      title: '进入房间失败',
+      content: '无法连接到房间，请重新进入小程序',
+      showCancel: false,
+      confirmText: '重新进入',
+      success: (res) => {
+        if (res.confirm) {
+          // 用户点击确认，重启小程序并进入房间
+          this.restartAppAndEnterRoom();
+        }
+      }
+    });
+  },
+
+  // 重启小程序并进入房间
+  restartAppAndEnterRoom() {
+    try {
+      // 保存当前房间信息到本地存储
+      const roomInfo = {
+        roomId: this.data.roomId,
+        roomCode: this.data.roomCode,
+        currentUserId: this.data.currentUserId
+      };
+      
+      wx.setStorageSync('restart_room_info', roomInfo);
+      
+      // 重启小程序
+      wx.reLaunch({
+        url: '/pages/index/index'
+      });
+    } catch (error) {
+      console.error('重启小程序失败:', error);
+      // 如果重启失败，直接跳转到首页
+      wx.reLaunch({
+        url: '/pages/index/index'
+      });
+    }
   },
 
   // 处理玩家加入事件

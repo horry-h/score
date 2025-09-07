@@ -26,6 +26,20 @@ Page({
   },
 
   async onLoad() {
+    // 检查是否有重启房间信息，如果有则自动进入房间
+    const restartRoomInfo = wx.getStorageSync('restart_room_info');
+    if (restartRoomInfo && restartRoomInfo.roomId) {
+      console.log('检测到重启房间信息，自动进入房间:', restartRoomInfo);
+      // 清除重启房间信息
+      wx.removeStorageSync('restart_room_info');
+      
+      // 延迟一下确保页面完全加载
+      setTimeout(() => {
+        this.enterRoom(restartRoomInfo.roomId, restartRoomInfo.roomCode);
+      }, 500);
+      return;
+    }
+
     // 检查用户信息，如果app.js已经静默登录成功，直接使用
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
     if (userInfo && userInfo.user_id) {
