@@ -15,10 +15,10 @@ fi
 
 # 检查配置文件
 echo "🔍 检查配置文件..."
-if [ ! -f "../server.env" ]; then
-    echo "❌ server.env文件不存在"
-    echo "   请创建server.env文件并配置所有必需的参数"
-    echo "   文件位置: server/server.env"
+if [ ! -f "../env.conf" ]; then
+    echo "❌ env.conf文件不存在"
+    echo "   请创建env.conf文件并配置所有必需的参数"
+    echo "   文件位置: server/env.conf"
     exit 1
 fi
 
@@ -28,10 +28,10 @@ MISSING_COUNT=0
 
 check_required_var() {
     local var_name="$1"
-    if ! grep -q "^${var_name}=" ../server.env; then
+    if ! grep -q "^${var_name}=" ../env.conf; then
         echo "   - $var_name (缺失)"
         MISSING_COUNT=$((MISSING_COUNT + 1))
-    elif [ -z "$(grep "^${var_name}=" ../server.env | cut -d'=' -f2)" ]; then
+    elif [ -z "$(grep "^${var_name}=" ../env.conf | cut -d'=' -f2)" ]; then
         echo "   - $var_name (为空)"
         MISSING_COUNT=$((MISSING_COUNT + 1))
     else
@@ -52,7 +52,7 @@ check_required_var "COS_SECRET_KEY"
 if [ $MISSING_COUNT -gt 0 ]; then
     echo ""
     echo "❌ 发现 $MISSING_COUNT 个必需配置项缺失或为空"
-    echo "请在server/server.env文件中设置这些配置项"
+    echo "请在server/env.conf文件中设置这些配置项"
     exit 1
 fi
 
@@ -165,8 +165,8 @@ fi
 # 7. 创建数据库
 echo "7. 创建数据库..."
 # 从环境变量文件读取数据库配置（注意：此时在server目录下）
-DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "123456")
-DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "mahjong_score")
+DB_PASSWORD=$(grep "^DB_PASSWORD=" env.conf 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "123456")
+DB_NAME=$(grep "^DB_NAME=" env.conf 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "mahjong_score")
 
 # 验证配置读取
 if [ -z "$DB_NAME" ]; then
@@ -294,9 +294,9 @@ echo "10. 配置systemd服务..."
 if [ ! -f "/etc/systemd/system/mahjong-server.service" ]; then
     echo "创建systemd服务配置..."
     # 从环境变量文件读取服务配置（注意：此时在server目录下）
-    SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
-    SERVICE_USER=$(grep "^SERVICE_USER=" server.env 2>/dev/null | cut -d'=' -f2 || echo "root")
-    SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" server.env 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
+    SERVICE_NAME=$(grep "^SERVICE_NAME=" env.conf 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+    SERVICE_USER=$(grep "^SERVICE_USER=" env.conf 2>/dev/null | cut -d'=' -f2 || echo "root")
+    SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" env.conf 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
     
     cat > /etc/systemd/system/$SERVICE_NAME.service << 'EOF'
 [Unit]
@@ -328,7 +328,7 @@ fi
 
 systemctl daemon-reload
 # 从环境变量文件读取服务名（注意：此时在server目录下）
-SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+SERVICE_NAME=$(grep "^SERVICE_NAME=" env.conf 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
 systemctl enable $SERVICE_NAME
 echo "✅ systemd服务配置完成"
 

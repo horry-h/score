@@ -1,4 +1,5 @@
 server/mahjong-server
 *.log
 server.env
+env.conf
 server/logs/

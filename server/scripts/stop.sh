@@ -16,8 +16,8 @@ fi
 # 1. 停止服务
 echo "1. 停止服务..."
 # 从环境变量文件读取配置
-SERVICE_NAME=$(grep "^SERVICE_NAME=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
-HTTP_PORT=$(grep "^HTTP_PORT=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "8080")
+SERVICE_NAME=$(grep "^SERVICE_NAME=" ../env.conf 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+HTTP_PORT=$(grep "^HTTP_PORT=" ../env.conf 2>/dev/null | cut -d'=' -f2 || echo "8080")
 
 systemctl stop $SERVICE_NAME || true
 pkill -f $SERVICE_NAME || true

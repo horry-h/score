@@ -21,8 +21,13 @@ import (
 
 func main() {
 	// 加载环境变量文件
-	if err := loadEnvFile("server.env"); err != nil {
-		log.Printf("Warning: Failed to load server.env: %v", err)
+	if err := loadEnvFile("env.conf"); err != nil {
+		// 尝试加载旧的文件名
+		if err2 := loadEnvFile("server.env"); err2 != nil {
+			log.Printf("Warning: Failed to load env.conf and server.env: %v, %v", err, err2)
+		} else {
+			log.Printf("Loaded server.env (deprecated, please rename to env.conf)")
+		}
 	}
 
 	// 初始化日志系统

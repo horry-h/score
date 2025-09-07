@@ -37,8 +37,8 @@ echo "✅ 基础依赖检查完成"
 # 2. 检查端口占用
 echo "2. 检查端口占用..."
 # 从环境变量文件读取配置
-SERVICE_NAME=$(grep "^SERVICE_NAME=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
-HTTP_PORT=$(grep "^HTTP_PORT=" ../server.env 2>/dev/null | cut -d'=' -f2 || echo "8080")
+SERVICE_NAME=$(grep "^SERVICE_NAME=" ../env.conf 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+HTTP_PORT=$(grep "^HTTP_PORT=" ../env.conf 2>/dev/null | cut -d'=' -f2 || echo "8080")
 
 if netstat -tlnp | grep -q ":$HTTP_PORT "; then
     echo "⚠️  端口$HTTP_PORT已被占用，正在停止现有服务..."
