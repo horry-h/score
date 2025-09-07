@@ -79,6 +79,7 @@ func main() {
 			
 			// WebSocket请求跳过CORS处理，直接传递给处理器
 			if r.URL.Path == "/ws" {
+				logger.Info("CORS处理器: WebSocket请求", "path", r.URL.Path, "method", r.Method)
 				h.ServeHTTP(w, r)
 				return
 			}
