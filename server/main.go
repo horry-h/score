@@ -77,7 +77,7 @@ func main() {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 			
-			// WebSocket请求跳过CORS处理
+			// WebSocket请求跳过CORS处理，直接传递给处理器
 			if r.URL.Path == "/ws" {
 				h.ServeHTTP(w, r)
 				return
