@@ -751,9 +751,12 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		player := &RoomPlayer{}
 		user := &User{}
 		
+		// 使用sql.NullInt32来处理可能为NULL的final_score
+		var finalScore sql.NullInt32
+		
 		err := rows.Scan(
 			&player.Id, &player.RoomId, &player.UserId, &player.CurrentScore, 
-			&player.FinalScore, &player.JoinedAt,
+			&finalScore, &player.JoinedAt,
 			&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, 
 			&user.CreatedAt, &user.UpdatedAt,
 		)
@@ -762,10 +765,17 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 			continue
 		}
 		
+		// 处理NULL值
+		if finalScore.Valid {
+			player.FinalScore = &finalScore.Int32
+		} else {
+			player.FinalScore = nil
+		}
+		
 		player.User = user
 		players = append(players, player)
 		playerCount++
-		fmt.Printf("getRoomPlayers: 找到玩家 %d, 用户ID: %d, 昵称: %s\n", playerCount, player.UserId, user.Nickname)
+		fmt.Printf("getRoomPlayers: 找到玩家 %d, 用户ID: %d, 昵称: %s, 当前分数: %d\n", playerCount, player.UserId, user.Nickname, player.CurrentScore)
 	}
 	
 	// 检查是否有行扫描错误
