@@ -34,7 +34,7 @@ CREATE TABLE room_players (
     room_id BIGINT NOT NULL COMMENT '房间ID',
     user_id BIGINT NOT NULL COMMENT '用户ID',
     current_score INT NOT NULL DEFAULT 0 COMMENT '当前分数',
-    final_score INT DEFAULT NULL COMMENT '最终分数',
+    final_score INT NOT NULL DEFAULT 0 COMMENT '最终分数',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
     UNIQUE KEY uk_room_user (room_id, user_id),
     INDEX idx_room_id (room_id),
