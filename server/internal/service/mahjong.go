@@ -451,7 +451,7 @@ func (s *MahjongService) GetRoomTransfers(ctx context.Context, req *GetRoomTrans
 			LEFT JOIN users u2 ON st.to_user_id = u2.id
 			WHERE st.room_id = ?
 			ORDER BY st.id DESC
-			LIMIT 2
+			LIMIT 100
 		`
 		args = []interface{}{req.RoomId}
 	}
