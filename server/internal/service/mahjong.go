@@ -67,15 +67,15 @@ func (s *MahjongService) AutoLogin(ctx context.Context, req *AutoLoginRequest) (
 			Openid:    openid,
 			Nickname:  "微信用户",
 			AvatarUrl: "/images/default-avatar.png",
-			CreatedAt: time.Now().Unix(),
-			UpdatedAt: time.Now().Unix(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 	} else if err != nil {
 		return &Response{Code: 500, Message: "查询用户失败: " + err.Error()}, nil
 	} else {
 		// 用户已存在，更新最后登录时间
-		user.CreatedAt = createdAt.Unix()
-		user.UpdatedAt = updatedAt.Unix()
+		user.CreatedAt = createdAt
+		user.UpdatedAt = updatedAt
 		
 		_, err = s.db.Exec(`UPDATE users SET updated_at = NOW() WHERE id = ?`, user.Id)
 		if err != nil {
@@ -152,8 +152,8 @@ func (s *MahjongService) ValidateSession(ctx context.Context, sessionID string) 
 		return &Response{Code: 404, Message: "用户不存在"}, nil
 	}
 	
-	user.CreatedAt = createdAt.Unix()
-	user.UpdatedAt = updatedAt.Unix()
+	user.CreatedAt = createdAt
+	user.UpdatedAt = updatedAt
 	
 	userData, _ := json.Marshal(user)
 	return &Response{Code: 200, Message: "验证成功", Data: string(userData)}, nil
@@ -172,8 +172,8 @@ func (s *MahjongService) GetUser(ctx context.Context, req *GetUserRequest) (*Res
 		return &Response{Code: 404, Message: "用户不存在"}, nil
 	}
 	
-	user.CreatedAt = createdAt.Unix()
-	user.UpdatedAt = updatedAt.Unix()
+	user.CreatedAt = createdAt
+	user.UpdatedAt = updatedAt
 
 	userData, _ := json.Marshal(user)
 	return &Response{Code: 200, Message: "获取成功", Data: string(userData)}, nil
@@ -343,11 +343,11 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	fmt.Printf("查询成功: 房间ID=%d, 房间号=%s\n", room.Id, room.RoomCode)
 
 	// 转换时间戳
-	room.CreatedAt = createdAt.Unix()
+	room.CreatedAt = createdAt
 	if settledAt.Valid {
-		room.SettledAt = settledAt.Time.Unix()
+		room.SettledAt = &settledAt.Time
 	} else {
-		room.SettledAt = 0  // 如果settled_at为NULL，设置为0
+		room.SettledAt = nil  // 如果settled_at为NULL，设置为nil
 	}
 
 	// 获取房间玩家
@@ -675,7 +675,7 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 	}
 
 	// 转换时间戳
-	recentRoom.LastAccessedAt = lastAccessedAt.Unix()
+	recentRoom.LastAccessedAt = lastAccessedAt
 
 	recentRoomData, _ := json.Marshal(recentRoom)
 	return &Response{Code: 200, Message: "获取成功", Data: string(recentRoomData)}, nil
@@ -764,7 +764,7 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 			&user.CreatedAt, &user.UpdatedAt,
 		)
 		if err != nil {
-			fmt.Printf("getRoomPlayers: 扫描行数据失败: %v\n", err)
+			logger.Error("getRoomPlayers: 扫描行数据失败", "error", err.Error())
 			continue
 		}
 		
