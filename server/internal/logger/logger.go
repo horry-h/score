@@ -164,7 +164,9 @@ func (l *Logger) Close() error {
 // getCallerInfo 获取调用者信息，跳过logger.go中的函数调用
 func (l *Logger) getCallerInfo() (pc uintptr, file string, line int, ok bool) {
 	// 从调用栈中查找第一个不在logger.go中的调用者
-	for i := 1; i < 10; i++ {
+	// 调用栈：实际调用 -> Debug/Info/Error等 -> log -> formatMessage -> getCallerInfo
+	// 所以我们需要跳过前4层
+	for i := 4; i < 10; i++ {
 		pc, file, line, ok = runtime.Caller(i)
 		if !ok {
 			break
