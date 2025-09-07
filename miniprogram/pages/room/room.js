@@ -436,7 +436,7 @@ Page({
     return new Promise((resolve) => {
       wx.showModal({
         title: '转移分数',
-        content: '请输入转移分数：',
+        content: '',
         editable: true,
         placeholderText: '50',
         success: (res) => {

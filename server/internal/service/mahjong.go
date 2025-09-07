@@ -426,9 +426,7 @@ func (s *MahjongService) TransferScore(ctx context.Context, req *TransferScoreRe
 		return &Response{Code: 404, Message: "转出用户不在房间中"}, nil
 	}
 
-	if fromScore < req.Amount {
-		return &Response{Code: 400, Message: "分数不足"}, nil
-	}
+	// 允许分数为负数，移除分数不足检查
 
 	// 更新转出用户分数
 	_, err = tx.Exec(`
