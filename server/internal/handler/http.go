@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"mahjong-server/internal/logger"
 	"mahjong-server/internal/service"
 )
 
@@ -33,7 +34,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 路由处理
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/")
-	fmt.Printf("请求路径: %s, 方法: %s, 处理后路径: %s\n", r.URL.Path, r.Method, path)
+	logger.Debug("处理HTTP请求", "method", r.Method, "path", r.URL.Path, "processed_path", path)
 	
 	switch {
 	case r.Method == "POST" && path == "autoLogin":
@@ -80,19 +81,24 @@ func (h *HTTPHandler) handleAutoLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Error("自动登录请求解析失败", "error", err.Error())
 		h.writeError(w, 400, "Invalid request body")
 		return
 	}
+
+	logger.Info("处理自动登录请求", "code_length", len(req.Code))
 
 	response, err := h.service.AutoLogin(r.Context(), &service.AutoLoginRequest{
 		Code: req.Code,
 	})
 	
 	if err != nil {
+		logger.Error("自动登录服务调用失败", "error", err.Error())
 		h.writeError(w, 500, "Internal server error")
 		return
 	}
 
+	logger.Info("自动登录成功", "response_code", response.Code)
 	h.writeResponse(w, response)
 }
 

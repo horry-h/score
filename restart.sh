@@ -1,95 +1,85 @@
 #!/bin/bash
 
-# 颜色定义
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# 麻将记分服务重启脚本
+# 快速重启服务
 
-SERVICE_NAME="score-server"
+set -e
 
-echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  服务重启脚本${NC}"
-echo -e "${BLUE}========================================${NC}"
+echo "=== 麻将记分服务重启 ==="
 
-# 1. 检查Go环境
-echo -e "\n${YELLOW}--- 1. 检查Go环境 ---${NC}"
-if command -v go &> /dev/null; then
-    echo -e "${GREEN}Go已安装: $(go version)${NC}"
-else
-    echo -e "${RED}Go未安装${NC}"
+# 检查是否以root权限运行
+if [ "$EUID" -ne 0 ]; then
+    echo "请以root权限运行此脚本"
     exit 1
 fi
 
-# 2. 进入server目录
-echo -e "\n${YELLOW}--- 2. 进入server目录 ---${NC}"
+# 1. 停止服务
+echo "1. 停止服务..."
+systemctl stop mahjong-server || true
+sleep 2
+
+# 2. 确保进程完全停止
+echo "2. 确保进程完全停止..."
+pkill -f mahjong-server || true
+sleep 1
+
+# 3. 检查端口是否释放
+if netstat -tlnp | grep -q ":8080 "; then
+    echo "⚠️  端口8080仍被占用，强制清理..."
+    PID=$(netstat -tlnp | grep ":8080 " | awk '{print $7}' | cut -d'/' -f1)
+    if [ ! -z "$PID" ]; then
+        kill -9 $PID || true
+    fi
+    sleep 1
+fi
+
+# 4. 重新构建应用（可选，如果需要更新代码）
+echo "3. 检查代码更新..."
 cd server
-echo -e "${GREEN}当前目录: $(pwd)${NC}"
-
-# 3. 清理旧文件
-echo -e "\n${YELLOW}--- 3. 清理旧文件 ---${NC}"
-rm -f mahjong-server
-echo -e "${GREEN}已删除旧的可执行文件${NC}"
-
-# 4. 下载依赖
-echo -e "\n${YELLOW}--- 4. 下载依赖 ---${NC}"
-export PATH=$PATH:/usr/local/go/bin
-go mod tidy
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}依赖下载成功${NC}"
+if [ "server/main.go" -nt "/usr/local/bin/mahjong-server" ] || [ "server/go.mod" -nt "/usr/local/bin/mahjong-server" ]; then
+    echo "检测到代码更新，重新构建..."
+    go mod tidy
+    go build -o mahjong-server .
+    cp mahjong-server /usr/local/bin/
+    chmod +x /usr/local/bin/mahjong-server
+    echo "✅ 应用重新构建完成"
 else
-    echo -e "${RED}依赖下载失败${NC}"
-    exit 1
+    echo "✅ 代码无更新，跳过构建"
 fi
 
-# 5. 构建应用
-echo -e "\n${YELLOW}--- 5. 构建应用 ---${NC}"
-go build -o mahjong-server main.go
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}应用构建成功${NC}"
-    ls -la mahjong-server
-    echo -e "${BLUE}文件架构:${NC}"
-    file mahjong-server
-else
-    echo -e "${RED}应用构建失败${NC}"
-    exit 1
-fi
-
-# 6. 返回项目根目录
-cd ..
-
-# 7. 重启服务
-echo -e "\n${YELLOW}--- 6. 重启服务 ---${NC}"
-systemctl restart ${SERVICE_NAME}
+# 5. 启动服务
+echo "4. 启动服务..."
+systemctl start mahjong-server
 sleep 3
 
-if systemctl is-active --quiet ${SERVICE_NAME}; then
-    echo -e "${GREEN}服务重启成功${NC}"
+# 6. 检查服务状态
+if systemctl is-active --quiet mahjong-server; then
+    echo "✅ 服务重启成功"
 else
-    echo -e "${RED}服务重启失败${NC}"
-    echo -e "${BLUE}查看错误日志:${NC}"
-    journalctl -u ${SERVICE_NAME} -n 10 --no-pager
+    echo "❌ 服务重启失败"
+    echo "查看服务状态:"
+    systemctl status mahjong-server --no-pager
+    echo ""
+    echo "查看最新日志:"
+    if [ -d "logs" ] && [ "$(ls -A logs)" ]; then
+        LATEST_LOG=$(ls -t logs/log_*.log | head -1)
+        echo "=== 最新日志 ==="
+        tail -20 "$LATEST_LOG"
+    fi
     exit 1
 fi
 
-# 8. 测试API
-echo -e "\n${YELLOW}--- 7. 测试API ---${NC}"
+# 7. 测试服务
+echo "5. 测试服务..."
 sleep 2
-if curl -s http://localhost:8080/api/v1/health > /dev/null; then
-    echo -e "${GREEN}API测试成功${NC}"
-    echo -e "${BLUE}API响应:${NC}"
-    curl -s http://localhost:8080/api/v1/health | head -3
+if curl -s http://127.0.0.1:8080/health > /dev/null; then
+    echo "✅ 服务健康检查通过"
 else
-    echo -e "${RED}API测试失败${NC}"
-    echo -e "${BLUE}检查端口监听:${NC}"
-    ss -tuln | grep ":8080"
+    echo "⚠️  服务健康检查失败，但服务可能仍在启动中"
 fi
 
-echo -e "\n${GREEN}========================================${NC}"
-echo -e "${GREEN}  服务重启完成！${NC}"
-echo -e "${GREEN}========================================${NC}"
-
-echo -e "\n${BLUE}服务信息:${NC}"
-echo -e "  健康检查: http://124.156.196.117:8080/api/v1/health"
-echo -e "  服务状态: $(systemctl is-active ${SERVICE_NAME})"
+echo ""
+echo "=== 重启完成 ==="
+echo "✅ 麻将记分服务已成功重启"
+echo "📊 服务地址: https://www.aipaint.cloud"
+echo "📝 查看日志: ./view-logs.sh"

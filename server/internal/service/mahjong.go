@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"mahjong-server/internal/logger"
 )
 
 type MahjongService struct {
@@ -24,11 +26,16 @@ func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService
 
 // 自动登录（只获取openid，查询或创建用户记录）
 func (s *MahjongService) AutoLogin(ctx context.Context, req *AutoLoginRequest) (*Response, error) {
+	logger.Info("开始自动登录", "code_length", len(req.Code))
+	
 	// 通过微信code获取openid
 	wechatResp, err := s.wechatService.GetOpenID(req.Code)
 	if err != nil {
+		logger.Error("获取微信用户信息失败", "error", err.Error())
 		return &Response{Code: 500, Message: "获取微信用户信息失败: " + err.Error()}, nil
 	}
+	
+	logger.Info("获取微信openid成功", "openid", wechatResp.OpenID)
 	
 	openid := wechatResp.OpenID
 	if openid == "" {
