@@ -15,30 +15,34 @@ fi
 
 # 1. 停止服务
 echo "1. 停止服务..."
-systemctl stop mahjong-server || true
-pkill -f mahjong-server || true
+# 从环境变量文件读取配置
+SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+HTTP_PORT=$(grep "^HTTP_PORT=" server.env 2>/dev/null | cut -d'=' -f2 || echo "8080")
+
+systemctl stop $SERVICE_NAME || true
+pkill -f $SERVICE_NAME || true
 sleep 2
 
 # 2. 检查停止状态
 echo "2. 检查停止状态..."
-if systemctl is-active --quiet mahjong-server; then
+if systemctl is-active --quiet $SERVICE_NAME; then
     echo "❌ systemd服务仍在运行"
 else
     echo "✅ systemd服务已停止"
 fi
 
-if pgrep -f mahjong-server > /dev/null; then
+if pgrep -f $SERVICE_NAME > /dev/null; then
     echo "❌ 仍有进程在运行"
-    pkill -9 -f mahjong-server || true
+    pkill -9 -f $SERVICE_NAME || true
     sleep 1
 else
     echo "✅ 所有进程已停止"
 fi
 
-if netstat -tlnp | grep -q ":8080 "; then
-    echo "❌ 端口8080仍被占用"
+if netstat -tlnp | grep -q ":$HTTP_PORT "; then
+    echo "❌ 端口$HTTP_PORT仍被占用"
 else
-    echo "✅ 端口8080已释放"
+    echo "✅ 端口$HTTP_PORT已释放"
 fi
 
 echo ""

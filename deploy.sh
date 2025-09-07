@@ -119,19 +119,23 @@ fi
 
 # 7. 创建数据库
 echo "7. 创建数据库..."
-mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS mahjong_score DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
+# 从环境变量文件读取数据库配置
+DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2 || echo "123456")
+DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong_score")
+
+mysql -u root -p$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $DB_NAME DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
     echo "❌ 数据库创建失败，请检查MySQL配置"
     exit 1
 }
 
 # 检查数据库是否已有表
-TABLE_COUNT=$(mysql -u root -p123456 -D mahjong_score -e "SHOW TABLES;" 2>/dev/null | wc -l)
+TABLE_COUNT=$(mysql -u root -p$DB_PASSWORD -D $DB_NAME -e "SHOW TABLES;" 2>/dev/null | wc -l)
 if [ "$TABLE_COUNT" -gt 0 ]; then
     echo "✅ 数据库已存在表结构，跳过表创建以避免数据丢失"
     echo "   现有表数量: $((TABLE_COUNT - 1))"
 else
     echo "创建数据库表结构..."
-    mysql -u root -p123456 mahjong_score < server/database.sql
+    mysql -u root -p$DB_PASSWORD $DB_NAME < server/database.sql
     echo "✅ 数据库表结构创建完成"
 fi
 
@@ -202,16 +206,21 @@ echo "✅ Go应用构建完成"
 echo "10. 配置systemd服务..."
 if [ ! -f "/etc/systemd/system/mahjong-server.service" ]; then
     echo "创建systemd服务配置..."
-    cat > /etc/systemd/system/mahjong-server.service << 'EOF'
+    # 从环境变量文件读取服务配置
+    SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+    SERVICE_USER=$(grep "^SERVICE_USER=" server.env 2>/dev/null | cut -d'=' -f2 || echo "root")
+    SERVICE_WORK_DIR=$(grep "^SERVICE_WORK_DIR=" server.env 2>/dev/null | cut -d'=' -f2 || echo "/root/horry/score/server")
+    
+    cat > /etc/systemd/system/$SERVICE_NAME.service << EOF
 [Unit]
 Description=Mahjong Score Server
 After=network.target mysql.service
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/root/horry/score/server
-ExecStart=/usr/local/bin/mahjong-server
+User=$SERVICE_USER
+WorkingDirectory=$SERVICE_WORK_DIR
+ExecStart=/usr/local/bin/$SERVICE_NAME
 Restart=always
 RestartSec=5
 Environment=GIN_MODE=release
@@ -225,23 +234,25 @@ else
 fi
 
 systemctl daemon-reload
-systemctl enable mahjong-server
+# 从环境变量文件读取服务名
+SERVICE_NAME=$(grep "^SERVICE_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong-server")
+systemctl enable $SERVICE_NAME
 echo "✅ systemd服务配置完成"
 
 # 11. 启动服务
 echo "11. 启动服务..."
-if systemctl is-active --quiet mahjong-server; then
+if systemctl is-active --quiet $SERVICE_NAME; then
     echo "✅ 服务已在运行，跳过启动"
 else
-    echo "启动mahjong-server服务..."
-    systemctl start mahjong-server
+    echo "启动$SERVICE_NAME服务..."
+    systemctl start $SERVICE_NAME
     sleep 3
     
-    if systemctl is-active --quiet mahjong-server; then
+    if systemctl is-active --quiet $SERVICE_NAME; then
         echo "✅ 服务启动成功"
     else
         echo "❌ 服务启动失败"
-        systemctl status mahjong-server --no-pager
+        systemctl status $SERVICE_NAME --no-pager
         exit 1
     fi
 fi
@@ -263,8 +274,8 @@ echo "📝 日志目录: /root/horry/score/server/logs"
 echo ""
 echo "📋 部署总结:"
 echo "   - 已安装组件:$EXISTING_COMPONENTS"
-echo "   - 数据库表: $(mysql -u root -p123456 -D mahjong_score -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
-echo "   - 服务状态: $(systemctl is-active mahjong-server)"
+echo "   - 数据库表: $(mysql -u root -p$DB_PASSWORD -D $DB_NAME -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
+echo "   - 服务状态: $(systemctl is-active $SERVICE_NAME)"
 echo ""
 echo "⚠️  注意: 需要手动配置SSL证书文件:"
 echo "   - 证书文件: /etc/ssl/certs/aipaint.cloud.crt"
