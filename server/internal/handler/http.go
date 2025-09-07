@@ -66,15 +66,10 @@ func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandl
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 记录请求开始时间
 	startTime := time.Now()
-	
-	// 创建响应记录器
-	recorder := NewResponseRecorder(w)
-	
-	// 设置响应头
-	recorder.Header().Set("Content-Type", "application/json")
 
 	// 健康检查接口
 	if r.URL.Path == "/health" || r.URL.Path == "/api/v1/health" {
+		recorder := NewResponseRecorder(w)
 		h.handleHealth(recorder, r)
 		h.logRequest(r, recorder, startTime)
 		return
@@ -82,10 +77,16 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// WebSocket连接处理
 	if r.URL.Path == "/ws" {
-		h.wsHandler.HandleWebSocket(recorder, r)
-		h.logRequest(r, recorder, startTime)
+		// WebSocket升级需要直接使用原始的ResponseWriter，不能使用包装器
+		h.wsHandler.HandleWebSocket(w, r)
 		return
 	}
+	
+	// 创建响应记录器（用于其他HTTP请求）
+	recorder := NewResponseRecorder(w)
+	
+	// 设置响应头
+	recorder.Header().Set("Content-Type", "application/json")
 	
 	// 路由处理
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/")

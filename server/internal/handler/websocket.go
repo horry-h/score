@@ -157,6 +157,8 @@ func NewWebSocketHandler(hub *Hub) *WebSocketHandler {
 
 // HandleWebSocket 处理WebSocket连接请求
 func (h *WebSocketHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+	logger.Info("WebSocket连接请求", "path", r.URL.Path, "query", r.URL.RawQuery)
+	
 	// 从查询参数获取房间ID和用户ID
 	roomIDStr := r.URL.Query().Get("room_id")
 	userIDStr := r.URL.Query().Get("user_id")
@@ -179,9 +181,10 @@ func (h *WebSocketHandler) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 	}
 	
 	// 升级HTTP连接为WebSocket连接
+	logger.Info("开始WebSocket升级", "room_id", roomID, "user_id", userID)
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error("WebSocket升级失败", "error", err.Error())
+		logger.Error("WebSocket升级失败", "error", err.Error(), "room_id", roomID, "user_id", userID)
 		return
 	}
 	
