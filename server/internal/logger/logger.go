@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 )
@@ -58,11 +59,55 @@ var levelColors = map[LogLevel]string{
 
 const resetColor = "\033[0m"
 
+// cleanupOldLogs 清理旧日志文件，只保留最近3个
+func cleanupOldLogs(logDir string) error {
+	// 读取日志目录中的所有文件
+	files, err := os.ReadDir(logDir)
+	if err != nil {
+		return err
+	}
+
+	// 过滤出日志文件并按修改时间排序
+	var logFiles []os.FileInfo
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "log_") && strings.HasSuffix(file.Name(), ".log") {
+			info, err := file.Info()
+			if err != nil {
+				continue
+			}
+			logFiles = append(logFiles, info)
+		}
+	}
+
+	// 按修改时间排序（最新的在前）
+	sort.Slice(logFiles, func(i, j int) bool {
+		return logFiles[i].ModTime().After(logFiles[j].ModTime())
+	})
+
+	// 删除超过3个的旧日志文件
+	for i := 3; i < len(logFiles); i++ {
+		oldLogPath := filepath.Join(logDir, logFiles[i].Name())
+		if err := os.Remove(oldLogPath); err != nil {
+			// 记录错误但不中断初始化
+			fmt.Printf("删除旧日志文件失败: %s, 错误: %v\n", oldLogPath, err)
+		} else {
+			fmt.Printf("已删除旧日志文件: %s\n", oldLogPath)
+		}
+	}
+
+	return nil
+}
+
 // InitLogger 初始化日志器
 func InitLogger(logDir string, level LogLevel) error {
 	// 创建日志目录
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		return fmt.Errorf("创建日志目录失败: %v", err)
+	}
+
+	// 清理旧日志文件，只保留最近3个
+	if err := cleanupOldLogs(logDir); err != nil {
+		return fmt.Errorf("清理旧日志文件失败: %v", err)
 	}
 
 	// 生成日志文件名
@@ -116,10 +161,26 @@ func (l *Logger) Close() error {
 	return nil
 }
 
+// getCallerInfo 获取调用者信息，跳过logger.go中的函数调用
+func (l *Logger) getCallerInfo() (pc uintptr, file string, line int, ok bool) {
+	// 从调用栈中查找第一个不在logger.go中的调用者
+	for i := 1; i < 10; i++ {
+		pc, file, line, ok = runtime.Caller(i)
+		if !ok {
+			break
+		}
+		// 检查文件名是否包含logger.go
+		if !strings.Contains(file, "logger.go") {
+			return pc, file, line, ok
+		}
+	}
+	return 0, "", 0, false
+}
+
 // formatMessage 格式化日志消息
 func (l *Logger) formatMessage(level LogLevel, message string, fields ...interface{}) string {
-	// 获取调用者信息
-	_, file, line, ok := runtime.Caller(3)
+	// 获取调用者信息，跳过logger.go中的函数调用
+	_, file, line, ok := l.getCallerInfo()
 	if !ok {
 		file = "unknown"
 		line = 0
