@@ -74,6 +74,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	// 记录请求开始时间
 	startTime := time.Now()
+	
+	logger.Info("HTTP请求", "method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
 
 	// 健康检查接口
 	if r.URL.Path == "/health" || r.URL.Path == "/api/v1/health" {
