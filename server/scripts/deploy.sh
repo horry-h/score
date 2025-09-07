@@ -311,6 +311,7 @@ ExecStart=/usr/local/bin/SERVICE_NAME
 Restart=always
 RestartSec=5
 Environment=GIN_MODE=release
+EnvironmentFile=WORK_DIR/env.conf
 
 [Install]
 WantedBy=multi-user.target
