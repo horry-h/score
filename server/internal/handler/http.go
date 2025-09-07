@@ -16,6 +16,8 @@ import (
 
 type HTTPHandler struct {
 	service *service.MahjongService
+	wsHandler *WebSocketHandler
+	hub *Hub
 }
 
 // ResponseRecorder 用于记录HTTP响应
@@ -44,8 +46,20 @@ func (r *ResponseRecorder) Write(b []byte) (int, error) {
 }
 
 func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandler {
+	hub := NewHub()
+	wsHandler := NewWebSocketHandler(hub)
+	
+	// 启动Hub的消息处理循环
+	go hub.Run()
+	
+	// 创建麻将服务并设置Hub
+	mahjongService := service.NewMahjongService(db, wechatService)
+	mahjongService.SetHub(hub)
+	
 	return &HTTPHandler{
-		service: service.NewMahjongService(db, wechatService),
+		service: mahjongService,
+		wsHandler: wsHandler,
+		hub: hub,
 	}
 }
 
@@ -66,6 +80,13 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// WebSocket连接处理
+	if r.URL.Path == "/ws" {
+		h.wsHandler.HandleWebSocket(recorder, r)
+		h.logRequest(r, recorder, startTime)
+		return
+	}
+	
 	// 路由处理
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/")
 	logger.Debug("处理HTTP请求", "method", r.Method, "path", r.URL.Path, "processed_path", path)

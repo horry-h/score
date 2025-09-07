@@ -15,6 +15,7 @@ import (
 type MahjongService struct {
 	db          *sql.DB
 	wechatService *WeChatService
+	hub         interface{} // WebSocket Hub接口，避免循环依赖
 }
 
 func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService {
@@ -22,6 +23,11 @@ func NewMahjongService(db *sql.DB, wechatService *WeChatService) *MahjongService
 		db:            db,
 		wechatService: wechatService,
 	}
+}
+
+// SetHub 设置WebSocket Hub（避免循环依赖）
+func (s *MahjongService) SetHub(hub interface{}) {
+	s.hub = hub
 }
 
 // 自动登录（只获取openid，查询或创建用户记录）

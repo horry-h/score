@@ -1,5 +1,6 @@
 // room.js
 const api = require('../../utils/api');
+const wsManager = require('../../utils/websocket');
 const app = getApp();
 
 Page({
@@ -157,12 +158,22 @@ Page({
       withShareTicket: true,
       menus: ['shareAppMessage', 'shareTimeline']
     });
+    
+    // 设置WebSocket事件监听
+    this.setupWebSocketListeners();
   },
 
   onShow() {
     if (this.data.roomId) {
       this.loadRoomData();
+      // 连接WebSocket
+      this.connectWebSocket();
     }
+  },
+
+  onUnload() {
+    // 断开WebSocket连接
+    this.disconnectWebSocket();
   },
 
   // 加载房间数据
@@ -1057,4 +1068,158 @@ Page({
       url: '/pages/index/index'
     });
   },
+
+  // 设置WebSocket事件监听
+  setupWebSocketListeners() {
+    // 监听玩家加入事件
+    wsManager.onMessage('player_joined', (data) => {
+      console.log('收到玩家加入事件:', data);
+      this.handlePlayerJoined(data);
+    });
+
+    // 监听玩家离开事件
+    wsManager.onMessage('player_left', (data) => {
+      console.log('收到玩家离开事件:', data);
+      this.handlePlayerLeft(data);
+    });
+
+    // 监听分数转移事件
+    wsManager.onMessage('score_transfer', (data) => {
+      console.log('收到分数转移事件:', data);
+      this.handleScoreTransfer(data);
+    });
+
+    // 监听房间结算事件
+    wsManager.onMessage('room_settled', (data) => {
+      console.log('收到房间结算事件:', data);
+      this.handleRoomSettled(data);
+    });
+
+    // 监听玩家信息更新事件
+    wsManager.onMessage('player_updated', (data) => {
+      console.log('收到玩家信息更新事件:', data);
+      this.handlePlayerUpdated(data);
+    });
+
+    // 监听房间信息更新事件
+    wsManager.onMessage('room_updated', (data) => {
+      console.log('收到房间信息更新事件:', data);
+      this.handleRoomUpdated(data);
+    });
+
+    // 监听连接状态变化
+    wsManager.on('connected', () => {
+      console.log('WebSocket连接已建立');
+      wx.showToast({
+        title: '实时连接已建立',
+        icon: 'success',
+        duration: 1500
+      });
+    });
+
+    wsManager.on('disconnected', () => {
+      console.log('WebSocket连接已断开');
+      wx.showToast({
+        title: '实时连接已断开',
+        icon: 'none',
+        duration: 1500
+      });
+    });
+
+    wsManager.on('error', (error) => {
+      console.error('WebSocket连接错误:', error);
+    });
+  },
+
+  // 连接WebSocket
+  async connectWebSocket() {
+    if (!this.data.roomId || !this.data.currentUserId) {
+      console.log('房间ID或用户ID不存在，无法连接WebSocket');
+      return;
+    }
+
+    try {
+      await wsManager.connect(this.data.roomId, this.data.currentUserId);
+      console.log('WebSocket连接成功');
+    } catch (error) {
+      console.error('WebSocket连接失败:', error);
+    }
+  },
+
+  // 断开WebSocket连接
+  disconnectWebSocket() {
+    wsManager.disconnect();
+    console.log('WebSocket连接已断开');
+  },
+
+  // 处理玩家加入事件
+  handlePlayerJoined(data) {
+    // 重新加载房间数据以获取最新的玩家列表
+    this.loadRoomData();
+    
+    // 显示欢迎消息
+    if (data.player && data.player.nickname) {
+      wx.showToast({
+        title: `${data.player.nickname} 加入了房间`,
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  },
+
+  // 处理玩家离开事件
+  handlePlayerLeft(data) {
+    // 重新加载房间数据
+    this.loadRoomData();
+    
+    // 显示离开消息
+    if (data.player && data.player.nickname) {
+      wx.showToast({
+        title: `${data.player.nickname} 离开了房间`,
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  },
+
+  // 处理分数转移事件
+  handleScoreTransfer(data) {
+    // 重新加载房间数据以获取最新的分数和转移记录
+    this.loadRoomData();
+    
+    // 显示转移消息
+    if (data.transfer) {
+      const { from_user_name, to_user_name, amount } = data.transfer;
+      wx.showToast({
+        title: `${from_user_name} 向 ${to_user_name} 转移了 ${amount} 分`,
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  },
+
+  // 处理房间结算事件
+  handleRoomSettled(data) {
+    // 重新加载房间数据
+    this.loadRoomData();
+    
+    // 显示结算消息
+    wx.showToast({
+      title: '房间已结算',
+      icon: 'success',
+      duration: 2000
+    });
+  },
+
+  // 处理玩家信息更新事件
+  handlePlayerUpdated(data) {
+    // 重新加载房间数据
+    this.loadRoomData();
+  },
+
+  // 处理房间信息更新事件
+  handleRoomUpdated(data) {
+    // 重新加载房间数据
+    this.loadRoomData();
+  }
 });
