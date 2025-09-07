@@ -64,6 +64,14 @@ func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandl
 }
 
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// 添加panic恢复
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error("HTTP请求处理panic", "error", r, "path", r.URL.Path)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}()
+	
 	// 记录请求开始时间
 	startTime := time.Now()
 
