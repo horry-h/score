@@ -366,38 +366,69 @@ Page({
 
         if (transfersResponse.code === 200) {
           // 解析转移记录JSON字符串
-          let transfersData;
+          let newTransfers;
           try {
-            transfersData = typeof transfersResponse.data === 'string' ? JSON.parse(transfersResponse.data) : transfersResponse.data;
-            console.log('解析后的转移记录数据:', transfersData);
+            newTransfers = typeof transfersResponse.data === 'string' ? JSON.parse(transfersResponse.data) : transfersResponse.data;
+            console.log('解析后的转移记录数据:', newTransfers);
           } catch (error) {
             console.error('解析转移记录数据失败:', error);
-            transfersData = [];
+            newTransfers = [];
           }
           
-          // 使用缓存管理函数限制记录数量
-          const maxCacheSize = 100;
-          if (transfersData && transfersData.length > maxCacheSize) {
-            // 保留最新的100条记录
-            transfersData = transfersData.slice(-maxCacheSize);
-            console.log('全量获取时限制缓存为', maxCacheSize, '条记录');
+          // 预处理新流水的时间格式和分数格式
+          if (newTransfers && newTransfers.length > 0) {
+            newTransfers.forEach(transfer => {
+              // 处理时间格式
+              if (transfer.created_at) {
+                try {
+                  const date = new Date(transfer.created_at);
+                  if (!isNaN(date.getTime())) {
+                    // 直接在JavaScript中格式化时间，避免WXS问题
+                    transfer.formatted_time = this.formatTimestampJS(transfer.created_at);
+                  }
+                } catch (error) {
+                  console.error('处理时间格式失败:', error, transfer.created_at);
+                  transfer.formatted_time = '';
+                }
+              } else {
+                transfer.formatted_time = '';
+              }
+              
+              // 处理分数格式
+              if (transfer.amount !== null && transfer.amount !== undefined) {
+                const num = parseInt(transfer.amount);
+                if (!isNaN(num)) {
+                  if (num > 0) {
+                    transfer.formatted_amount = '+' + num;
+                  } else if (num < 0) {
+                    transfer.formatted_amount = num.toString();
+                  } else {
+                    transfer.formatted_amount = '0';
+                  }
+                } else {
+                  transfer.formatted_amount = '0';
+                }
+              } else {
+                transfer.formatted_amount = '0';
+              }
+            });
           }
           
-          // 按ID降序排序，确保最新的流水在上面
-          if (transfersData && transfersData.length > 0) {
-            transfersData.sort((a, b) => b.id - a.id);
-          }
+          // 使用缓存管理函数合并和限制记录
+          const currentTransfers = this.data.transfers || [];
+          const updatedTransfers = this.mergeAndLimitTransfers(currentTransfers, newTransfers);
           
           // 更新lastTransferId，用于后续增量更新
-          let lastTransferId = 0;
-          if (transfersData && transfersData.length > 0) {
-            lastTransferId = Math.max(...transfersData.map(t => t.id));
-          }
+          const newLastTransferId = updatedTransfers.length > 0 
+            ? Math.max(...updatedTransfers.map(t => t.id))
+            : this.data.lastTransferId;
           
           this.setData({
-            transfers: transfersData,
-            lastTransferId: lastTransferId,
+            transfers: updatedTransfers,
+            lastTransferId: newLastTransferId,
           });
+          
+          console.log('流水记录已更新，总数:', updatedTransfers.length);
         }
       } else {
         wx.hideLoading();
@@ -418,6 +449,91 @@ Page({
       });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  // 格式化时间戳（JavaScript版本，作为WXS的备用）
+  formatTimestampJS(timestamp) {
+    if (!timestamp) {
+      return '';
+    }
+    
+    try {
+      let date;
+      if (typeof timestamp === 'string') {
+        // 处理ISO时间字符串
+        if (timestamp.includes('T') || timestamp.includes('-')) {
+          date = new Date(timestamp);
+        } else {
+          // 处理时间戳字符串
+          const timestampNum = parseInt(timestamp);
+          if (timestampNum && !isNaN(timestampNum) && timestampNum > 0) {
+            date = new Date(timestampNum);
+          }
+        }
+      } else if (typeof timestamp === 'number') {
+        // 处理数字时间戳
+        if (timestamp > 0) {
+          date = new Date(timestamp);
+        }
+      }
+      
+      if (!date || isNaN(date.getTime())) {
+        return '';
+      }
+      
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      
+      if (isNaN(diff) || diff < 0) {
+        return '';
+      }
+      
+      // 小于1分钟
+      if (diff < 60000) {
+        const seconds = Math.floor(diff / 1000);
+        return seconds + '秒前';
+      }
+      
+      // 小于1小时
+      if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return minutes + '分钟前';
+      }
+      
+      // 小于24小时
+      if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return hours + '小时前';
+      }
+      
+      // 小于7天
+      if (diff < 604800000) {
+        const days = Math.floor(diff / 86400000);
+        return days + '天前';
+      }
+      
+      // 超过7天，显示具体日期
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hour = date.getHours();
+      const minute = date.getMinutes();
+      
+      // 如果是今年，不显示年份
+      if (year === now.getFullYear()) {
+        return month + '月' + day + '日 ' + 
+               (hour < 10 ? '0' + hour : hour) + ':' + 
+               (minute < 10 ? '0' + minute : minute);
+      }
+      
+      // 跨年显示完整日期
+      return year + '年' + month + '月' + day + '日 ' + 
+             (hour < 10 ? '0' + hour : hour) + ':' + 
+             (minute < 10 ? '0' + minute : minute);
+    } catch (error) {
+      console.error('格式化时间失败:', error);
+      return '';
     }
   },
 
@@ -483,6 +599,43 @@ Page({
 
         if (newTransfers && newTransfers.length > 0) {
           console.log('获取到新的流水记录:', newTransfers.length, '条');
+          
+          // 预处理新流水的时间格式和分数格式
+          newTransfers.forEach(transfer => {
+            // 处理时间格式
+            if (transfer.created_at) {
+              try {
+                const date = new Date(transfer.created_at);
+                if (!isNaN(date.getTime())) {
+                  // 直接在JavaScript中格式化时间，避免WXS问题
+                  transfer.formatted_time = this.formatTimestampJS(transfer.created_at);
+                }
+              } catch (error) {
+                console.error('处理新流水时间格式失败:', error, transfer.created_at);
+                transfer.formatted_time = '';
+              }
+            } else {
+              transfer.formatted_time = '';
+            }
+            
+            // 处理分数格式
+            if (transfer.amount !== null && transfer.amount !== undefined) {
+              const num = parseInt(transfer.amount);
+              if (!isNaN(num)) {
+                if (num > 0) {
+                  transfer.formatted_amount = '+' + num;
+                } else if (num < 0) {
+                  transfer.formatted_amount = num.toString();
+                } else {
+                  transfer.formatted_amount = '0';
+                }
+              } else {
+                transfer.formatted_amount = '0';
+              }
+            } else {
+              transfer.formatted_amount = '0';
+            }
+          });
           
           // 使用缓存管理函数合并和限制记录
           const currentTransfers = this.data.transfers || [];
