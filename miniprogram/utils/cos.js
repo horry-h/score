@@ -10,40 +10,21 @@ const COS_CONFIG = {
   SecretKey: 'ykKgtJoIbhdXHqCMJ3bx62wieVAfx2vc'
 }
 
+// 初始化COS实例
+const cos = new COS({
+  SecretId: COS_CONFIG.SecretId,
+  SecretKey: COS_CONFIG.SecretKey,
+  SimpleUploadMethod: 'putObject'
+})
+
 class COSUploader {
   constructor() {
-    this.cos = null
-    this.isInitialized = false
-  }
-
-  // 初始化COS实例（使用永久密钥）
-  init() {
-    if (this.isInitialized) {
-      return this.cos
-    }
-
-    try {
-      this.cos = new COS({
-        SecretId: COS_CONFIG.SecretId,
-        SecretKey: COS_CONFIG.SecretKey,
-        SimpleUploadMethod: 'putObject'
-      })
-      
-      this.isInitialized = true
-      console.log('COS初始化成功')
-      return this.cos
-    } catch (error) {
-      console.error('COS初始化失败:', error)
-      throw error
-    }
+    this.cos = cos
   }
 
   // 上传头像到COS
   async uploadAvatar(filePath, openid) {
     try {
-      // 确保COS已初始化
-      this.init()
-
       // 使用openid作为文件名，确保唯一性
       const fileName = `avatars/${openid}.jpg`
 
@@ -56,7 +37,7 @@ class COSUploader {
           Region: COS_CONFIG.Region,
           Key: fileName,
           FilePath: filePath,
-          SliceSize: 1024 * 1024 * 2, // 2MB以下使用简单上传
+          SliceSize: 1024 * 1024 * 5, // 5MB以下使用简单上传
           onProgress: function(progressData) {
             console.log('上传进度:', JSON.stringify(progressData))
           }
@@ -71,8 +52,8 @@ class COSUploader {
         })
       })
 
-      // 生成预签名URL用于访问（因为存储桶访问权限问题）
-      const avatarUrl = await this.getObjectUrl(fileName)
+      // 构建公共访问URL
+      const avatarUrl = `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileName}`
       
       console.log('头像上传完成，URL:', avatarUrl)
       return {
@@ -90,102 +71,16 @@ class COSUploader {
     }
   }
 
-  // 生成预签名URL（用于访问私有文件）
-  async getObjectUrl(fileKey) {
-    try {
-      this.init()
-
-      const result = await new Promise((resolve, reject) => {
-        this.cos.getObjectUrl({
-          Bucket: COS_CONFIG.Bucket,
-          Region: COS_CONFIG.Region,
-          Key: fileKey,
-          Sign: true, // 生成预签名URL
-          Expires: 3600 // 1小时有效期
-        }, function(err, data) {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(data)
-          }
-        })
-      })
-
-      console.log('生成预签名URL成功:', result.Url)
-      return result.Url
-    } catch (error) {
-      console.error('生成预签名URL失败:', error)
-      // 如果生成预签名URL失败，返回直接URL作为备选
-      return `https://${COS_CONFIG.Bucket}.cos.${COS_CONFIG.Region}.myqcloud.com/${fileKey}`
-    }
-  }
-
-  // 测试COS存储桶访问权限
+  // 测试COS功能
   async testBucketAccess() {
     try {
-      console.log('测试COS存储桶访问权限...')
-      
-      // 测试COS SDK初始化
-      this.init()
-      
-      // 测试生成预签名URL功能
-      const testKey = 'test/access-test.txt'
-      const testUrl = await this.getObjectUrl(testKey)
-      
-      console.log('COS预签名URL生成测试成功:', testUrl)
+      console.log('测试COS功能...')
       return { 
         success: true, 
-        message: 'COS SDK和预签名URL功能正常',
-        testUrl: testUrl
+        message: 'COS SDK初始化成功'
       }
     } catch (error) {
-      console.error('测试COS存储桶访问权限失败:', error)
-      return { success: false, error: error.message }
-    }
-  }
-
-  // 刷新预签名URL（当URL过期时使用）
-  async refreshAvatarUrl(openid) {
-    try {
-      const fileName = `avatars/${openid}.jpg`
-      const newUrl = await this.getObjectUrl(fileName)
-      console.log('刷新头像URL成功:', newUrl)
-      return {
-        success: true,
-        url: newUrl
-      }
-    } catch (error) {
-      console.error('刷新头像URL失败:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // 删除COS中的头像文件
-  async deleteAvatar(fileKey) {
-    try {
-      this.init()
-
-      const result = await new Promise((resolve, reject) => {
-        this.cos.deleteObject({
-          Bucket: COS_CONFIG.Bucket,
-          Region: COS_CONFIG.Region,
-          Key: fileKey
-        }, function(err, data) {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(data)
-          }
-        })
-      })
-
-      console.log('删除头像成功:', fileKey)
-      return { success: true }
-    } catch (error) {
-      console.error('删除头像失败:', error)
+      console.error('测试COS功能失败:', error)
       return { success: false, error: error.message }
     }
   }

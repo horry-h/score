@@ -682,29 +682,7 @@ Page({
     const sortedPlayers = currentUser ? [currentUser, ...otherPlayers] : players;
     console.log('sortPlayers: 排序后的玩家列表:', sortedPlayers);
     
-    // 为每个玩家的头像URL生成预签名URL（如果是COS URL）
-    this.refreshPlayerAvatarUrls(sortedPlayers);
-    
     return sortedPlayers;
-  },
-
-  // 刷新玩家头像URL（生成预签名URL）
-  async refreshPlayerAvatarUrls(players) {
-    if (!players || players.length === 0) return;
-    
-    for (let player of players) {
-      if (player.user && player.user.avatar_url && player.user.avatar_url.includes('cos.ap-guangzhou.myqcloud.com')) {
-        try {
-          // 如果是COS URL，生成预签名URL
-          const fileName = `avatars/${player.user.openid}.jpg`;
-          const signedUrl = await cosUploader.getObjectUrl(fileName);
-          player.user.avatar_url = signedUrl;
-          console.log('刷新玩家头像URL:', player.user.nickname, signedUrl);
-        } catch (error) {
-          console.error('刷新玩家头像URL失败:', error);
-        }
-      }
-    }
   },
 
   // 显示个人信息浮窗
