@@ -268,24 +268,24 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 		}
 		
 		data, _ := json.Marshal(roomData)
-		fmt.Printf("已在房间中，返回房间数据: %s\n", string(data))
+		logger.Info("已在房间中，返回房间数据", "data", string(data))
 		return &Response{Code: 200, Message: "已在房间中", Data: string(data)}, nil
 	}
 
 	// 加入房间
-	fmt.Printf("JoinRoom: 插入玩家记录, 房间ID: %d, 用户ID: %d\n", roomID, req.UserId)
+	logger.Info("JoinRoom: 插入玩家记录", "room_id", roomID, "user_id", req.UserId)
 	result, err := s.db.Exec(`
 		INSERT INTO room_players (room_id, user_id, current_score, final_score) 
 		VALUES (?, ?, 0, 0)
 	`, roomID, req.UserId)
 	
 	if err != nil {
-		fmt.Printf("JoinRoom: 插入玩家记录失败: %v\n", err)
+		logger.Error("JoinRoom: 插入玩家记录失败", "error", err.Error())
 		return &Response{Code: 500, Message: "加入房间失败"}, nil
 	}
 	
 	rowsAffected, _ := result.RowsAffected()
-	fmt.Printf("JoinRoom: 成功插入玩家记录, 影响行数: %d\n", rowsAffected)
+	logger.Info("JoinRoom: 成功插入玩家记录", "rows_affected", rowsAffected)
 
 	// 更新用户最近房间
 	s.updateRecentRoom(req.UserId, roomID)
@@ -309,23 +309,23 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	var args []interface{}
 	
 	// 添加调试日志
-	fmt.Printf("GetRoom请求: RoomId=%d, RoomCode=%s\n", req.RoomId, req.RoomCode)
+	logger.Debug("GetRoom请求", "room_id", req.RoomId, "room_code", req.RoomCode)
 	
 	// 优先使用room_id，如果没有则使用room_code
 	if req.RoomId > 0 {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE id = ?"
 		args = []interface{}{req.RoomId}
-		fmt.Printf("使用room_id查询: %d\n", req.RoomId)
+		logger.Debug("使用room_id查询", "room_id", req.RoomId)
 	} else if req.RoomCode != "" {
 		query = "SELECT id, room_code, room_name, creator_id, status, created_at, settled_at FROM rooms WHERE room_code = ?"
 		args = []interface{}{req.RoomCode}
-		fmt.Printf("使用room_code查询: %s\n", req.RoomCode)
+		logger.Debug("使用room_code查询", "room_code", req.RoomCode)
 	} else {
-		fmt.Printf("缺少房间标识\n")
+		logger.Warn("缺少房间标识")
 		return &Response{Code: 400, Message: "缺少房间标识"}, nil
 	}
 
-	fmt.Printf("执行查询: %s, 参数: %v\n", query, args)
+	logger.Debug("执行查询", "query", query, "args", args)
 
 	room := &Room{}
 	var createdAt time.Time
@@ -336,11 +336,11 @@ func (s *MahjongService) GetRoom(ctx context.Context, req *GetRoomRequest) (*Res
 	)
 	
 	if err != nil {
-		fmt.Printf("查询错误: %v\n", err)
+		logger.Error("查询错误", "error", err.Error())
 		return &Response{Code: 404, Message: "房间不存在"}, nil
 	}
 	
-	fmt.Printf("查询成功: 房间ID=%d, 房间号=%s\n", room.Id, room.RoomCode)
+	logger.Info("查询成功", "room_id", room.Id, "room_code", room.RoomCode)
 
 	// 转换时间戳
 	room.CreatedAt = createdAt
@@ -719,15 +719,15 @@ func (s *MahjongService) updateRecentRoom(userID, roomID int64) {
 }
 
 func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
-	fmt.Printf("getRoomPlayers: 查询房间ID %d 的玩家\n", roomID)
+	logger.Debug("getRoomPlayers: 查询房间玩家", "room_id", roomID)
 	
 	// 先简单查询room_players表，看看是否有记录
 	var count int
 	err := s.db.QueryRow("SELECT COUNT(*) FROM room_players WHERE room_id = ?", roomID).Scan(&count)
 	if err != nil {
-		fmt.Printf("getRoomPlayers: 查询room_players表失败: %v\n", err)
+		logger.Error("getRoomPlayers: 查询room_players表失败", "error", err.Error())
 	} else {
-		fmt.Printf("getRoomPlayers: room_players表中房间ID %d 有 %d 条记录\n", roomID, count)
+		logger.Debug("getRoomPlayers: room_players表记录数", "room_id", roomID, "count", count)
 	}
 	
 	query := `
@@ -738,12 +738,12 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		WHERE rp.room_id = ?
 		ORDER BY rp.joined_at ASC
 	`
-	fmt.Printf("getRoomPlayers: 执行查询: %s, 参数: [%d]\n", query, roomID)
+	logger.Debug("getRoomPlayers: 执行查询", "query", query, "room_id", roomID)
 	
 	rows, err := s.db.Query(query, roomID)
 	
 	if err != nil {
-		fmt.Printf("getRoomPlayers: 查询失败: %v\n", err)
+		logger.Error("getRoomPlayers: 查询失败", "error", err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -751,9 +751,9 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 	var players []*RoomPlayer
 	playerCount := 0
 	
-	fmt.Printf("getRoomPlayers: 开始遍历查询结果\n")
+	logger.Debug("getRoomPlayers: 开始遍历查询结果")
 	for rows.Next() {
-		fmt.Printf("getRoomPlayers: 处理第 %d 行数据\n", playerCount+1)
+		logger.Debug("getRoomPlayers: 处理行数据", "row_number", playerCount+1)
 		player := &RoomPlayer{}
 		user := &User{}
 		
@@ -771,16 +771,16 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		player.User = user
 		players = append(players, player)
 		playerCount++
-		fmt.Printf("getRoomPlayers: 找到玩家 %d, 用户ID: %d, 昵称: %s, 当前分数: %d\n", playerCount, player.UserId, user.Nickname, player.CurrentScore)
+		logger.Debug("getRoomPlayers: 找到玩家", "player_count", playerCount, "user_id", player.UserId, "nickname", user.Nickname, "current_score", player.CurrentScore)
 	}
 	
 	// 检查是否有行扫描错误
 	if err := rows.Err(); err != nil {
-		fmt.Printf("getRoomPlayers: 行扫描过程中出现错误: %v\n", err)
+		logger.Error("getRoomPlayers: 行扫描过程中出现错误", "error", err.Error())
 		return nil, err
 	}
 
-	fmt.Printf("getRoomPlayers: 总共找到 %d 个玩家\n", playerCount)
+	logger.Info("getRoomPlayers: 查询完成", "total_players", playerCount)
 	return players, nil
 }
 
