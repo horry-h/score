@@ -167,7 +167,7 @@
 .players-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12rpx;
+  gap: 8rpx;
   width: 100%;
   box-sizing: border-box;
   padding: 0 8rpx;
@@ -176,18 +176,19 @@
 .player-card {
   background: white;
   border-radius: 16rpx;
-  padding: 16rpx 12rpx;
+  padding: 12rpx 8rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2rpx solid transparent;
   position: relative;
   overflow: hidden;
-  min-height: 140rpx;
+  min-height: 120rpx;
+  max-width: 100%;
   justify-content: center;
 }
 
@@ -218,8 +219,8 @@
 }
 
 .player-avatar {
-  width: 60rpx;
-  height: 60rpx;
+  width: 50rpx;
+  height: 50rpx;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
@@ -245,7 +246,7 @@
 }
 
 .player-name {
-  font-size: 22rpx;
+  font-size: 20rpx;
   font-weight: 600;
   color: #333;
   line-height: 1.2;
@@ -259,7 +260,7 @@
 }
 
 .player-score {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 700;
   color: #07c160;
   margin-top: 4rpx;
