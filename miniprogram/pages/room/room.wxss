@@ -166,10 +166,8 @@
 }
 
 .players-grid {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  grid-auto-rows: auto !important;
-  gap: 8rpx;
+  display: flex !important;
+  flex-wrap: wrap !important;
   width: 100%;
   box-sizing: border-box;
   padding: 0 8rpx;
@@ -190,9 +188,10 @@
   position: relative;
   overflow: hidden;
   min-height: 120rpx;
-  max-width: 100%;
-  width: 100%;
+  width: 23%;
+  margin: 1%;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .player-card:active {
