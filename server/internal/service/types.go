@@ -1,5 +1,7 @@
 package service
 
+import "time"
+
 // 用户信息
 type User struct {
 	Id        int64  `json:"id"`
@@ -24,13 +26,13 @@ type Room struct {
 
 // 房间玩家
 type RoomPlayer struct {
-	Id          int64  `json:"id"`
-	RoomId      int64  `json:"room_id"`
-	UserId      int64  `json:"user_id"`
-	CurrentScore int32 `json:"current_score"`
-	FinalScore  int32  `json:"final_score"`
-	JoinedAt    int64  `json:"joined_at"`
-	User        *User  `json:"user"`
+	Id          int64     `json:"id"`
+	RoomId      int64     `json:"room_id"`
+	UserId      int64     `json:"user_id"`
+	CurrentScore int32    `json:"current_score"`
+	FinalScore  int32     `json:"final_score"`
+	JoinedAt    time.Time `json:"joined_at"`
+	User        *User     `json:"user"`
 }
 
 // 分数转移记录
