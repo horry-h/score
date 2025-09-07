@@ -216,3 +216,57 @@
     </view>
   </view>
 </view>
+
+<!-- 结算结果浮窗 -->
+<view class="settlement-modal" wx:if="{{showSettlementModal}}">
+  <view class="settlement-modal-content" catchtap="stopPropagation">
+    <view class="settlement-modal-header">
+      <text class="settlement-modal-title">
+        <text class="icon">💰</text>
+        <text>房间结算</text>
+      </text>
+      <view class="settlement-modal-close" catchtap="hideSettlementModal">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+    
+    <view class="settlement-modal-body">
+      <view class="settlement-summary">
+        <text class="summary-text">最优转账方案（{{settlementData.length}}笔转账）</text>
+      </view>
+      
+      <view class="settlement-list">
+        <view 
+          wx:for="{{settlementData}}" 
+          wx:key="index" 
+          class="settlement-item"
+        >
+          <view class="settlement-info">
+            <view class="settlement-direction">
+              <text class="from-user">{{item.fromUserName}}</text>
+              <text class="arrow">→</text>
+              <text class="to-user">{{item.toUserName}}</text>
+            </view>
+            <view class="settlement-amount">
+              <text class="amount-label">转账金额：</text>
+              <text class="amount-value">{{item.amount}}</text>
+            </view>
+          </view>
+          <view class="settlement-number">{{index + 1}}</view>
+        </view>
+      </view>
+      
+      <view class="settlement-hint">
+        <text class="icon">💡</text>
+        <text>请按照以上顺序进行微信转账</text>
+      </view>
+    </view>
+    
+    <view class="settlement-modal-footer">
+      <button class="confirm-btn" catchtap="hideSettlementModal">
+        <text class="btn-icon">✅</text>
+        <text class="btn-text">我知道了</text>
+      </button>
+    </view>
+  </view>
+</view>

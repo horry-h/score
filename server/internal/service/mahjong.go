@@ -514,7 +514,7 @@ func (s *MahjongService) SettleRoom(ctx context.Context, req *SettleRoomRequest)
 		_, err = tx.Exec(`
 			INSERT INTO settlements (room_id, from_user_id, to_user_id, amount) 
 			VALUES (?, ?, ?, ?)
-		`, req.RoomId, settlement.FromUserID, settlement.ToUserID, settlement.Amount)
+		`, req.RoomId, settlement.FromUserId, settlement.ToUserId, settlement.Amount)
 		
 		if err != nil {
 			return &Response{Code: 500, Message: "记录结算失败"}, nil
@@ -548,6 +548,77 @@ func (s *MahjongService) SettleRoom(ctx context.Context, req *SettleRoomRequest)
 
 	settlementsData, _ := json.Marshal(settlements)
 	return &Response{Code: 200, Message: "结算成功", Data: string(settlementsData)}, nil
+}
+
+// 计算最优转账方案
+func (s *MahjongService) calculateOptimalSettlement(players []struct {
+	UserID   int64
+	Score    int32
+	Nickname string
+}) []Settlement {
+	// 分离债权人和债务人
+	var creditors []struct {
+		UserID   int64
+		Score    int32
+		Nickname string
+	}
+	var debtors []struct {
+		UserID   int64
+		Score    int32
+		Nickname string
+	}
+
+	for _, player := range players {
+		if player.Score > 0 {
+			creditors = append(creditors, player)
+		} else if player.Score < 0 {
+			debtors = append(debtors, player)
+		}
+	}
+
+	var settlements []Settlement
+	creditorIndex := 0
+	debtorIndex := 0
+
+	// 贪心算法：每次处理一个债权人和一个债务人
+	for creditorIndex < len(creditors) && debtorIndex < len(debtors) {
+		creditor := &creditors[creditorIndex]
+		debtor := &debtors[debtorIndex]
+
+		// 计算转账金额
+		amount := min(creditor.Score, -debtor.Score)
+		
+		// 创建转账记录
+		settlement := Settlement{
+			FromUserId: debtor.UserID,
+			ToUserId:   creditor.UserID,
+			Amount:     amount,
+		}
+		settlements = append(settlements, settlement)
+
+		// 更新余额
+		creditor.Score -= amount
+		debtor.Score += amount
+
+		// 如果债权人余额为0，移动到下一个债权人
+		if creditor.Score == 0 {
+			creditorIndex++
+		}
+		// 如果债务人余额为0，移动到下一个债务人
+		if debtor.Score == 0 {
+			debtorIndex++
+		}
+	}
+
+	return settlements
+}
+
+// 辅助函数：返回两个整数中的较小值
+func min(a, b int32) int32 {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // 获取用户房间列表
@@ -846,71 +917,6 @@ func (s *MahjongService) getRoomSettlements(roomID int64) ([]*Settlement, error)
 	return settlements, nil
 }
 
-// 计算最优转账方案（最少转账次数）
-func (s *MahjongService) calculateOptimalSettlement(players []struct {
-	UserID   int64
-	Score    int32
-	Nickname string
-}) []struct {
-	FromUserID int64
-	ToUserID   int64
-	Amount     int32
-} {
-	// 分离赢家和输家
-	var winners, losers []struct {
-		UserID   int64
-		Score    int32
-		Nickname string
-	}
-
-	for _, player := range players {
-		if player.Score > 0 {
-			winners = append(winners, player)
-		} else if player.Score < 0 {
-			losers = append(losers, player)
-		}
-	}
-
-	var settlements []struct {
-		FromUserID int64
-		ToUserID   int64
-		Amount     int32
-	}
-
-	// 贪心算法：每次处理一个输家，尽可能多地偿还给赢家
-	for _, loser := range losers {
-		debt := -loser.Score // 债务金额
-		
-		for i := range winners {
-			if debt <= 0 {
-				break
-			}
-			if winners[i].Score <= 0 {
-				continue
-			}
-
-			transfer := debt
-			if transfer > winners[i].Score {
-				transfer = winners[i].Score
-			}
-
-			settlements = append(settlements, struct {
-				FromUserID int64
-				ToUserID   int64
-				Amount     int32
-			}{
-				FromUserID: loser.UserID,
-				ToUserID:   winners[i].UserID,
-				Amount:     transfer,
-			})
-
-			debt -= transfer
-			winners[i].Score -= transfer
-		}
-	}
-
-	return settlements
-}
 
 // 生成房间二维码
 func (s *MahjongService) GenerateQRCode(ctx context.Context, req *GenerateQRCodeRequest) (*Response, error) {

@@ -12,6 +12,8 @@ Page({
     currentUserId: null,
     showShareModal: false,
     showProfileModal: false,
+    showSettlementModal: false,
+    settlementData: [],
     loading: false,
     qrCodeData: null,
     qrCodeLoading: false,
@@ -492,10 +494,19 @@ Page({
       wx.hideLoading();
 
       if (response.code === 200) {
-        wx.showToast({
-          title: '结算成功',
-          icon: 'success'
+        // 解析结算数据
+        const settlementData = JSON.parse(response.data);
+        console.log('结算数据:', settlementData);
+        
+        // 处理结算数据，添加用户昵称
+        const processedSettlementData = await this.processSettlementData(settlementData);
+        
+        // 显示结算浮窗
+        this.setData({
+          showSettlementModal: true,
+          settlementData: processedSettlementData
         });
+        
         this.loadRoomData(); // 重新加载数据
       } else {
         wx.showToast({
@@ -725,6 +736,58 @@ Page({
     
     console.log(`昵称截断: "${nickname}" -> "${result}" (字符数: ${charCount})`);
     return result;
+  },
+
+  // 处理结算数据，添加用户昵称
+  async processSettlementData(settlementData) {
+    const processedData = [];
+    
+    for (const settlement of settlementData) {
+      // 获取用户昵称
+      const fromUserName = await this.getUserNameById(settlement.from_user_id);
+      const toUserName = await this.getUserNameById(settlement.to_user_id);
+      
+      processedData.push({
+        fromUserId: settlement.from_user_id,
+        toUserId: settlement.to_user_id,
+        fromUserName: fromUserName,
+        toUserName: toUserName,
+        amount: settlement.amount
+      });
+    }
+    
+    return processedData;
+  },
+
+  // 根据用户ID获取用户昵称
+  async getUserNameById(userId) {
+    try {
+      // 先从当前玩家列表中查找
+      const player = this.data.players.find(p => p.user_id === userId);
+      if (player && player.user && player.user.nickname) {
+        return player.user.nickname;
+      }
+      
+      // 如果没找到，调用API获取
+      const response = await api.getUserInfo(userId);
+      if (response.code === 200) {
+        const userInfo = JSON.parse(response.data);
+        return userInfo.nickname || '未知用户';
+      }
+      
+      return '未知用户';
+    } catch (error) {
+      console.error('获取用户昵称失败:', error);
+      return '未知用户';
+    }
+  },
+
+  // 隐藏结算浮窗
+  hideSettlementModal() {
+    this.setData({
+      showSettlementModal: false,
+      settlementData: []
+    });
   },
 
   // 显示个人信息浮窗

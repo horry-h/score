@@ -931,3 +931,189 @@
   justify-content: center;
   gap: 8rpx;
 }
+
+/* 结算浮窗样式 */
+.settlement-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settlement-modal-content {
+  background: white;
+  border-radius: 24rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+.settlement-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 40rpx 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.settlement-modal-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.settlement-modal-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.settlement-modal-close:active {
+  background: #e9ecef;
+  transform: scale(0.95);
+}
+
+.settlement-modal-body {
+  padding: 30rpx 40rpx;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.settlement-summary {
+  text-align: center;
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+.summary-text {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.settlement-list {
+  margin-bottom: 30rpx;
+}
+
+.settlement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 20rpx;
+  margin-bottom: 16rpx;
+  background: #f8f9fa;
+  border-radius: 16rpx;
+  border-left: 6rpx solid #07c160;
+}
+
+.settlement-info {
+  flex: 1;
+}
+
+.settlement-direction {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+  font-size: 28rpx;
+}
+
+.from-user {
+  color: #ff4757;
+  font-weight: 600;
+}
+
+.arrow {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.to-user {
+  color: #07c160;
+  font-weight: 600;
+}
+
+.settlement-amount {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+}
+
+.amount-label {
+  color: #666;
+}
+
+.amount-value {
+  color: #333;
+  font-weight: 600;
+}
+
+.settlement-number {
+  width: 40rpx;
+  height: 40rpx;
+  background: #07c160;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.settlement-hint {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx;
+  background: #e8f5e8;
+  border-radius: 12rpx;
+  color: #07c160;
+  font-size: 26rpx;
+}
+
+.settlement-modal-footer {
+  padding: 20rpx 40rpx 40rpx;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 24rpx 32rpx;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  color: white;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.confirm-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+}
