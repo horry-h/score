@@ -165,28 +165,65 @@ fi
 # 7. 创建数据库
 echo "7. 创建数据库..."
 # 从环境变量文件读取数据库配置（注意：此时在server目录下）
-DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2 || echo "123456")
-DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2 || echo "mahjong_score")
+DB_PASSWORD=$(grep "^DB_PASSWORD=" server.env 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "123456")
+DB_NAME=$(grep "^DB_NAME=" server.env 2>/dev/null | cut -d'=' -f2- | tr -d ' ' || echo "mahjong_score")
 
-# 使用mysql_config_editor或直接使用密码
-mysql -u root -p$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || {
-    echo "尝试使用默认密码连接MySQL..."
-    mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
-        echo "❌ 数据库创建失败，请检查MySQL配置"
-        echo "   请确保MySQL root密码正确配置"
-        exit 1
-    }
+# 验证配置读取
+if [ -z "$DB_NAME" ]; then
+    echo "❌ 数据库名称读取失败，使用默认值"
+    DB_NAME="mahjong_score"
+fi
+
+if [ -z "$DB_PASSWORD" ]; then
+    echo "❌ 数据库密码读取失败，使用默认值"
+    DB_PASSWORD="123456"
+fi
+
+echo "   数据库名: '$DB_NAME'"
+echo "   数据库密码: ${DB_PASSWORD:0:3}***"
+
+# 测试MySQL连接
+echo "   测试MySQL连接..."
+if mysql -u root -p$DB_PASSWORD -e "SELECT 1;" >/dev/null 2>&1; then
+    echo "   ✅ MySQL连接成功"
+    MYSQL_PASSWORD=$DB_PASSWORD
+elif mysql -u root -p123456 -e "SELECT 1;" >/dev/null 2>&1; then
+    echo "   ✅ MySQL连接成功（使用默认密码）"
+    MYSQL_PASSWORD="123456"
+else
+    echo "   ❌ MySQL连接失败，请检查密码配置"
+    echo "   尝试重置MySQL root密码..."
+    systemctl stop mysql
+    mysqld_safe --skip-grant-tables --skip-networking &
+    sleep 3
+    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';"
+    mysql -u root -e "FLUSH PRIVILEGES;"
+    pkill mysqld
+    systemctl start mysql
+    MYSQL_PASSWORD="123456"
+    echo "   ✅ MySQL密码已重置为默认值"
+fi
+
+# 创建数据库
+echo "   创建数据库..."
+mysql -u root -p$MYSQL_PASSWORD -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || {
+    echo "❌ 数据库创建失败"
+    exit 1
 }
 
 # 检查数据库是否已有表
-TABLE_COUNT=$(mysql -u root -p$DB_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l || mysql -u root -p123456 -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l)
+TABLE_COUNT=$(mysql -u root -p$MYSQL_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l)
 if [ "$TABLE_COUNT" -gt 0 ]; then
     echo "✅ 数据库已存在表结构，跳过表创建以避免数据丢失"
     echo "   现有表数量: $((TABLE_COUNT - 1))"
 else
-    echo "创建数据库表结构..."
-    mysql -u root -p$DB_PASSWORD $DB_NAME < database.sql 2>/dev/null || mysql -u root -p123456 $DB_NAME < database.sql
-    echo "✅ 数据库表结构创建完成"
+    echo "   创建数据库表结构..."
+    if [ -f "database.sql" ]; then
+        mysql -u root -p$MYSQL_PASSWORD $DB_NAME < database.sql
+        echo "✅ 数据库表结构创建完成"
+    else
+        echo "⚠️  database.sql文件不存在，跳过表创建"
+    fi
 fi
 
 # 8. 配置Nginx
@@ -330,7 +367,7 @@ echo "📝 日志目录: /root/horry/score/server/logs"
 echo ""
 echo "📋 部署总结:"
 echo "   - 已安装组件:$EXISTING_COMPONENTS"
-echo "   - 数据库表: $(mysql -u root -p$DB_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}' || mysql -u root -p123456 -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
+echo "   - 数据库表: $(mysql -u root -p$MYSQL_PASSWORD -D \`$DB_NAME\` -e "SHOW TABLES;" 2>/dev/null | wc -l | awk '{print $1-1}') 个表"
 echo "   - 服务状态: $(systemctl is-active $SERVICE_NAME)"
 echo ""
 echo "⚠️  注意: 需要手动配置SSL证书文件:"
