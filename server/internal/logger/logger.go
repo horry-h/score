@@ -61,11 +61,15 @@ const resetColor = "\033[0m"
 
 // cleanupOldLogs 清理旧日志文件，只保留最近3个
 func cleanupOldLogs(logDir string) error {
+	fmt.Printf("开始清理日志文件，目录: %s\n", logDir)
+	
 	// 读取日志目录中的所有文件
 	files, err := os.ReadDir(logDir)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("找到 %d 个文件\n", len(files))
 
 	// 过滤出日志文件并按修改时间排序
 	var logFiles []os.FileInfo
@@ -79,12 +83,15 @@ func cleanupOldLogs(logDir string) error {
 		}
 	}
 
+	fmt.Printf("找到 %d 个日志文件\n", len(logFiles))
+
 	// 按修改时间排序（最新的在前）
 	sort.Slice(logFiles, func(i, j int) bool {
 		return logFiles[i].ModTime().After(logFiles[j].ModTime())
 	})
 
 	// 删除超过3个的旧日志文件
+	deletedCount := 0
 	for i := 3; i < len(logFiles); i++ {
 		oldLogPath := filepath.Join(logDir, logFiles[i].Name())
 		if err := os.Remove(oldLogPath); err != nil {
@@ -92,9 +99,11 @@ func cleanupOldLogs(logDir string) error {
 			fmt.Printf("删除旧日志文件失败: %s, 错误: %v\n", oldLogPath, err)
 		} else {
 			fmt.Printf("已删除旧日志文件: %s\n", oldLogPath)
+			deletedCount++
 		}
 	}
 
+	fmt.Printf("清理完成，删除了 %d 个日志文件\n", deletedCount)
 	return nil
 }
 
