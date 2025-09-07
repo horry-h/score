@@ -22,8 +22,8 @@
   color: white;
   width: 100%;
   box-sizing: border-box;
-  /* 为小程序胶囊按钮和左侧按钮预留空间 */
-  padding: calc(60rpx + env(safe-area-inset-top)) calc(24rpx + 200rpx) 40rpx calc(24rpx + 40rpx);
+  /* 为小程序胶囊按钮和左侧按钮预留空间，减少高度 */
+  padding: calc(40rpx + env(safe-area-inset-top)) calc(24rpx + 200rpx) 24rpx calc(24rpx + 40rpx);
   position: relative;
   overflow: hidden;
 }
@@ -47,10 +47,10 @@
 .room-header-left {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 20rpx;
+  gap: 8rpx;
+  padding: 8rpx 16rpx;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 50rpx;
+  border-radius: 40rpx;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10rpx);
@@ -65,25 +65,25 @@
 }
 
 .room-header-left .back-icon {
-  font-size: 28rpx;
+  font-size: 24rpx;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .room-header-left .back-text {
-  font-size: 26rpx;
+  font-size: 22rpx;
   font-weight: 500;
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .room-header-title {
-  font-size: 40rpx;
+  font-size: 32rpx;
   font-weight: 600;
   flex: 1;
   text-align: center;
   position: relative;
   z-index: 1;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .room-header-right {
@@ -95,20 +95,20 @@
 .room-status-badge {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 8rpx 16rpx;
+  gap: 6rpx;
+  padding: 6rpx 12rpx;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 20rpx;
+  border-radius: 16rpx;
   backdrop-filter: blur(10rpx);
   border: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .room-status-badge .status-icon {
-  font-size: 20rpx;
+  font-size: 18rpx;
 }
 
 .room-status-badge .status-text {
-  font-size: 22rpx;
+  font-size: 18rpx;
   font-weight: 500;
 }
 
@@ -1224,6 +1224,34 @@
   border-radius: 12rpx;
   color: #07c160;
   font-size: 26rpx;
+}
+
+.empty-settlement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 20rpx;
+  text-align: center;
+}
+
+.empty-settlement .icon {
+  font-size: 64rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.empty-settlement .empty-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.empty-settlement .empty-hint {
+  font-size: 26rpx;
+  color: #999;
+  line-height: 1.4;
 }
 
 .settlement-modal-footer {

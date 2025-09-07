@@ -808,7 +808,13 @@ Page({
 
       if (response.code === 200) {
         // 解析结算数据
-        const settlementData = JSON.parse(response.data);
+        let settlementData = null;
+        try {
+          settlementData = response.data ? JSON.parse(response.data) : null;
+        } catch (error) {
+          console.error('解析结算数据失败:', error);
+          settlementData = null;
+        }
         console.log('结算数据:', settlementData);
         
         // 处理结算数据，添加用户昵称
@@ -1103,6 +1109,12 @@ Page({
   // 处理结算数据，添加用户昵称
   async processSettlementData(settlementData) {
     const processedData = [];
+    
+    // 检查结算数据是否为空
+    if (!settlementData || !Array.isArray(settlementData) || settlementData.length === 0) {
+      console.log('结算数据为空，返回空数组');
+      return processedData;
+    }
     
     for (const settlement of settlementData) {
       // 获取用户昵称

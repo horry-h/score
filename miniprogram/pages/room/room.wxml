@@ -246,34 +246,42 @@
     </view>
     
     <view class="settlement-modal-body">
-      <view class="settlement-summary">
-        <text class="summary-text">结算方案（{{settlementData.length}}笔转移）</text>
-      </view>
-      
-      <view class="settlement-list">
-        <view 
-          wx:for="{{settlementData}}" 
-          wx:key="index" 
-          class="settlement-item"
-        >
-          <view class="settlement-info">
-            <view class="settlement-direction">
-              <text class="from-user">{{item.fromUserName}}</text>
-              <text class="arrow">→</text>
-              <text class="to-user">{{item.toUserName}}</text>
+      <view wx:if="{{settlementData && settlementData.length > 0}}">
+        <view class="settlement-summary">
+          <text class="summary-text">结算方案（{{settlementData.length}}笔转移）</text>
+        </view>
+        
+        <view class="settlement-list">
+          <view 
+            wx:for="{{settlementData}}" 
+            wx:key="index" 
+            class="settlement-item"
+          >
+            <view class="settlement-info">
+              <view class="settlement-direction">
+                <text class="from-user">{{item.fromUserName}}</text>
+                <text class="arrow">→</text>
+                <text class="to-user">{{item.toUserName}}</text>
+              </view>
+              <view class="settlement-amount">
+                <text class="amount-label">转账分数：</text>
+                <text class="amount-value">{{item.amount}}</text>
+              </view>
             </view>
-            <view class="settlement-amount">
-              <text class="amount-label">转账分数：</text>
-              <text class="amount-value">{{item.amount}}</text>
-            </view>
+            <view class="settlement-number">{{index + 1}}</view>
           </view>
-          <view class="settlement-number">{{index + 1}}</view>
+        </view>
+        
+        <view class="settlement-hint">
+          <text class="icon">💡</text>
+          <text>请按照以上顺序进行转移</text>
         </view>
       </view>
       
-      <view class="settlement-hint">
-        <text class="icon">💡</text>
-        <text>请按照以上顺序进行转移</text>
+      <view wx:else class="empty-settlement">
+        <text class="icon">📊</text>
+        <text class="empty-text">暂无结算方案</text>
+        <text class="empty-hint">所有玩家分数已平衡，无需转移</text>
       </view>
     </view>
     
