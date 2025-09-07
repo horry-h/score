@@ -255,6 +255,12 @@
           <view class="settlement-number">{{index + 1}}</view>
         </view>
       </view>
+      
+      <view class="settlement-hint">
+        <text class="icon">💡</text>
+        <text>请按照以上顺序进行微信转账</text>
+      </view>
+    </view>
     
     <view class="settlement-modal-footer">
       <button class="confirm-btn" catchtap="hideSettlementModal">
