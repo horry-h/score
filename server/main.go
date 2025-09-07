@@ -105,10 +105,22 @@ func main() {
 		})
 	}
 
+	// 创建路由处理器
+	mux := http.NewServeMux()
+	
+	// WebSocket路由直接处理，不经过CORS包装器
+	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("直接WebSocket处理", "path", r.URL.Path, "method", r.Method)
+		httpHandler.ServeHTTP(w, r)
+	})
+	
+	// 其他路由经过CORS包装器
+	mux.Handle("/", corsHandler(httpHandler))
+	
 	// 启动HTTP服务器（由Nginx处理HTTPS）
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.HTTP.Port),
-		Handler:      corsHandler(httpHandler),
+		Handler:      mux,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 	}
