@@ -1,16 +1,18 @@
 <!--room.wxml-->
-<view class="container">
-  <!-- 返回主页按钮 -->
-  <view class="back-button" bindtap="goToHome">
-    <text class="back-icon">🏠</text>
-    <text class="back-text">返回主页</text>
-  </view>
-
-  <!-- 房间号区域 -->
-  <view class="room-number-section">
-    <view class="room-number-container">
-      <text class="room-number-label">房间号 {{roomInfo.id}}</text>
-      <view wx:if="{{roomInfo.status === 2}}" class="room-status settled">
+<view class="container" 
+      bindtouchstart="onTouchStart" 
+      bindtouchmove="onTouchMove" 
+      bindtouchend="onTouchEnd">
+  
+  <!-- 统一头部 -->
+  <view class="room-header">
+    <view class="room-header-left" bindtap="goToHome">
+      <text class="back-icon">🏠</text>
+      <text class="back-text">返回主页</text>
+    </view>
+    <text class="room-header-title">房间 {{roomInfo.id}}</text>
+    <view class="room-header-right">
+      <view wx:if="{{roomInfo.status === 2}}" class="room-status-badge">
         <text class="status-icon">🏁</text>
         <text class="status-text">已结算</text>
       </view>

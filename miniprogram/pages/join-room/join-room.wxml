@@ -1,12 +1,12 @@
 <!--join-room.wxml-->
 <view class="container">
-  <view class="header">
-    <view class="header-left" bindtap="goToHome">
+  <view class="common-header">
+    <view class="common-header-left" bindtap="goToHome">
       <text class="back-icon">🏠</text>
       <text class="back-text">返回主页</text>
     </view>
-    <text class="title">扫码加入</text>
-    <view class="header-right"></view>
+    <text class="common-header-title">扫码加入</text>
+    <view class="common-header-right"></view>
   </view>
 
   <view class="qr-section">

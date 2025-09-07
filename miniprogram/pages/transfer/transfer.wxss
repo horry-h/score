@@ -1,4 +1,6 @@
 /* transfer.wxss */
+@import '../../styles/common-header.wxss';
+
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
@@ -6,19 +8,6 @@
   margin: 0;
   width: 100%;
   box-sizing: border-box;
-}
-
-.header {
-  text-align: center;
-  padding: 40rpx 0;
-  background: linear-gradient(135deg, #07c160, #06ad56);
-  color: white;
-  margin: -40rpx -40rpx 40rpx -40rpx;
-}
-
-.title {
-  font-size: 40rpx;
-  font-weight: 600;
 }
 
 .content-section {

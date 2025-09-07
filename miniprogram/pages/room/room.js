@@ -1420,6 +1420,103 @@ Page({
     });
   },
 
+  // 触摸手势识别 - 左滑返回
+  touchStartX: 0,
+  touchStartY: 0,
+  touchStartTime: 0,
+  isSwipeGesture: false,
+
+  onTouchStart(e) {
+    const touch = e.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+    this.isSwipeGesture = false;
+  },
+
+  onTouchMove(e) {
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - this.touchStartX;
+    const deltaY = touch.clientY - this.touchStartY;
+    
+    // 实时检测是否为水平滑动
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+      this.isSwipeGesture = true;
+    }
+  },
+
+  onTouchEnd(e) {
+    const touch = e.changedTouches[0];
+    const touchEndX = touch.clientX;
+    const touchEndY = touch.clientY;
+    const touchEndTime = Date.now();
+    
+    // 计算滑动距离和时间
+    const deltaX = touchEndX - this.touchStartX;
+    const deltaY = touchEndY - this.touchStartY;
+    const deltaTime = touchEndTime - this.touchStartTime;
+    
+    // 判断是否为有效的左滑手势
+    // 条件：1. 是水平滑动 2. 向左滑动距离大于80px 3. 滑动时间小于800ms 4. 垂直滑动距离小于100px
+    const isHorizontalSwipe = this.isSwipeGesture && Math.abs(deltaX) > Math.abs(deltaY);
+    const isLeftSwipe = deltaX < -80;
+    const isQuickSwipe = deltaTime < 800;
+    const isNotVerticalScroll = Math.abs(deltaY) < 100;
+    
+    if (isHorizontalSwipe && isLeftSwipe && isQuickSwipe && isNotVerticalScroll) {
+      console.log('检测到左滑手势，返回上一页', {
+        deltaX, deltaY, deltaTime, 
+        isHorizontalSwipe, isLeftSwipe, isQuickSwipe, isNotVerticalScroll
+      });
+      this.handleSwipeBack();
+    }
+  },
+
+  // 处理左滑返回
+  handleSwipeBack() {
+    // 显示一个简单的提示
+    wx.showToast({
+      title: '返回上一页',
+      icon: 'none',
+      duration: 500
+    });
+    
+    // 延迟执行返回，让用户看到提示
+    setTimeout(() => {
+      // 获取当前页面栈
+      const pages = getCurrentPages();
+      console.log('当前页面栈长度:', pages.length);
+      
+      // 检查是否有上一页
+      if (pages.length > 1) {
+        // 获取上一页的路径
+        const prevPage = pages[pages.length - 2];
+        console.log('上一页路径:', prevPage.route);
+        
+        // 使用navigateBack返回上一页
+        wx.navigateBack({
+          delta: 1,
+          success: () => {
+            console.log('成功返回上一页');
+          },
+          fail: (error) => {
+            console.error('返回上一页失败:', error);
+            // 如果返回失败，则返回首页
+            wx.redirectTo({
+              url: '/pages/index/index'
+            });
+          }
+        });
+      } else {
+        // 如果没有上一页，返回首页
+        console.log('没有上一页，返回首页');
+        wx.redirectTo({
+          url: '/pages/index/index'
+        });
+      }
+    }, 300);
+  },
+
   // 设置WebSocket事件监听
   setupWebSocketListeners() {
     // 监听玩家加入事件

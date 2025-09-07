@@ -1,4 +1,6 @@
 /**index.wxss**/
+@import '../../styles/common-header.wxss';
+
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
@@ -7,15 +9,21 @@
   width: 100%;
 }
 
-/* 头部样式 */
+/* 首页特殊头部样式 */
 .header {
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 60rpx 24rpx 40rpx;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
   color: white;
   position: relative;
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
+  /* 为小程序胶囊按钮预留空间 */
+  padding-top: calc(60rpx + env(safe-area-inset-top));
+  padding-right: calc(24rpx + 200rpx);
 }
 
 .header::before {
@@ -40,6 +48,7 @@
   align-items: center;
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 
 .header-title {
@@ -68,6 +77,10 @@
   border: 4rpx solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.15);
   transition: transform 0.3s ease;
+  /* 确保头像不被胶囊按钮遮挡 */
+  position: relative;
+  z-index: 10;
+  margin-right: 20rpx; /* 增加右边距，避免与胶囊按钮重叠 */
 }
 
 .header-avatar:active {
@@ -88,11 +101,16 @@
 
 /* 没有房间时的紧凑样式 */
 .recent-section.no-room {
-  padding: 16rpx 16rpx 12rpx;
+  padding: 12rpx 16rpx 8rpx;
 }
 
 .recent-section.no-room .section-title {
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
+  font-size: 32rpx; /* 稍微减小标题字体 */
+}
+
+.recent-section.no-room .section-icon {
+  font-size: 36rpx; /* 稍微减小图标字体 */
 }
 
 .section-title {
@@ -161,11 +179,11 @@
 /* 没有最近房间时的样式 */
 .no-recent-room {
   background: white;
-  border-radius: 20rpx;
-  padding: 32rpx 24rpx;
-  margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.08);
-  border: 2rpx solid rgba(7, 193, 96, 0.06);
+  border-radius: 16rpx;
+  padding: 24rpx 20rpx;
+  margin-bottom: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.06);
+  border: 1rpx solid rgba(7, 193, 96, 0.04);
   background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
   text-align: center;
   position: relative;
@@ -183,22 +201,22 @@
 }
 
 .no-room-icon {
-  font-size: 48rpx;
-  margin-bottom: 16rpx;
+  font-size: 40rpx;
+  margin-bottom: 12rpx;
   opacity: 0.6;
 }
 
 .no-room-text {
   display: block;
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: #2c3e50;
   font-weight: 600;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .no-room-hint {
   display: block;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #7f8c8d;
   opacity: 0.8;
 }
@@ -308,6 +326,17 @@
   margin: 12rpx 0;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* 没有房间时历史按钮的紧凑样式 */
+.recent-section.no-room .history-btn-wrapper {
+  margin: 8rpx 0;
+}
+
+.recent-section.no-room .history-btn {
+  padding: 16rpx 24rpx;
+  font-size: 26rpx;
+  border-radius: 20rpx;
 }
 
 /* 个人信息浮窗样式 */

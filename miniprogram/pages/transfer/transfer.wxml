@@ -1,6 +1,6 @@
 <!--transfer.wxml-->
 <view class="container">
-  <view class="header">
+  <view class="simple-header">
     <text class="title">分数转移</text>
   </view>
 
