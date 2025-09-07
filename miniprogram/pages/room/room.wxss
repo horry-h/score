@@ -537,15 +537,25 @@
 
 .share-room-info .room-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-bottom: 20rpx;
+  gap: 10rpx;
 }
 
 .share-room-info .room-id {
   font-size: 36rpx;
   font-weight: 600;
   color: #07c160;
+}
+
+.share-room-info .status-badge {
+  background: #07c160;
+  color: white;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .share-room-info .room-stats {

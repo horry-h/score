@@ -108,7 +108,7 @@
     <view class="share-room-info">
       <view class="room-header">
         <text class="room-id">房间号: {{roomInfo.id}}</text>
-        <text class="status-badge status-active">等待加入</text>
+        <text class="status-badge status-active">房间号{{roomInfo.id}}</text>
       </view>
       <view class="room-stats">
         <text class="icon">👥</text>
