@@ -23,23 +23,35 @@ if [ ! -f "../server.env" ]; then
 fi
 
 # 检查必需的环境变量
-REQUIRED_VARS=("WECHAT_APP_ID" "WECHAT_APP_SECRET" "COS_BUCKET" "COS_REGION" "COS_SECRET_ID" "COS_SECRET_KEY")
-MISSING_VARS=()
+echo "检查必需配置项..."
+MISSING_COUNT=0
 
-for var in "${REQUIRED_VARS[@]}"; do
-    if ! grep -q "^${var}=" ../server.env; then
-        MISSING_VARS+=("$var")
-    elif [ -z "$(grep "^${var}=" ../server.env | cut -d'=' -f2)" ]; then
-        MISSING_VARS+=("$var")
+check_required_var() {
+    local var_name="$1"
+    if ! grep -q "^${var_name}=" ../server.env; then
+        echo "   - $var_name (缺失)"
+        MISSING_COUNT=$((MISSING_COUNT + 1))
+    elif [ -z "$(grep "^${var_name}=" ../server.env | cut -d'=' -f2)" ]; then
+        echo "   - $var_name (为空)"
+        MISSING_COUNT=$((MISSING_COUNT + 1))
+    else
+        echo "   ✅ $var_name"
     fi
-done
+}
 
-if [ ${#MISSING_VARS[@]} -gt 0 ]; then
-    echo "❌ 以下必需配置项缺失或为空:"
-    for var in "${MISSING_VARS[@]}"; do
-        echo "   - $var"
-    done
+echo "检查微信配置..."
+check_required_var "WECHAT_APP_ID"
+check_required_var "WECHAT_APP_SECRET"
+
+echo "检查COS配置..."
+check_required_var "COS_BUCKET"
+check_required_var "COS_REGION"
+check_required_var "COS_SECRET_ID"
+check_required_var "COS_SECRET_KEY"
+
+if [ $MISSING_COUNT -gt 0 ]; then
     echo ""
+    echo "❌ 发现 $MISSING_COUNT 个必需配置项缺失或为空"
     echo "请在server/server.env文件中设置这些配置项"
     exit 1
 fi
