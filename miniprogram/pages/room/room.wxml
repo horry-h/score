@@ -1,4 +1,5 @@
 <!--room.wxml-->
+<wxs module="utils" src="./utils.wxs"></wxs>
 <view class="container">
   <!-- 返回主页按钮 -->
   <view class="back-button" bindtap="goToHome">
@@ -68,10 +69,10 @@
       >
         <view class="transfer-info">
           <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
-          <view class="transfer-time">{{item.created_at | formatTimestamp}}</view>
+          <view class="transfer-time">{{utils.formatTimestamp(item.created_at)}}</view>
         </view>
         <view class="transfer-amount {{item.from_user_id === currentUserId ? 'outgoing' : (item.to_user_id === currentUserId ? 'incoming' : 'neutral')}}">
-          {{item.amount | formatScore}}
+          {{utils.formatScore(item.amount)}}
         </view>
       </view>
     </view>

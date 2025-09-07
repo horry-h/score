@@ -383,6 +383,11 @@ Page({
             console.log('全量获取时限制缓存为', maxCacheSize, '条记录');
           }
           
+          // 按ID降序排序，确保最新的流水在上面
+          if (transfersData && transfersData.length > 0) {
+            transfersData.sort((a, b) => b.id - a.id);
+          }
+          
           // 更新lastTransferId，用于后续增量更新
           let lastTransferId = 0;
           if (transfersData && transfersData.length > 0) {
@@ -451,8 +456,8 @@ Page({
       console.log('缓存已满，保留最新', maxCacheSize, '条记录');
     }
     
-    // 按ID升序排序，确保显示顺序正确（最新的在底部）
-    finalTransfers.sort((a, b) => a.id - b.id);
+    // 按ID降序排序，确保显示顺序正确（最新的在上面）
+    finalTransfers.sort((a, b) => b.id - a.id);
     
     return finalTransfers;
   },

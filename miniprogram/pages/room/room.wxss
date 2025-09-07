@@ -433,8 +433,10 @@
 }
 
 .transfer-time {
-  font-size: 24rpx;
-  color: #666;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+  opacity: 0.8;
 }
 
 .transfer-amount {
