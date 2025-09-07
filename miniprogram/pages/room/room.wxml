@@ -72,26 +72,28 @@
       <text class="icon">📜</text>
       <text>房间流水</text>
     </view>
-    <view wx:if="{{transfers.length > 0}}">
-      <view 
-        wx:for="{{transfers}}" 
-        wx:key="id" 
-        class="history-item {{item.from_user_id === currentUserId || item.to_user_id === currentUserId ? 'related' : 'unrelated'}}"
-      >
-        <view class="transfer-info">
-          <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
-          <view class="transfer-time">{{item.formatted_time}}</view>
-        </view>
-        <view class="transfer-amount {{item.from_user_id === currentUserId ? 'outgoing' : (item.to_user_id === currentUserId ? 'incoming' : 'neutral')}}">
-          {{item.formatted_amount}}
+    <scroll-view class="transfers-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <view wx:if="{{transfers.length > 0}}">
+        <view 
+          wx:for="{{transfers}}" 
+          wx:key="id" 
+          class="history-item {{item.from_user_id === currentUserId || item.to_user_id === currentUserId ? 'related' : 'unrelated'}}"
+        >
+          <view class="transfer-info">
+            <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
+            <view class="transfer-time">{{item.formatted_time}}</view>
+          </view>
+          <view class="transfer-amount {{item.from_user_id === currentUserId ? 'outgoing' : (item.to_user_id === currentUserId ? 'incoming' : 'neutral')}}">
+            {{item.formatted_amount}}
+          </view>
         </view>
       </view>
-    </view>
-    <view wx:else class="empty-state">
-      <text class="icon">📝</text>
-      <text>{{roomInfo.status === 2 ? '暂无转移记录' : '暂无转移记录'}}</text>
-      <text wx:if="{{roomInfo.status === 2}}" class="empty-hint">房间已结算，显示完整流水</text>
-    </view>
+      <view wx:else class="empty-state">
+        <text class="icon">📝</text>
+        <text>{{roomInfo.status === 2 ? '暂无转移记录' : '暂无转移记录'}}</text>
+        <text wx:if="{{roomInfo.status === 2}}" class="empty-hint">房间已结算，显示完整流水</text>
+      </view>
+    </scroll-view>
   </view>
 
   <!-- 操作按钮 -->
