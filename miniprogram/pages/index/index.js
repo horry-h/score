@@ -119,13 +119,26 @@ Page({
           }
           
           // 使用数据库中的信息，如果没有则使用默认值
+          let avatarUrl = userData.avatar_url || '/images/default-avatar.png'
+          
+          // 如果是COS URL，生成预签名URL
+          if (avatarUrl.includes('cos.ap-guangzhou.myqcloud.com')) {
+            try {
+              const fileName = `avatars/${userData.openid}.jpg`;
+              avatarUrl = await cosUploader.getObjectUrl(fileName);
+              console.log('刷新用户头像URL:', avatarUrl);
+            } catch (error) {
+              console.error('刷新用户头像URL失败:', error);
+            }
+          }
+          
           const updatedUserInfo = {
             user_id: localUserInfo.user_id,
             nickName: userData.nickname || '微信用户',
-            avatarUrl: userData.avatar_url || '/images/default-avatar.png',
+            avatarUrl: avatarUrl,
             openid: userData.openid || userData.Openid,
             nickname: userData.nickname,
-            avatar_url: userData.avatar_url
+            avatar_url: avatarUrl
           }
           
           // 更新本地存储和全局数据
