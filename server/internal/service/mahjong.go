@@ -198,8 +198,8 @@ func (s *MahjongService) CreateRoom(ctx context.Context, req *CreateRoomRequest)
 	
 	// 创建者加入房间
 	_, err = s.db.Exec(`
-		INSERT INTO room_players (room_id, user_id) 
-		VALUES (?, ?)
+		INSERT INTO room_players (room_id, user_id, current_score, final_score) 
+		VALUES (?, ?, 0, 0)
 	`, roomID, req.CreatorId)
 	
 	if err != nil {
@@ -275,8 +275,8 @@ func (s *MahjongService) JoinRoom(ctx context.Context, req *JoinRoomRequest) (*R
 	// 加入房间
 	fmt.Printf("JoinRoom: 插入玩家记录, 房间ID: %d, 用户ID: %d\n", roomID, req.UserId)
 	result, err := s.db.Exec(`
-		INSERT INTO room_players (room_id, user_id) 
-		VALUES (?, ?)
+		INSERT INTO room_players (room_id, user_id, current_score, final_score) 
+		VALUES (?, ?, 0, 0)
 	`, roomID, req.UserId)
 	
 	if err != nil {
@@ -730,14 +730,17 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		fmt.Printf("getRoomPlayers: room_players表中房间ID %d 有 %d 条记录\n", roomID, count)
 	}
 	
-	rows, err := s.db.Query(`
+	query := `
 		SELECT rp.id, rp.room_id, rp.user_id, rp.current_score, rp.final_score, rp.joined_at,
 		       u.id, u.openid, u.nickname, u.avatar_url, u.created_at, u.updated_at
 		FROM room_players rp
 		LEFT JOIN users u ON rp.user_id = u.id
 		WHERE rp.room_id = ?
 		ORDER BY rp.joined_at ASC
-	`, roomID)
+	`
+	fmt.Printf("getRoomPlayers: 执行查询: %s, 参数: [%d]\n", query, roomID)
+	
+	rows, err := s.db.Query(query, roomID)
 	
 	if err != nil {
 		fmt.Printf("getRoomPlayers: 查询失败: %v\n", err)
@@ -747,29 +750,22 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 
 	var players []*RoomPlayer
 	playerCount := 0
+	
+	fmt.Printf("getRoomPlayers: 开始遍历查询结果\n")
 	for rows.Next() {
+		fmt.Printf("getRoomPlayers: 处理第 %d 行数据\n", playerCount+1)
 		player := &RoomPlayer{}
 		user := &User{}
 		
-		// 使用sql.NullInt32来处理可能为NULL的final_score
-		var finalScore sql.NullInt32
-		
 		err := rows.Scan(
 			&player.Id, &player.RoomId, &player.UserId, &player.CurrentScore, 
-			&finalScore, &player.JoinedAt,
+			&player.FinalScore, &player.JoinedAt,
 			&user.Id, &user.Openid, &user.Nickname, &user.AvatarUrl, 
 			&user.CreatedAt, &user.UpdatedAt,
 		)
 		if err != nil {
 			fmt.Printf("getRoomPlayers: 扫描行数据失败: %v\n", err)
 			continue
-		}
-		
-		// 处理NULL值
-		if finalScore.Valid {
-			player.FinalScore = &finalScore.Int32
-		} else {
-			player.FinalScore = nil
 		}
 		
 		player.User = user
