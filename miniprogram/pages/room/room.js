@@ -451,10 +451,12 @@ Page({
         title: '转移分数',
         content: '',
         editable: true,
-        placeholderText: '50',
+        placeholderText: '1',
         success: (res) => {
-          if (res.confirm && res.content) {
-            const amount = parseInt(res.content);
+          if (res.confirm) {
+            // 如果用户直接点击确认而没有输入内容，使用默认值1
+            const inputValue = res.content || '1';
+            const amount = parseInt(inputValue);
             if (isNaN(amount) || amount <= 0) {
               wx.showToast({
                 title: '请输入有效的分数',

@@ -792,9 +792,8 @@ func (s *MahjongService) GetRoomDetail(ctx context.Context, req *GetRoomDetailRe
 
 // 获取最近房间
 func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest) (*Response, error) {
-	var recentRoom RecentRoom
-	var lastAccessedAt time.Time
-	err := s.db.QueryRow(`
+	// 查询最近20个房间，限制数量以优化性能
+	rows, err := s.db.Query(`
 		SELECT r.id, r.room_code, r.room_name, r.status, rp.joined_at,
 		       rp.current_score,
 		       (SELECT COUNT(*) FROM room_players WHERE room_id = r.id) as player_count,
@@ -803,23 +802,38 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 		INNER JOIN rooms r ON rp.room_id = r.id
 		WHERE rp.user_id = ? AND r.status = 1
 		ORDER BY rp.joined_at DESC
-		LIMIT 1
-	`, req.UserId).Scan(
-		&recentRoom.RoomId, &recentRoom.RoomCode, &recentRoom.RoomName, &recentRoom.Status,
-		&lastAccessedAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
-	)
+		LIMIT 20
+	`, req.UserId)
 	
-	if err == sql.ErrNoRows {
-		return &Response{Code: 200, Message: "没有最近房间"}, nil
-	} else if err != nil {
+	if err != nil {
 		return &Response{Code: 500, Message: "查询最近房间失败"}, nil
 	}
+	defer rows.Close()
 
-	// 转换时间戳
-	recentRoom.LastAccessedAt = lastAccessedAt
+	var recentRooms []RecentRoom
+	for rows.Next() {
+		var recentRoom RecentRoom
+		var lastAccessedAt time.Time
+		
+		err := rows.Scan(
+			&recentRoom.RoomId, &recentRoom.RoomCode, &recentRoom.RoomName, &recentRoom.Status,
+			&lastAccessedAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
+		)
+		if err != nil {
+			return &Response{Code: 500, Message: "解析房间数据失败"}, nil
+		}
+		
+		// 转换时间戳
+		recentRoom.LastAccessedAt = lastAccessedAt
+		recentRooms = append(recentRooms, recentRoom)
+	}
+	
+	if len(recentRooms) == 0 {
+		return &Response{Code: 200, Message: "没有最近房间"}, nil
+	}
 
-	recentRoomData, _ := json.Marshal(recentRoom)
-	return &Response{Code: 200, Message: "获取成功", Data: string(recentRoomData)}, nil
+	recentRoomsData, _ := json.Marshal(recentRooms)
+	return &Response{Code: 200, Message: "获取成功", Data: string(recentRoomsData)}, nil
 }
 
 // 辅助方法

@@ -64,13 +64,13 @@
       <view 
         wx:for="{{transfers}}" 
         wx:key="id" 
-        class="history-item"
+        class="history-item {{item.from_user_id === currentUserId || item.to_user_id === currentUserId ? 'related' : 'unrelated'}}"
       >
         <view class="transfer-info">
           <view class="transfer-desc">{{item.from_user_name}} → {{item.to_user_name}}</view>
           <view class="transfer-time">{{item.created_at | formatTimestamp}}</view>
         </view>
-        <view class="transfer-amount {{item.amount > 0 ? 'positive' : 'negative'}}">
+        <view class="transfer-amount {{item.from_user_id === currentUserId ? 'outgoing' : (item.to_user_id === currentUserId ? 'incoming' : 'neutral')}}">
           {{item.amount | formatScore}}
         </view>
       </view>

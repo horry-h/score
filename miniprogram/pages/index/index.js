@@ -200,11 +200,10 @@ Page({
         console.log('最近房间原始数据:', response.data)
         
         // 解析JSON字符串
-        let recentRoomData;
+        let recentRoomsData;
         try {
-          recentRoomData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-          console.log('解析后的最近房间数据:', recentRoomData)
-          console.log('room_id值:', recentRoomData.room_id, '类型:', typeof recentRoomData.room_id)
+          recentRoomsData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+          console.log('解析后的最近房间数据:', recentRoomsData)
         } catch (error) {
           console.error('解析最近房间数据失败:', error)
           this.setData({
@@ -213,13 +212,27 @@ Page({
           return
         }
         
-        // 只展示未结算的房间 (status === 1)
-        if (recentRoomData && recentRoomData.status === 1) {
+        // 处理房间列表，找到第一个未结算的房间 (status === 1)
+        let activeRoom = null;
+        if (Array.isArray(recentRoomsData)) {
+          for (let room of recentRoomsData) {
+            if (room && room.status === 1) {
+              activeRoom = room;
+              console.log('找到活跃房间:', room.room_id, '类型:', typeof room.room_id)
+              break;
+            }
+          }
+        } else if (recentRoomsData && recentRoomsData.status === 1) {
+          // 兼容单个房间的情况
+          activeRoom = recentRoomsData;
+        }
+        
+        if (activeRoom) {
           this.setData({
-            recentRoom: recentRoomData
+            recentRoom: activeRoom
           })
         } else {
-          console.log('最近房间已结算，不展示')
+          console.log('没有找到活跃房间')
           this.setData({
             recentRoom: null
           })

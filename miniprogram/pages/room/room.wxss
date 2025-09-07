@@ -44,6 +44,30 @@
   letter-spacing: 1rpx;
 }
 
+/* 房间号区域 */
+.room-number-section {
+  padding: 120rpx 40rpx 20rpx 40rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
+  margin: 0 -40rpx 24rpx -40rpx;
+  position: relative;
+  overflow: hidden;
+  width: calc(100% + 80rpx);
+  box-sizing: border-box;
+}
+
+.room-number-container {
+  position: relative;
+  z-index: 2;
+}
+
+.room-number-label {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
 /* 房间标题区域 */
 .room-header {
   background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
@@ -158,8 +182,8 @@
 }
 
 .players-section {
-  margin-bottom: 24rpx;
-  padding: 0 16rpx;
+  margin-bottom: 40rpx;
+  padding: 0 16rpx 24rpx 16rpx;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
@@ -176,21 +200,21 @@
 .player-card {
   background: white;
   border-radius: 16rpx;
-  padding: 12rpx 8rpx;
+  padding: 20rpx 8rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
+  gap: 10rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2rpx solid transparent;
   position: relative;
   overflow: hidden;
-  min-height: 120rpx;
+  min-height: 160rpx;
   width: 23%;
   margin: 1%;
-  justify-content: center;
+  justify-content: flex-start;
   box-sizing: border-box;
 }
 
@@ -221,8 +245,8 @@
 }
 
 .player-avatar {
-  width: 50rpx;
-  height: 50rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
@@ -248,7 +272,7 @@
 }
 
 .player-name {
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: 600;
   color: #333;
   line-height: 1.2;
@@ -261,10 +285,10 @@
 }
 
 .player-score {
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 700;
   color: #07c160;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
   text-align: center;
 }
 
@@ -320,7 +344,7 @@
   background: #f8f9fa;
   padding: 16rpx 24rpx;
   border-radius: 16rpx;
-  margin: 8rpx 0;
+  margin: 20rpx 16rpx 8rpx 16rpx;
   color: #666;
   font-size: 26rpx;
   text-align: center;
@@ -382,6 +406,26 @@
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
+/* 与用户相关的流水 */
+.history-item.related {
+  background: white;
+  border-left: 6rpx solid #07c160;
+}
+
+/* 与用户无关的流水 */
+.history-item.unrelated {
+  background: #f8f9fa;
+  opacity: 0.7;
+}
+
+.history-item.unrelated .transfer-desc {
+  color: #999;
+}
+
+.history-item.unrelated .transfer-time {
+  color: #bbb;
+}
+
 .transfer-desc {
   font-size: 28rpx;
   color: #333;
@@ -398,6 +442,22 @@
   font-weight: 600;
 }
 
+/* 用户转出的流水 - 红色 */
+.transfer-amount.outgoing {
+  color: #ff4757;
+}
+
+/* 别人转给用户的流水 - 绿色 */
+.transfer-amount.incoming {
+  color: #07c160;
+}
+
+/* 与用户无关的流水 - 灰色 */
+.transfer-amount.neutral {
+  color: #999;
+}
+
+/* 保留原有的positive/negative样式作为备用 */
 .transfer-amount.positive {
   color: #07c160;
 }
