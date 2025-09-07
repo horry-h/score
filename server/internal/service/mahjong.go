@@ -758,6 +758,7 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 			&user.CreatedAt, &user.UpdatedAt,
 		)
 		if err != nil {
+			fmt.Printf("getRoomPlayers: 扫描行数据失败: %v\n", err)
 			continue
 		}
 		
@@ -765,6 +766,12 @@ func (s *MahjongService) getRoomPlayers(roomID int64) ([]*RoomPlayer, error) {
 		players = append(players, player)
 		playerCount++
 		fmt.Printf("getRoomPlayers: 找到玩家 %d, 用户ID: %d, 昵称: %s\n", playerCount, player.UserId, user.Nickname)
+	}
+	
+	// 检查是否有行扫描错误
+	if err := rows.Err(); err != nil {
+		fmt.Printf("getRoomPlayers: 行扫描过程中出现错误: %v\n", err)
+		return nil, err
 	}
 
 	fmt.Printf("getRoomPlayers: 总共找到 %d 个玩家\n", playerCount)

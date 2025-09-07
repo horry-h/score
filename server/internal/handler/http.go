@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"mahjong-server/internal/logger"
 	"mahjong-server/internal/service"
@@ -15,6 +18,31 @@ type HTTPHandler struct {
 	service *service.MahjongService
 }
 
+// ResponseRecorder 用于记录HTTP响应
+type ResponseRecorder struct {
+	http.ResponseWriter
+	statusCode int
+	body       *bytes.Buffer
+}
+
+func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
+	return &ResponseRecorder{
+		ResponseWriter: w,
+		statusCode:     http.StatusOK,
+		body:           &bytes.Buffer{},
+	}
+}
+
+func (r *ResponseRecorder) WriteHeader(code int) {
+	r.statusCode = code
+	r.ResponseWriter.WriteHeader(code)
+}
+
+func (r *ResponseRecorder) Write(b []byte) (int, error) {
+	r.body.Write(b)
+	return r.ResponseWriter.Write(b)
+}
+
 func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandler {
 	return &HTTPHandler{
 		service: service.NewMahjongService(db, wechatService),
@@ -22,12 +50,19 @@ func NewHTTPHandler(db *sql.DB, wechatService *service.WeChatService) *HTTPHandl
 }
 
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// 记录请求开始时间
+	startTime := time.Now()
+	
+	// 创建响应记录器
+	recorder := NewResponseRecorder(w)
+	
 	// 设置响应头
-	w.Header().Set("Content-Type", "application/json")
+	recorder.Header().Set("Content-Type", "application/json")
 
 	// 健康检查接口
 	if r.URL.Path == "/health" || r.URL.Path == "/api/v1/health" {
-		h.handleHealth(w, r)
+		h.handleHealth(recorder, r)
+		h.logRequest(r, recorder, startTime)
 		return
 	}
 
@@ -37,44 +72,96 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	switch {
 	case r.Method == "POST" && path == "autoLogin":
-		h.handleAutoLogin(w, r)
+		h.handleAutoLogin(recorder, r)
 	case r.Method == "POST" && path == "updateUser":
-		h.handleUpdateUser(w, r)
+		h.handleUpdateUser(recorder, r)
 	case r.Method == "GET" && path == "getUser":
-		h.handleGetUser(w, r)
+		h.handleGetUser(recorder, r)
 	case r.Method == "POST" && path == "createRoom":
-		h.handleCreateRoom(w, r)
+		h.handleCreateRoom(recorder, r)
 	case r.Method == "POST" && path == "joinRoom":
-		h.handleJoinRoom(w, r)
+		h.handleJoinRoom(recorder, r)
 	case r.Method == "GET" && path == "getRoom":
-		h.handleGetRoom(w, r)
+		h.handleGetRoom(recorder, r)
 	case r.Method == "GET" && path == "getRoomPlayers":
-		h.handleGetRoomPlayers(w, r)
+		h.handleGetRoomPlayers(recorder, r)
 	case r.Method == "GET" && path == "getRoomTransfers":
-		h.handleGetRoomTransfers(w, r)
+		h.handleGetRoomTransfers(recorder, r)
 	case r.Method == "POST" && path == "transferScore":
-		h.handleTransferScore(w, r)
+		h.handleTransferScore(recorder, r)
 	case r.Method == "POST" && path == "settleRoom":
-		h.handleSettleRoom(w, r)
+		h.handleSettleRoom(recorder, r)
 	case r.Method == "GET" && path == "getUserRooms":
-		h.handleGetUserRooms(w, r)
+		h.handleGetUserRooms(recorder, r)
 	case r.Method == "GET" && path == "getRoomDetail":
-		h.handleGetRoomDetail(w, r)
+		h.handleGetRoomDetail(recorder, r)
 	case r.Method == "GET" && path == "getRecentRoom":
-		h.handleGetRecentRoom(w, r)
+		h.handleGetRecentRoom(recorder, r)
 	case r.Method == "GET" && path == "health":
-		h.handleHealth(w, r)
+		h.handleHealth(recorder, r)
 	case r.Method == "POST" && path == "validateSession":
-		h.handleValidateSession(w, r)
+		h.handleValidateSession(recorder, r)
 	case r.Method == "POST" && path == "generateQRCode":
-		h.handleGenerateQRCode(w, r)
+		h.handleGenerateQRCode(recorder, r)
 	default:
-		http.NotFound(w, r)
+		http.NotFound(recorder, r)
+	}
+	
+	// 记录请求日志
+	h.logRequest(r, recorder, startTime)
+}
+
+// logRequest 记录HTTP请求日志
+func (h *HTTPHandler) logRequest(r *http.Request, recorder *ResponseRecorder, startTime time.Time) {
+	duration := time.Since(startTime)
+	
+	// 获取客户端IP
+	clientIP := r.RemoteAddr
+	if xForwardedFor := r.Header.Get("X-Forwarded-For"); xForwardedFor != "" {
+		clientIP = strings.Split(xForwardedFor, ",")[0]
+	} else if xRealIP := r.Header.Get("X-Real-IP"); xRealIP != "" {
+		clientIP = xRealIP
+	}
+	
+	// 获取请求体（仅对POST请求）
+	var requestBody string
+	if r.Method == "POST" && r.Body != nil {
+		bodyBytes, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		if len(bodyBytes) > 0 {
+			requestBody = string(bodyBytes)
+		}
+	}
+	
+	// 获取响应体
+	responseBody := recorder.body.String()
+	
+	// 构建日志字段
+	logFields := map[string]interface{}{
+		"method":        r.Method,
+		"path":          r.URL.Path,
+		"query":         r.URL.RawQuery,
+		"client_ip":     clientIP,
+		"user_agent":    r.Header.Get("User-Agent"),
+		"status_code":   recorder.statusCode,
+		"duration_ms":   duration.Milliseconds(),
+		"response_size": len(responseBody),
+	}
+	
+	// 对于非200状态码，记录详细信息
+	if recorder.statusCode != http.StatusOK {
+		logFields["request_body"] = requestBody
+		logFields["response_body"] = responseBody
+		
+		logger.Error("HTTP请求异常", logFields)
+	} else {
+		// 对于200状态码，只记录基本信息
+		logger.Info("HTTP请求", logFields)
 	}
 }
 
 // 自动登录（只获取openid，查询或创建用户记录）
-func (h *HTTPHandler) handleAutoLogin(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleAutoLogin(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		Code string `json:"code"`
 	}
@@ -103,7 +190,7 @@ func (h *HTTPHandler) handleAutoLogin(w http.ResponseWriter, r *http.Request) {
 
 
 // 更新用户信息
-func (h *HTTPHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleUpdateUser(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		UserId    int64  `json:"user_id"`
 		Nickname  string `json:"nickname"`
@@ -130,7 +217,7 @@ func (h *HTTPHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // 获取用户信息
-func (h *HTTPHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetUser(w *ResponseRecorder, r *http.Request) {
 	userIdStr := r.URL.Query().Get("user_id")
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
@@ -151,7 +238,7 @@ func (h *HTTPHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // 创建房间
-func (h *HTTPHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleCreateRoom(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		CreatorId int64  `json:"creator_id"`
 		RoomName  string `json:"room_name"`
@@ -176,7 +263,7 @@ func (h *HTTPHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 // 加入房间
-func (h *HTTPHandler) handleJoinRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleJoinRoom(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		UserId int64 `json:"user_id"`
 		RoomId int64 `json:"room_id"`
@@ -201,7 +288,7 @@ func (h *HTTPHandler) handleJoinRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 // 获取房间信息
-func (h *HTTPHandler) handleGetRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetRoom(w *ResponseRecorder, r *http.Request) {
 	roomIdStr := r.URL.Query().Get("room_id")
 	roomCode := r.URL.Query().Get("room_code")
 
@@ -229,7 +316,7 @@ func (h *HTTPHandler) handleGetRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 // 获取房间玩家
-func (h *HTTPHandler) handleGetRoomPlayers(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetRoomPlayers(w *ResponseRecorder, r *http.Request) {
 	roomIdStr := r.URL.Query().Get("room_id")
 	roomId, err := strconv.ParseInt(roomIdStr, 10, 64)
 	if err != nil {
@@ -250,7 +337,7 @@ func (h *HTTPHandler) handleGetRoomPlayers(w http.ResponseWriter, r *http.Reques
 }
 
 // 获取房间转移记录
-func (h *HTTPHandler) handleGetRoomTransfers(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetRoomTransfers(w *ResponseRecorder, r *http.Request) {
 	roomIdStr := r.URL.Query().Get("room_id")
 	roomId, err := strconv.ParseInt(roomIdStr, 10, 64)
 	if err != nil {
@@ -271,7 +358,7 @@ func (h *HTTPHandler) handleGetRoomTransfers(w http.ResponseWriter, r *http.Requ
 }
 
 // 转移分数
-func (h *HTTPHandler) handleTransferScore(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleTransferScore(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		RoomId     int64 `json:"room_id"`
 		FromUserId int64 `json:"from_user_id"`
@@ -300,7 +387,7 @@ func (h *HTTPHandler) handleTransferScore(w http.ResponseWriter, r *http.Request
 }
 
 // 结算房间
-func (h *HTTPHandler) handleSettleRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleSettleRoom(w *ResponseRecorder, r *http.Request) {
 	var req struct {
 		RoomId int64 `json:"room_id"`
 		UserId int64 `json:"user_id"`
@@ -325,7 +412,7 @@ func (h *HTTPHandler) handleSettleRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 // 获取用户房间列表
-func (h *HTTPHandler) handleGetUserRooms(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetUserRooms(w *ResponseRecorder, r *http.Request) {
 	userIdStr := r.URL.Query().Get("user_id")
 	pageStr := r.URL.Query().Get("page")
 	pageSizeStr := r.URL.Query().Get("page_size")
@@ -361,7 +448,7 @@ func (h *HTTPHandler) handleGetUserRooms(w http.ResponseWriter, r *http.Request)
 }
 
 // 获取房间详情
-func (h *HTTPHandler) handleGetRoomDetail(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetRoomDetail(w *ResponseRecorder, r *http.Request) {
 	roomIdStr := r.URL.Query().Get("room_id")
 	userIdStr := r.URL.Query().Get("user_id")
 
@@ -391,7 +478,7 @@ func (h *HTTPHandler) handleGetRoomDetail(w http.ResponseWriter, r *http.Request
 }
 
 // 获取最近房间
-func (h *HTTPHandler) handleGetRecentRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGetRecentRoom(w *ResponseRecorder, r *http.Request) {
 	userIdStr := r.URL.Query().Get("user_id")
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
@@ -412,7 +499,7 @@ func (h *HTTPHandler) handleGetRecentRoom(w http.ResponseWriter, r *http.Request
 }
 
 // 写入响应
-func (h *HTTPHandler) writeResponse(w http.ResponseWriter, response *service.Response) {
+func (h *HTTPHandler) writeResponse(w *ResponseRecorder, response *service.Response) {
 	// 对于业务逻辑错误，返回HTTP 200状态码，在响应体中包含业务状态码
 	if response.Code == 404 {
 		w.WriteHeader(http.StatusOK)
@@ -425,7 +512,7 @@ func (h *HTTPHandler) writeResponse(w http.ResponseWriter, response *service.Res
 }
 
 // 写入错误响应
-func (h *HTTPHandler) writeError(w http.ResponseWriter, code int, message string) {
+func (h *HTTPHandler) writeError(w *ResponseRecorder, code int, message string) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"code":    code,
@@ -435,7 +522,7 @@ func (h *HTTPHandler) writeError(w http.ResponseWriter, code int, message string
 }
 
 // 健康检查
-func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleHealth(w *ResponseRecorder, r *http.Request) {
 	response := map[string]interface{}{
 		"code":    200,
 		"message": "服务运行正常",
@@ -452,16 +539,16 @@ func (h *HTTPHandler) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // 验证登录态
-func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleValidateSession(w *ResponseRecorder, r *http.Request) {
 	var req service.ValidateSessionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		h.writeError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	response, err := h.service.ValidateSession(r.Context(), req.SessionID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		h.writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -470,16 +557,16 @@ func (h *HTTPHandler) handleValidateSession(w http.ResponseWriter, r *http.Reque
 }
 
 // 生成房间二维码
-func (h *HTTPHandler) handleGenerateQRCode(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleGenerateQRCode(w *ResponseRecorder, r *http.Request) {
 	var req service.GenerateQRCodeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		h.writeError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	response, err := h.service.GenerateQRCode(r.Context(), &req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		h.writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
