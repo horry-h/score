@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -87,7 +88,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// WebSocket连接处理
 	if r.URL.Path == "/ws" {
-		logger.Info("匹配到WebSocket路由", "path", r.URL.Path)
+		logger.Info("匹配到WebSocket路由", "path", r.URL.Path, "method", r.Method)
+		logger.Info("ResponseWriter类型", "type", fmt.Sprintf("%T", w))
 		// WebSocket升级需要直接使用原始的ResponseWriter，不能使用包装器
 		h.wsHandler.HandleWebSocket(w, r)
 		return
