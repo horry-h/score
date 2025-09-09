@@ -20,6 +20,7 @@ Page({
     qrCodeData: null,
     qrCodeLoading: false,
     showAvatarOverlay: false, // 是否显示头像蒙层提示
+    selectedPlayerId: null, // 当前选中的玩家ID（用于转移分数）
     profileForm: {
       nickname: '微信用户',
       avatarUrl: ''
@@ -804,10 +805,18 @@ Page({
       return;
     }
 
-    // 点击他人头像，显示转移分数浮窗
+    // 点击他人头像，设置选中状态并显示转移分数浮窗
+    this.setData({
+      selectedPlayerId: player.user_id
+    });
+    
     try {
       const amount = await this.showTransferInput(player.user.nickname, player.current_score);
-      if (!amount || amount <= 0) return;
+      if (!amount || amount <= 0) {
+        // 取消转移时清除选中状态
+        this.setData({ selectedPlayerId: null });
+        return;
+      }
 
       wx.showLoading({ title: '转移中...' });
       const response = await api.transferScore(
@@ -823,12 +832,16 @@ Page({
           title: '转移成功',
           icon: 'success'
         });
+        // 转移成功后清除选中状态
+        this.setData({ selectedPlayerId: null });
         this.loadRoomData(); // 重新加载数据
       } else {
         wx.showToast({
           title: response.message || '转移失败',
           icon: 'none'
         });
+        // 转移失败时清除选中状态
+        this.setData({ selectedPlayerId: null });
       }
     } catch (error) {
       wx.hideLoading();
@@ -837,6 +850,8 @@ Page({
         title: '转移失败',
         icon: 'none'
       });
+      // 出错时清除选中状态
+      this.setData({ selectedPlayerId: null });
     }
   },
 

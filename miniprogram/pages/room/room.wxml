@@ -25,7 +25,7 @@
       <view 
         wx:for="{{sortedPlayers}}" 
         wx:key="id" 
-        class="player-card {{item.user_id === currentUserId ? 'current-player' : ''}} {{roomInfo.status === 2 ? 'settled-room' : ''}}"
+        class="player-card {{item.user_id === currentUserId ? 'current-player' : ''}} {{roomInfo.status === 2 ? 'settled-room' : ''}} {{item.user_id === selectedPlayerId ? 'selected-player' : ''}}"
         bindtap="quickTransfer"
         data-player="{{item}}"
       >

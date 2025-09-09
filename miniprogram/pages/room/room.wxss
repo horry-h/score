@@ -1388,3 +1388,27 @@
 .player-avatar-container {
   position: relative;
 }
+
+/* 选中玩家状态样式 */
+.player-card.selected-player {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4rpx #ff8c00, 0 8rpx 24rpx rgba(255, 140, 0, 0.3);
+  border: 2rpx solid #ff8c00;
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  transition: all 0.3s ease;
+}
+
+.player-card.selected-player .player-avatar {
+  box-shadow: 0 0 0 3rpx #ff8c00;
+  border: 2rpx solid #fff;
+}
+
+.player-card.selected-player .player-name {
+  color: #ff8c00;
+  font-weight: 600;
+}
+
+.player-card.selected-player .player-score {
+  color: #ff8c00;
+  font-weight: 600;
+}
