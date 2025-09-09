@@ -3,7 +3,7 @@
   <view class="common-header">
     <view class="common-header-left" bindtap="goToHome">
       <text class="back-icon">🏠</text>
-      <text class="back-text">返回主页</text>
+      <text class="back-text">主页</text>
     </view>
     <text class="common-header-title">房间详情</text>
     <view class="common-header-right"></view>

@@ -947,7 +947,7 @@ Page({
       console.log('从分享按钮分享，房间ID:', roomId);
       
       return {
-        title: '麻将记分',
+        title: '记分助手',
         path: `/pages/room/room?roomId=${roomId}`
       };
     } else {
@@ -955,7 +955,7 @@ Page({
       console.log('从右上角菜单分享');
       
       return {
-        title: '麻将记分',
+        title: '记分助手',
         path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
       };
     }
@@ -966,7 +966,7 @@ Page({
     console.log('分享到朋友圈');
     
     return {
-      title: '麻将记分',
+      title: '记分助手',
       path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
     };
   },

@@ -1069,7 +1069,7 @@ Page({
   // 分享给好友
   onShareAppMessage() {
     return {
-      title: '麻将记分',
+      title: '记分助手',
       path: '/pages/index/index'
     }
   },
@@ -1077,7 +1077,7 @@ Page({
   // 分享到朋友圈
   onShareTimeline() {
     return {
-      title: '麻将记分',
+      title: '记分助手',
       path: '/pages/index/index'
     }
   }

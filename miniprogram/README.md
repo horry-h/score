@@ -1,6 +1,6 @@
-# 麻将记分小程序
+# 记分助手小程序
 
-基于微信小程序开发的麻将记分应用，支持多人实时记分、分数转移、房间结算等功能。
+基于微信小程序开发的记分助手应用，支持多人实时记分、分数转移、房间结算等功能。
 
 ## 功能特性
 
@@ -149,7 +149,7 @@ const API_BASE_URL = 'http://localhost:8080'; // 修改为实际的后端地址
   ],
   "window": {
     "navigationBarBackgroundColor": "#07c160",
-    "navigationBarTitleText": "麻将记分",
+    "navigationBarTitleText": "记分助手",
     "navigationBarTextStyle": "white"
   }
 }

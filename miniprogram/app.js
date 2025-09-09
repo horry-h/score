@@ -172,7 +172,7 @@ App({
   // 全局分享配置
   onShareAppMessage() {
     return {
-      title: '麻将记分',
+      title: '记分助手',
       path: '/pages/index/index'
     }
   },

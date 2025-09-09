@@ -8,7 +8,7 @@
   <view class="room-header">
     <view class="room-header-left" bindtap="goToHome">
       <text class="back-icon">🏠</text>
-      <text class="back-text">返回主页</text>
+      <text class="back-text">主页</text>
     </view>
     <text class="room-header-title">房间 {{roomInfo.id}}</text>
     <view class="room-header-right">
@@ -100,11 +100,11 @@
   <view class="action-buttons">
     <button class="btn" bindtap="settleRoom">
       <text class="icon">{{roomInfo.status === 2 ? '📊' : '🧮'}}</text>
-      <text>{{roomInfo.status === 2 ? '查看结算信息' : '结算房间'}}</text>
+      <text>{{roomInfo.status === 2 ? '查看结算信息' : '结算'}}</text>
     </button>
     <button class="btn btn-secondary" bindtap="shareRoom">
       <text class="icon">📤</text>
-      <text>分享房间</text>
+      <text>分享</text>
     </button>
   </view>
 </view>

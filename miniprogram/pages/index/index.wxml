@@ -5,7 +5,7 @@
     <view class="header-content">
       <view class="header-title">
         <text class="title-icon">🏠</text>
-        <text class="title-text">麻将记分</text>
+        <text class="title-text">记分助手</text>
       </view>
       <view class="header-avatar" bindtap="goToProfile">
         <image class="avatar-img" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
