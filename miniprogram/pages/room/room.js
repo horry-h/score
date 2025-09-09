@@ -1379,9 +1379,11 @@ Page({
     return userInfo.nickname === '微信用户';
   },
 
-  // 关闭头像蒙层提示
+  // 关闭头像蒙层提示并打开用户信息修改浮窗
   closeAvatarOverlay() {
     this.setData({ showAvatarOverlay: false });
+    // 立即打开用户信息修改浮窗
+    this.showProfileModal();
   },
 
   // 隐藏个人信息浮窗
