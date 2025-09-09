@@ -11,12 +11,6 @@
       <text class="back-text">主页</text>
     </view>
     <text class="common-header-title">房间 {{roomInfo.id}}</text>
-    <view class="common-header-right">
-      <view wx:if="{{roomInfo.status === 2}}" class="room-status-badge">
-        <text class="status-icon">🏁</text>
-        <text class="status-text">已结算</text>
-      </view>
-    </view>
   </view>
 
   <!-- 玩家信息区域 -->

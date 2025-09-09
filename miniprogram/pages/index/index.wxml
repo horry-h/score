@@ -1,16 +1,19 @@
 <!--index.wxml-->
 <view class="container">
   <!-- 头部区域 -->
-  <view class="common-header">
-    <view class="common-header-left">
-      <text class="title-text">记分助手</text>
-    </view>
-    <view class="common-header-title"></view>
-    <view class="common-header-right">
-      <view class="header-avatar" bindtap="goToProfile">
+  <view class="index-header">
+    <!-- 左侧用户头像 -->
+    <view class="header-avatar-section" bindtap="goToProfile">
+      <view class="header-avatar">
         <image class="avatar-img" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
       </view>
     </view>
+    
+    <!-- 中间标题 - 绝对居中 -->
+    <text class="app-title">记分助手</text>
+    
+    <!-- 右侧占位 -->
+    <view class="header-right-placeholder"></view>
   </view>
 
   <!-- 最近房间区域 -->
@@ -218,3 +221,4 @@
     </view>
   </view>
 </view>
+

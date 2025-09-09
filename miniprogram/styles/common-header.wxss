@@ -46,6 +46,9 @@
   border: 1rpx solid rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 1;
+  /* 确保左侧区域有固定宽度，与右侧对称 */
+  min-width: 120rpx;
+  justify-content: flex-start;
 }
 
 .common-header-left:active {
@@ -70,9 +73,10 @@
 .common-header-title {
   font-size: 40rpx;
   font-weight: 600;
-  flex: 1;
-  text-align: center;
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
   letter-spacing: 1rpx;
@@ -80,13 +84,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 确保标题不被左右按钮遮挡 */
+  max-width: calc(100% - 200rpx);
 }
 
 /* 头部右侧占位 */
 .common-header-right {
-  width: 80rpx;
+  min-width: 120rpx;
   position: relative;
   z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 /* 头部右侧按钮 */

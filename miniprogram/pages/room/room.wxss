@@ -24,15 +24,23 @@
   border-radius: 16rpx;
   backdrop-filter: blur(10rpx);
   border: 1rpx solid rgba(255, 255, 255, 0.2);
+  /* 防止换行 */
+  white-space: nowrap;
+  /* 向右移动一些 */
+  margin-left: 20rpx;
 }
 
 .room-status-badge .status-icon {
   font-size: 18rpx;
+  /* 防止换行 */
+  white-space: nowrap;
 }
 
 .room-status-badge .status-text {
   font-size: 18rpx;
   font-weight: 500;
+  /* 防止换行 */
+  white-space: nowrap;
 }
 
 /* 房间号区域 */

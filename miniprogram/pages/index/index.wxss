@@ -9,37 +9,104 @@
   width: 100%;
 }
 
-/* 首页头部样式调整 */
-.title-icon {
-  font-size: 28rpx;
-  margin-right: 12rpx;
-  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
+/* 首页专用头部样式 */
+.index-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+  /* 为小程序胶囊按钮预留空间 */
+  padding: calc(40rpx + env(safe-area-inset-top)) calc(24rpx + 200rpx) 24rpx calc(24rpx + 40rpx);
+  position: relative;
+  overflow: hidden;
 }
 
-.title-text {
-  font-size: 40rpx;
-  font-weight: 500;
-  letter-spacing: 1rpx;
-  /* 防止文字换行 */
-  white-space: nowrap;
+.index-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* 左侧头像区域 */
+.header-avatar-section {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /* 确保左侧区域有固定宽度，与右侧对称 */
+  min-width: 120rpx;
+  justify-content: flex-start;
+}
+
+.header-avatar-section:active {
+  transform: scale(0.95);
 }
 
 .header-avatar {
-  width: 64rpx;
-  height: 64rpx;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: 50%;
   overflow: hidden;
-  border: 2rpx solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
-  /* 确保头像不被胶囊按钮遮挡 */
+  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
   position: relative;
-  z-index: 10;
-  margin-right: 5rpx; /* 增加右边距，避免与胶囊按钮重叠 */
+  z-index: 1;
 }
 
-.header-avatar:active {
-  transform: scale(0.95);
+.header-avatar::after {
+  content: '';
+  position: absolute;
+  top: -2rpx;
+  left: -2rpx;
+  right: -2rpx;
+  bottom: -2rpx;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+  z-index: -1;
+}
+
+/* 右侧占位区域 */
+.header-right-placeholder {
+  min-width: 120rpx;
+  position: relative;
+  z-index: 1;
+}
+
+/* 中间标题 - 绝对居中 */
+.app-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  color: white;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
+  /* 绝对居中定位 */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  /* 防止文字换行 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 确保标题不被左右元素遮挡 */
+  max-width: calc(100% - 200rpx);
 }
 
 .avatar-img {
