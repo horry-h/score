@@ -14,7 +14,6 @@ Page({
     showShareModal: false,
     showProfileModal: false,
     showSettlementModal: false,
-    showSettledRoomModal: false,
     settlementData: [],
     loading: false,
     qrCodeData: null,
@@ -270,11 +269,7 @@ Page({
           roomInfo: roomData,
         });
         
-        // 检查房间状态，如果已结算则显示提示
-        if (roomData.status === 2) {
-          console.log('房间已结算，显示提示浮窗');
-          this.setData({ showSettledRoomModal: true });
-        }
+        // 房间状态已加载，无需额外处理
         
         // 如果使用roomCode进入，需要获取roomId用于后续API调用
         if (this.data.roomCode && !this.data.roomId) {
@@ -420,22 +415,7 @@ Page({
               }
               
               // 处理分数格式
-              if (transfer.amount !== null && transfer.amount !== undefined) {
-                const num = parseInt(transfer.amount);
-                if (!isNaN(num)) {
-                  if (num > 0) {
-                    transfer.formatted_amount = '+' + num;
-                  } else if (num < 0) {
-                    transfer.formatted_amount = num.toString();
-                  } else {
-                    transfer.formatted_amount = '0';
-                  }
-                } else {
-                  transfer.formatted_amount = '0';
-                }
-              } else {
-                transfer.formatted_amount = '0';
-              }
+              transfer.formatted_amount = this.formatTransferAmount(transfer, userInfo.user_id);
             });
           }
           
@@ -658,22 +638,7 @@ Page({
             }
             
             // 处理分数格式
-            if (transfer.amount !== null && transfer.amount !== undefined) {
-              const num = parseInt(transfer.amount);
-              if (!isNaN(num)) {
-                if (num > 0) {
-                  transfer.formatted_amount = '+' + num;
-                } else if (num < 0) {
-                  transfer.formatted_amount = num.toString();
-                } else {
-                  transfer.formatted_amount = '0';
-                }
-              } else {
-                transfer.formatted_amount = '0';
-              }
-            } else {
-              transfer.formatted_amount = '0';
-            }
+            transfer.formatted_amount = this.formatTransferAmount(transfer, this.data.currentUserId);
           });
           
           // 使用缓存管理函数合并和限制记录
@@ -905,10 +870,6 @@ Page({
     }
   },
 
-  // 关闭已结算房间提示浮窗
-  closeSettledRoomModal() {
-    this.setData({ showSettledRoomModal: false });
-  },
 
   // 分享房间
   shareRoom() {
@@ -998,7 +959,11 @@ Page({
     this.setData({ qrCodeLoading: true });
 
     try {
-      const response = await api.generateQRCode(this.data.roomId);
+      // 获取当前小程序版本信息
+      const accountInfo = wx.getAccountInfoSync();
+      const envVersion = accountInfo.miniProgram.envVersion;
+      
+      const response = await api.generateQRCode(this.data.roomId, envVersion);
 
       if (response.code === 200) {
         const qrData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
@@ -1057,6 +1022,33 @@ Page({
     }
     console.log('最终解析结果:', params);
     return params;
+  },
+
+  // 格式化转移金额显示
+  formatTransferAmount(transfer, currentUserId) {
+    if (transfer.amount === null || transfer.amount === undefined) {
+      return '0';
+    }
+    
+    const num = parseInt(transfer.amount);
+    if (isNaN(num)) {
+      return '0';
+    }
+    
+    // 判断转移类型
+    const isFromCurrentUser = transfer.from_user_id === currentUserId;
+    const isToCurrentUser = transfer.to_user_id === currentUserId;
+    
+    if (isFromCurrentUser) {
+      // 当前用户转出分数，显示负数
+      return num > 0 ? `-${num}` : num.toString();
+    } else if (isToCurrentUser) {
+      // 当前用户被转移分数，显示正数
+      return num > 0 ? `+${num}` : num.toString();
+    } else {
+      // 与当前用户无关的转移，只显示数字，不显示符号
+      return Math.abs(num).toString();
+    }
   },
 
   // 排序玩家：当前用户始终在第一个位置

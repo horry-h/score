@@ -294,28 +294,3 @@
   </view>
 </view>
 
-<!-- 已结算房间提示浮窗 -->
-<view class="modal {{showSettledRoomModal ? 'show' : ''}}" bindtap="closeSettledRoomModal">
-  <view class="modal-content settled-room-modal" catchtap="stopPropagation">
-    <view class="modal-header">
-      <text class="modal-title">
-        <text class="icon">🏁</text>
-        <text>房间已结算</text>
-      </text>
-    </view>
-    
-    <view class="modal-body">
-      <view class="settled-room-info">
-        <text class="info-text">该房间已经结算完成</text>
-        <text class="info-detail">您可以查看最终分数和完整流水记录</text>
-        <text class="info-hint">点击"查看结算信息"了解详细结果</text>
-      </view>
-    </view>
-    
-    <view class="modal-footer">
-      <button class="btn btn-primary" bindtap="closeSettledRoomModal">
-        <text>开始查看</text>
-      </button>
-    </view>
-  </view>
-</view>

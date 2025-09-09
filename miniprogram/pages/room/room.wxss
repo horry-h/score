@@ -84,6 +84,11 @@
   z-index: 1;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
   letter-spacing: 0.5rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  line-height: 1.2;
 }
 
 .room-header-right {
@@ -1280,95 +1285,7 @@
   box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
 }
 
-/* 已结算房间提示浮窗样式 */
-.settled-room-modal {
-  max-width: 650rpx;
-  border-radius: 32rpx;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-  box-shadow: 0 25rpx 80rpx rgba(79, 172, 254, 0.4);
-  overflow: hidden;
-}
 
-.settled-room-modal .modal-header {
-  text-align: center;
-  padding: 50rpx 50rpx 30rpx;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10rpx);
-}
-
-.settled-room-modal .modal-title {
-  font-size: 40rpx;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
-}
-
-.settled-room-modal .modal-title .icon {
-  font-size: 48rpx;
-  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.2));
-}
-
-.settled-room-modal .modal-body {
-  padding: 50rpx;
-  text-align: center;
-}
-
-.settled-room-info {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.settled-room-info .info-text {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.1);
-}
-
-.settled-room-info .info-detail {
-  font-size: 30rpx;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
-  margin-top: 8rpx;
-}
-
-.settled-room-info .info-hint {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
-  margin-top: 8rpx;
-  font-style: italic;
-}
-
-.settled-room-modal .modal-footer {
-  padding: 30rpx 50rpx 50rpx;
-  display: flex;
-  justify-content: center;
-}
-
-.settled-room-modal .btn {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  border: 3rpx solid rgba(255, 255, 255, 0.4);
-  font-size: 32rpx;
-  font-weight: 600;
-  padding: 24rpx 80rpx;
-  border-radius: 60rpx;
-  transition: all 0.3s ease;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
-  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
-}
-
-.settled-room-modal .btn:active {
-  background: rgba(255, 255, 255, 0.35);
-  transform: translateY(2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-}
 
 /* 已结算房间玩家卡片样式 */
 .player-card.settled-room {

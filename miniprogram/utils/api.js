@@ -173,11 +173,12 @@ class ApiService {
   }
 
   // 生成房间二维码
-  async generateQRCode(roomId) {
+  async generateQRCode(roomId, envVersion) {
     return this.request('/api/v1/generateQRCode', {
       method: 'POST',
       data: {
         room_id: roomId,
+        env_version: envVersion,
       },
     });
   }

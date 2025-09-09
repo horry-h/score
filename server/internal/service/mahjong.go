@@ -1048,7 +1048,7 @@ func (s *MahjongService) GenerateQRCode(ctx context.Context, req *GenerateQRCode
 	}
 	
 	// 调用微信API生成小程序码
-	qrCodeData, err := s.wechatService.GenerateUnlimitedQRCode(req.RoomId)
+	qrCodeData, err := s.wechatService.GenerateUnlimitedQRCode(req.RoomId, req.EnvVersion)
 	if err != nil {
 		return &Response{Code: 500, Message: "生成二维码失败: " + err.Error()}, nil
 	}

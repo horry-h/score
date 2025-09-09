@@ -146,5 +146,6 @@ type ValidateSessionRequest struct {
 }
 
 type GenerateQRCodeRequest struct {
-	RoomId int64 `json:"room_id"`
+	RoomId     int64  `json:"room_id"`
+	EnvVersion string `json:"env_version"` // 小程序版本: develop, trial, release
 }
