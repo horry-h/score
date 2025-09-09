@@ -5,14 +5,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 60rpx 24rpx 40rpx;
   background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
   color: white;
   width: 100%;
   box-sizing: border-box;
-  /* 为小程序胶囊按钮预留空间 */
-  padding-top: calc(60rpx + env(safe-area-inset-top));
-  padding-right: calc(24rpx + 200rpx);
+  /* 为小程序胶囊按钮和左侧按钮预留空间，统一使用较小的padding */
+  padding: calc(40rpx + env(safe-area-inset-top)) calc(24rpx + 200rpx) 24rpx calc(24rpx + 40rpx);
   position: relative;
   overflow: hidden;
 }
@@ -64,6 +62,8 @@
   font-size: 26rpx;
   font-weight: 500;
   letter-spacing: 1rpx;
+  /* 防止文字换行 */
+  white-space: nowrap;
 }
 
 /* 头部标题 */
@@ -76,6 +76,10 @@
   z-index: 1;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
   letter-spacing: 1rpx;
+  /* 防止文字换行 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 头部右侧占位 */
@@ -115,19 +119,19 @@
   font-size: 26rpx;
   font-weight: 500;
   letter-spacing: 1rpx;
+  /* 防止文字换行 */
+  white-space: nowrap;
 }
 
 /* 简化头部样式（用于不需要复杂布局的页面） */
 .simple-header {
   text-align: center;
-  padding: 60rpx 24rpx 40rpx;
   background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
   color: white;
   width: 100%;
   box-sizing: border-box;
-  /* 为小程序胶囊按钮预留空间 */
-  padding-top: calc(60rpx + env(safe-area-inset-top));
-  padding-right: calc(24rpx + 200rpx);
+  /* 为小程序胶囊按钮预留空间，统一使用较小的padding */
+  padding: calc(40rpx + env(safe-area-inset-top)) calc(24rpx + 200rpx) 24rpx calc(24rpx + 40rpx);
   position: relative;
   overflow: hidden;
 }
@@ -150,4 +154,8 @@
   z-index: 1;
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
   letter-spacing: 1rpx;
+  /* 防止文字换行 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

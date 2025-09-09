@@ -1,12 +1,13 @@
 <!--index.wxml-->
 <view class="container">
   <!-- 头部区域 -->
-  <view class="header">
-    <view class="header-content">
-      <view class="header-title">
-        <text class="title-icon">🏠</text>
-        <text class="title-text">记分助手</text>
-      </view>
+  <view class="common-header">
+    <view class="common-header-left">
+      <text class="title-icon">🏠</text>
+      <text class="title-text">记分助手</text>
+    </view>
+    <view class="common-header-title"></view>
+    <view class="common-header-right">
       <view class="header-avatar" bindtap="goToProfile">
         <image class="avatar-img" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
       </view>
@@ -17,7 +18,7 @@
   <view class="recent-section {{recentRoom ? 'has-room' : 'no-room'}}">
     <view class="section-title">
       <text class="section-icon">🕐</text>
-      <text class="section-text">最近房间</text>
+      <text class="section-text">最近进行中房间</text>
     </view>
     
     <!-- 有最近房间时显示完整卡片 -->

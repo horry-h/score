@@ -9,78 +9,33 @@
   width: 100%;
 }
 
-/* 首页特殊头部样式 */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 60rpx 24rpx 40rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 50%, #05a04d 100%);
-  color: white;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  box-sizing: border-box;
-  /* 为小程序胶囊按钮预留空间 */
-  padding-top: calc(60rpx + env(safe-area-inset-top));
-  padding-right: calc(24rpx + 200rpx);
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-}
-
-.header-title {
-  display: flex;
-  align-items: center;
-}
-
+/* 首页头部样式调整 */
 .title-icon {
-  font-size: 48rpx;
-  margin-right: 20rpx;
-  filter: drop-shadow(0 2rpx 4rpx rgba(0,0,0,0.1));
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .title-text {
-  font-size: 44rpx;
-  font-weight: 700;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+  font-size: 26rpx;
+  font-weight: 500;
   letter-spacing: 1rpx;
+  /* 防止文字换行 */
+  white-space: nowrap;
 }
 
 .header-avatar {
-  width: 88rpx;
-  height: 88rpx;
+  width: 64rpx;
+  height: 64rpx;
   border-radius: 50%;
   overflow: hidden;
-  border: 4rpx solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.15);
+  border: 2rpx solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
   transition: transform 0.3s ease;
   /* 确保头像不被胶囊按钮遮挡 */
   position: relative;
   z-index: 10;
-  margin-right: 20rpx; /* 增加右边距，避免与胶囊按钮重叠 */
+  margin-right: 5rpx; /* 增加右边距，避免与胶囊按钮重叠 */
 }
 
 .header-avatar:active {
