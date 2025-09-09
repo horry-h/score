@@ -19,6 +19,7 @@ Page({
     loading: false,
     qrCodeData: null,
     qrCodeLoading: false,
+    showAvatarOverlay: false, // 是否显示头像蒙层提示
     profileForm: {
       nickname: '微信用户',
       avatarUrl: ''
@@ -222,10 +223,14 @@ Page({
         return;
       }
 
+      // 检查是否需要显示头像蒙层提示
+      const shouldShowAvatarOverlay = this.shouldShowAvatarOverlay(userInfo);
+      
       this.setData({ 
         currentUserId: userInfo.user_id,
         userInfo: userInfo,
-        loading: true 
+        loading: true,
+        showAvatarOverlay: shouldShowAvatarOverlay
       });
 
       wx.showLoading({ title: '加载中...' });
@@ -1364,6 +1369,21 @@ Page({
     }
   },
 
+  // 检查是否应该显示头像蒙层提示
+  shouldShowAvatarOverlay(userInfo) {
+    if (!userInfo || !userInfo.nickname) {
+      return true; // 没有昵称信息时显示提示
+    }
+    
+    // 如果昵称仍然是默认的"微信用户"，显示提示
+    return userInfo.nickname === '微信用户';
+  },
+
+  // 关闭头像蒙层提示
+  closeAvatarOverlay() {
+    this.setData({ showAvatarOverlay: false });
+  },
+
   // 隐藏个人信息浮窗
   hideProfileModal() {
     this.setData({ showProfileModal: false })
@@ -1530,6 +1550,9 @@ Page({
           title: '保存成功',
           icon: 'success'
         })
+        
+        // 关闭头像蒙层提示（因为用户已经修改了昵称）
+        this.closeAvatarOverlay();
         
         this.hideProfileModal()
         this.loadRoomData() // 重新加载房间数据以更新显示

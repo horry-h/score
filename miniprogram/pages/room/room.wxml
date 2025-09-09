@@ -41,6 +41,22 @@
           <view wx:else class="player-avatar default-avatar">
             <text class="avatar-icon">👤</text>
           </view>
+          
+          <!-- 头像蒙层提示 - 只对当前用户且昵称为"微信用户"时显示 -->
+          <view 
+            wx:if="{{item.user_id === currentUserId && showAvatarOverlay}}" 
+            class="avatar-overlay"
+            catchtap="closeAvatarOverlay"
+          >
+            <view class="overlay-content">
+              <view class="click-hint">
+                <text class="hint-text">点击修改信息</text>
+                <view class="click-animation">
+                  <text class="click-icon">👆</text>
+                </view>
+              </view>
+            </view>
+          </view>
         </view>
         <view class="player-name">{{item.user.displayName || item.user.nickname}}</view>
         <view class="player-score {{item.current_score < 0 ? 'score-negative' : ''}}">
