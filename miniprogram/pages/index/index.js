@@ -1,6 +1,7 @@
 // index.js
 const api = require('../../utils/api')
 const eventBus = require('../../utils/eventBus')
+const userCache = require('../../utils/userCache')
 const app = getApp()
 
 Page({
@@ -40,8 +41,30 @@ Page({
       return;
     }
 
+    // 检查是否有未完成的房间，如果有则自动进入房间
+    const currentRoomInfo = wx.getStorageSync('current_room_info');
+    if (currentRoomInfo && currentRoomInfo.roomId) {
+      // 检查房间信息是否过期（超过30分钟）
+      const now = Date.now();
+      const roomAge = now - currentRoomInfo.timestamp;
+      const maxAge = 30 * 60 * 1000; // 30分钟
+      
+      if (roomAge < maxAge) {
+        console.log('检测到未完成的房间，自动进入房间:', currentRoomInfo);
+        // 延迟一下确保页面完全加载
+        setTimeout(() => {
+          this.enterRoom(currentRoomInfo.roomId, currentRoomInfo.roomCode);
+        }, 500);
+        return;
+      } else {
+        // 房间信息过期，清除
+        console.log('房间信息已过期，清除:', currentRoomInfo);
+        wx.removeStorageSync('current_room_info');
+      }
+    }
+
     // 检查用户信息，如果app.js已经静默登录成功，直接使用
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (userInfo && userInfo.user_id) {
       console.log('使用已有的用户信息')
       this.setData({
@@ -85,7 +108,7 @@ Page({
   async autoLogin() {
     try {
       // 检查是否已经有用户信息
-      const existingUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      const existingUserInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
       if (existingUserInfo && existingUserInfo.user_id) {
         console.log('用户已登录，跳过自动登录')
         return
@@ -117,40 +140,21 @@ Page({
   async loadUserInfo() {
     try {
       // 首先尝试从本地存储获取用户ID
-      const localUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      const localUserInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
       
       if (localUserInfo && localUserInfo.user_id) {
-        // 从数据库获取最新的用户信息
-        const response = await api.getUserInfo(localUserInfo.user_id)
+        // 使用缓存管理工具获取用户信息（优先从缓存，缓存失效时从服务器获取）
+        const updatedUserInfo = await userCache.getUserInfo(localUserInfo.user_id)
         
-        if (response.code === 200 && response.data) {
-          let userData;
-          try {
-            userData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-          } catch (error) {
-            console.error('解析用户数据失败:', error)
-            userData = response.data;
-          }
-          
-          // 使用数据库中的信息，如果没有则使用默认值
-          const updatedUserInfo = {
-            user_id: localUserInfo.user_id,
-            nickName: userData.nickname || '微信用户',
-            avatarUrl: userData.avatar_url || '/images/default-avatar.png',
-            openid: userData.openid || userData.Openid,
-            nickname: userData.nickname,
-            avatar_url: userData.avatar_url
-          }
-          
-          // 更新本地存储和全局数据
+        if (updatedUserInfo) {
+          // 更新全局数据
           app.globalData.userInfo = updatedUserInfo
-          wx.setStorageSync('userInfo', updatedUserInfo)
           
           this.setData({
             userInfo: updatedUserInfo
           })
           
-          console.log('从数据库加载用户信息成功:', updatedUserInfo)
+          console.log('从缓存/数据库加载用户信息成功:', updatedUserInfo)
           return
         }
       }
@@ -177,7 +181,7 @@ Page({
       console.error('加载用户信息失败:', error)
       
       // 出错时使用本地存储的信息或默认值
-      const localUserInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      const localUserInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
       if (localUserInfo) {
         this.setData({
           userInfo: {
@@ -199,7 +203,7 @@ Page({
 
   // 加载最近房间信息
   async loadRecentRoom() {
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (!userInfo || !userInfo.user_id) {
       return
     }
@@ -328,7 +332,7 @@ Page({
   // 创建房间
   async createRoom() {
     // 检查用户是否已登录
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (!userInfo || !userInfo.user_id) {
       this.showLoginModal()
       return
@@ -397,7 +401,7 @@ Page({
   // 加入房间
   joinRoom() {
     // 检查用户是否已登录
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (!userInfo || !userInfo.user_id) {
       this.showLoginModal()
       return
@@ -413,7 +417,7 @@ Page({
   // 查看历史房间
   goToHistory() {
     // 检查用户是否已登录
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (!userInfo || !userInfo.user_id) {
       this.showLoginModal()
       return
@@ -540,7 +544,7 @@ Page({
       wx.showLoading({ title: '保存中...' })
       
       // 调用更新用户信息API
-      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
+      const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
       if (!userInfo || !userInfo.user_id) {
         wx.hideLoading()
         wx.showToast({
@@ -550,16 +554,10 @@ Page({
         return
       }
       
-      const response = await api.updateUser(userInfo.user_id, nickname, avatarUrl)
-      if (response.code === 200) {
-        // 更新本地用户信息
-        const updatedUserInfo = {
-          ...userInfo,
-          nickName: nickname,
-          avatarUrl: avatarUrl
-        }
-        
-        wx.setStorageSync('userInfo', updatedUserInfo)
+      // 使用缓存管理工具更新用户信息
+      const updatedUserInfo = await userCache.updateUserInfo(userInfo.user_id, nickname, avatarUrl)
+      if (updatedUserInfo) {
+        // 更新全局数据
         app.globalData.userInfo = updatedUserInfo
         
         this.setData({
@@ -595,33 +593,26 @@ Page({
   // 显示个人信息浮窗
   async showProfileModal() {
     try {
-      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+      const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo() || {}
       console.log('本地用户信息:', userInfo)
       
       // 从后端获取完整的用户信息（包含openid）
       if (userInfo.user_id) {
         wx.showLoading({ title: '加载中...' })
-        const response = await api.getUser(userInfo.user_id)
+        const fullUserInfo = await userCache.getUserInfo(userInfo.user_id)
         wx.hideLoading()
         
-        if (response.code === 200) {
-          const fullUserInfo = JSON.parse(response.data)
-          console.log('从后端获取的完整用户信息:', fullUserInfo)
+        if (fullUserInfo) {
+          console.log('从缓存/后端获取的完整用户信息:', fullUserInfo)
           
-          // 更新本地存储的用户信息
-          const updatedUserInfo = {
-            ...userInfo,
-            ...fullUserInfo,
-            openid: fullUserInfo.openid || fullUserInfo.Openid
-          }
-          app.globalData.userInfo = updatedUserInfo
-          wx.setStorageSync('userInfo', updatedUserInfo)
+          // 更新全局数据
+          app.globalData.userInfo = fullUserInfo
           
           this.setData({
             showProfileModal: true,
             profileForm: {
-              nickname: fullUserInfo.nickname || '微信用户',
-              avatarUrl: fullUserInfo.avatar_url || ''
+              nickname: fullUserInfo.nickname || fullUserInfo.nickName || '微信用户',
+              avatarUrl: fullUserInfo.avatar_url || fullUserInfo.avatarUrl || ''
             }
           })
           return
@@ -642,7 +633,7 @@ Page({
       console.error('获取用户信息失败:', error)
       
       // 出错时使用本地信息
-      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {}
+      const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo() || {}
       this.setData({
         showProfileModal: true,
         profileForm: {
@@ -854,16 +845,10 @@ Page({
         return
       }
       
-      const response = await api.updateUser(userInfo.user_id, nickname, avatarUrl)
-      if (response.code === 200) {
-        // 更新本地用户信息
-        const updatedUserInfo = {
-          ...userInfo,
-          nickName: nickname,
-          avatarUrl: avatarUrl
-        }
-        
-        wx.setStorageSync('userInfo', updatedUserInfo)
+      // 使用缓存管理工具更新用户信息
+      const updatedUserInfo = await userCache.updateUserInfo(userInfo.user_id, nickname, avatarUrl)
+      if (updatedUserInfo) {
+        // 更新全局数据
         app.globalData.userInfo = updatedUserInfo
         
         this.setData({

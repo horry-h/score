@@ -172,12 +172,30 @@ Page({
     }
   },
 
+  onHide() {
+    // 保存当前房间信息，用于用户重新进入时自动回到房间
+    if (this.data.roomId && this.data.roomInfo) {
+      const roomInfo = {
+        roomId: this.data.roomId,
+        roomCode: this.data.roomInfo.room_code,
+        roomStatus: this.data.roomInfo.status,
+        timestamp: Date.now()
+      };
+      wx.setStorageSync('current_room_info', roomInfo);
+      console.log('保存当前房间信息:', roomInfo);
+    }
+  },
+
   onUnload() {
     // 断开WebSocket连接
     this.disconnectWebSocket();
     
     // 清理缓存，释放内存
     this.cleanupCache();
+    
+    // 清除当前房间信息（用户主动离开房间）
+    wx.removeStorageSync('current_room_info');
+    console.log('用户离开房间，清除房间信息');
   },
 
   // 加载房间数据
@@ -1065,6 +1083,13 @@ Page({
       if (player.user && player.user.nickname) {
         const nickname = player.user.nickname;
         player.user.displayName = this.truncateNickname(nickname, 6);
+      } else {
+        // 如果用户信息不存在或没有昵称，设置默认显示名称
+        if (!player.user) {
+          player.user = {};
+        }
+        player.user.displayName = `用户${player.user_id}`;
+        player.user.nickname = `用户${player.user_id}`;
       }
       return player;
     });
@@ -1427,6 +1452,10 @@ Page({
 
   // 返回主页
   goToHome() {
+    // 清除当前房间信息（用户主动返回主页）
+    wx.removeStorageSync('current_room_info');
+    console.log('用户主动返回主页，清除房间信息');
+    
     wx.redirectTo({
       url: '/pages/index/index'
     });
@@ -1514,6 +1543,8 @@ Page({
           fail: (error) => {
             console.error('返回上一页失败:', error);
             // 如果返回失败，则返回首页
+            wx.removeStorageSync('current_room_info');
+            console.log('返回失败，清除房间信息并返回首页');
             wx.redirectTo({
               url: '/pages/index/index'
             });
@@ -1522,6 +1553,8 @@ Page({
       } else {
         // 如果没有上一页，返回首页
         console.log('没有上一页，返回首页');
+        wx.removeStorageSync('current_room_info');
+        console.log('没有上一页，清除房间信息并返回首页');
         wx.redirectTo({
           url: '/pages/index/index'
         });

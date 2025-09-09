@@ -1,6 +1,7 @@
 // app.js
 const api = require('./utils/api')
 const eventBus = require('./utils/eventBus')
+const userCache = require('./utils/userCache')
 
 App({
   // 注册过滤器
@@ -35,7 +36,7 @@ App({
 
   // 初始化用户信息
   initUserInfo() {
-    const userInfo = wx.getStorageSync('userInfo')
+    const userInfo = userCache.getCachedUserInfo()
     if (userInfo) {
       this.globalData.userInfo = userInfo
     }
@@ -70,7 +71,8 @@ App({
           expires_at: expiresAt
         }
         
-        wx.setStorageSync('userInfo', userData)
+        // 使用缓存管理工具保存用户信息
+        userCache.setCachedUserInfo(userData)
         wx.setStorageSync('sessionID', sessionID)
         this.globalData.userInfo = userData
         
@@ -120,7 +122,7 @@ App({
   async silentAutoLogin() {
     try {
       // 检查是否已经有用户信息
-      const existingUserInfo = this.globalData.userInfo || wx.getStorageSync('userInfo')
+      const existingUserInfo = this.globalData.userInfo || userCache.getCachedUserInfo()
       if (existingUserInfo && existingUserInfo.user_id) {
         console.log('用户已登录，跳过静默自动登录')
         return
@@ -154,12 +156,12 @@ App({
         // 更新用户信息
         const userData = JSON.parse(response.data)
         this.globalData.userInfo = userData
-        wx.setStorageSync('userInfo', userData)
+        userCache.setCachedUserInfo(userData)
         return true
       } else {
         // 登录态无效，清除本地数据
         wx.removeStorageSync('sessionID')
-        wx.removeStorageSync('userInfo')
+        userCache.clearCache()
         this.globalData.userInfo = null
         return false
       }
