@@ -725,6 +725,11 @@ func min(a, b int32) int32 {
 
 // 获取用户房间列表
 func (s *MahjongService) GetUserRooms(ctx context.Context, req *GetUserRoomsRequest) (*Response, error) {
+	// 限制最大返回100条记录
+	if req.PageSize > 100 {
+		req.PageSize = 100
+	}
+	
 	offset := (req.Page - 1) * req.PageSize
 	
 	rows, err := s.db.Query(`

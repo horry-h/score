@@ -2,25 +2,32 @@
 @import '../../styles/common-header.wxss';
 
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f8fffe 0%, #f0f9f4 100%);
   padding: 0;
   margin: 0;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .content-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 0 16rpx;
   width: 100%;
   box-sizing: border-box;
+  min-height: 0;
 }
 
 .info-tip {
   background: #f8f9fa;
   padding: 30rpx;
   border-radius: 16rpx;
-  margin: 40rpx 0;
+  margin: 40rpx 0 20rpx 0;
   color: #666;
   font-size: 28rpx;
   text-align: center;
@@ -30,6 +37,20 @@
   gap: 10rpx;
   width: 100%;
   box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.rooms-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.rooms-scroll {
+  flex: 1;
+  height: 0;
+  min-height: 0;
 }
 
 .room-card {
@@ -108,16 +129,23 @@
   gap: 20rpx;
 }
 
-.load-more {
+.loading-more {
   text-align: center;
-  margin: 40rpx 0;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
 }
 
-.load-more .btn {
-  width: auto;
-  padding: 16rpx 32rpx;
+.no-more {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #07c160;
   font-size: 28rpx;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 10rpx;

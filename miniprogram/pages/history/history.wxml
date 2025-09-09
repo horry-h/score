@@ -15,50 +15,63 @@
       <text>查看所有历史房间的流水和结算信息</text>
     </view>
 
-    <view wx:if="{{rooms.length > 0}}">
-    <view 
-      wx:for="{{rooms}}" 
-      wx:key="room_id" 
-      class="card room-card"
-      bindtap="viewRoomDetail"
-      data-room="{{item}}"
-    >
-      <view class="room-header">
-        <text class="room-id">房间号: {{item.room_id}}</text>
-        <text class="status-badge {{item.status === 1 ? 'status-active' : 'status-settled'}}">
-          {{item.status === 1 ? '进行中' : '已结算'}}
-        </text>
-      </view>
-      <view class="room-info">
-        <view class="room-time">
-          <text class="icon">📅</text>
-          <text>{{item.created_at | formatTimestamp}}</text>
+    <view wx:if="{{rooms.length > 0}}" class="rooms-container">
+      <scroll-view 
+        class="rooms-scroll" 
+        scroll-y="true" 
+        enhanced="true" 
+        show-scrollbar="false"
+        bindscrolltolower="loadMore"
+        lower-threshold="100"
+      >
+        <view 
+          wx:for="{{rooms}}" 
+          wx:key="room_id" 
+          class="card room-card"
+          bindtap="viewRoomDetail"
+          data-room="{{item}}"
+        >
+          <view class="room-header">
+            <text class="room-id">房间号: {{item.room_id}}</text>
+            <text class="status-badge {{item.status === 1 ? 'status-active' : 'status-settled'}}">
+              {{item.status === 1 ? '进行中' : '已结算'}}
+            </text>
+          </view>
+          <view class="room-info">
+            <view class="room-time">
+              <text class="icon">📅</text>
+              <text>{{item.created_at | formatTimestamp}}</text>
+            </view>
+            <view class="room-score {{item.final_score > 0 ? 'positive' : 'negative'}}">
+              <text class="icon">💰</text>
+              <text>{{item.final_score | formatScore}}分</text>
+            </view>
+          </view>
+          <view class="room-stats">
+            <text class="icon">👥</text>
+            <text>{{item.player_count}}人参与</text>
+            <text class="separator">|</text>
+            <text class="icon">🔄</text>
+            <text>{{item.transfer_count}}次转移</text>
+          </view>
         </view>
-        <view class="room-score {{item.final_score > 0 ? 'positive' : 'negative'}}">
-          <text class="icon">💰</text>
-          <text>{{item.final_score | formatScore}}分</text>
+        
+        <!-- 加载更多提示 -->
+        <view wx:if="{{hasMore && loading}}" class="loading-more">
+          <text class="icon">⏳</text>
+          <text>加载中...</text>
         </view>
-      </view>
-      <view class="room-stats">
-        <text class="icon">👥</text>
-        <text>{{item.player_count}}人参与</text>
-        <text class="separator">|</text>
-        <text class="icon">🔄</text>
-        <text>{{item.transfer_count}}次转移</text>
-      </view>
+        
+        <view wx:elif="{{!hasMore && rooms.length > 0}}" class="no-more">
+          <text class="icon">✅</text>
+          <text>已加载全部房间</text>
+        </view>
+      </scroll-view>
     </view>
-  </view>
 
     <view wx:else class="empty-state">
       <text class="icon">📝</text>
       <text>暂无历史房间</text>
-    </view>
-
-    <view wx:if="{{hasMore}}" class="load-more">
-      <button class="btn btn-secondary" bindtap="loadMore">
-        <text class="icon">📄</text>
-        <text>加载更多</text>
-      </button>
     </view>
   </view>
 </view>

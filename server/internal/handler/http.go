@@ -479,6 +479,10 @@ func (h *HTTPHandler) handleGetUserRooms(w *ResponseRecorder, r *http.Request) {
 	if pageSize <= 0 {
 		pageSize = 10
 	}
+	// 限制最大返回100条记录
+	if pageSize > 100 {
+		pageSize = 100
+	}
 
 	response, err := h.service.GetUserRooms(r.Context(), &service.GetUserRoomsRequest{
 		UserId:   userId,

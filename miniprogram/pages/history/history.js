@@ -113,7 +113,7 @@ Page({
     wx.stopPullDownRefresh();
   },
 
-  // 上拉加载更多
+  // 上拉加载更多（保留作为备用）
   onReachBottom() {
     this.loadMore();
   },
