@@ -51,15 +51,26 @@ Page({
       
       if (roomAge < maxAge) {
         console.log('检测到未完成的房间，自动进入房间:', currentRoomInfo);
+        // 显示提示信息
+        wx.showToast({
+          title: '正在回到房间...',
+          icon: 'loading',
+          duration: 1000
+        });
         // 延迟一下确保页面完全加载
         setTimeout(() => {
           this.enterRoom(currentRoomInfo.roomId, currentRoomInfo.roomCode);
-        }, 500);
+        }, 800);
         return;
       } else {
         // 房间信息过期，清除
         console.log('房间信息已过期，清除:', currentRoomInfo);
         wx.removeStorageSync('current_room_info');
+        wx.showToast({
+          title: '房间信息已过期',
+          icon: 'none',
+          duration: 1500
+        });
       }
     }
 
@@ -326,6 +337,42 @@ Page({
         title: '没有最近房间',
         icon: 'none'
       })
+    }
+  },
+
+  // 进入指定房间（用于自动回到房间功能）
+  enterRoom(roomId, roomCode) {
+    console.log('enterRoom被调用，roomId:', roomId, 'roomCode:', roomCode)
+    
+    if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== 0) {
+      const url = `/pages/room/room?roomId=${roomId}`
+      console.log('自动进入房间URL:', url)
+      
+      wx.redirectTo({
+        url: url,
+        success: () => {
+          console.log('自动进入房间成功')
+        },
+        fail: (error) => {
+          console.error('自动进入房间失败:', error)
+          wx.showToast({
+            title: '进入房间失败',
+            icon: 'none',
+            duration: 2000
+          })
+          // 清除无效的房间信息
+          wx.removeStorageSync('current_room_info')
+        }
+      })
+    } else {
+      console.error('房间ID无效:', roomId)
+      wx.showToast({
+        title: '房间信息无效',
+        icon: 'none',
+        duration: 2000
+      })
+      // 清除无效的房间信息
+      wx.removeStorageSync('current_room_info')
     }
   },
 
