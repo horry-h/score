@@ -3,5 +3,6 @@
   "navigationBarTitleText": "房间",
   "enablePullDownRefresh": true,
   "onReachBottomDistance": 50,
-  "disableScroll": false
+  "disableScroll": false,
+  "restartStrategy": "homePageAndLatestPage"
 }

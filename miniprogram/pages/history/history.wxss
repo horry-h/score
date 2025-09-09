@@ -78,8 +78,9 @@
 .room-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin: 20rpx 0;
+  gap: 20rpx;
 }
 
 .room-time {
@@ -88,6 +89,15 @@
   display: flex;
   align-items: center;
   gap: 10rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.time-text {
+  /* 确保时间文本完整显示，不省略 */
+  white-space: nowrap;
+  overflow: visible;
+  word-break: keep-all;
 }
 
 .room-score {
@@ -96,6 +106,14 @@
   display: flex;
   align-items: center;
   gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.score-text {
+  /* 确保分数文本完整显示，不省略 */
+  white-space: nowrap;
+  overflow: visible;
+  word-break: keep-all;
 }
 
 .room-score.positive {
@@ -104,6 +122,10 @@
 
 .room-score.negative {
   color: #ff4757;
+}
+
+.room-score.neutral {
+  color: #666;
 }
 
 .room-stats {

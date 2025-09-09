@@ -27,52 +27,7 @@ Page({
   },
 
   async onLoad() {
-    // 检查是否有重启房间信息，如果有则自动进入房间
-    const restartRoomInfo = wx.getStorageSync('restart_room_info');
-    if (restartRoomInfo && restartRoomInfo.roomId) {
-      console.log('检测到重启房间信息，自动进入房间:', restartRoomInfo);
-      // 清除重启房间信息
-      wx.removeStorageSync('restart_room_info');
-      
-      // 延迟一下确保页面完全加载
-      setTimeout(() => {
-        this.enterRoom(restartRoomInfo.roomId, restartRoomInfo.roomCode);
-      }, 500);
-      return;
-    }
-
-    // 检查是否有未完成的房间，如果有则自动进入房间
-    const currentRoomInfo = wx.getStorageSync('current_room_info');
-    if (currentRoomInfo && currentRoomInfo.roomId) {
-      // 检查房间信息是否过期（超过30分钟）
-      const now = Date.now();
-      const roomAge = now - currentRoomInfo.timestamp;
-      const maxAge = 30 * 60 * 1000; // 30分钟
-      
-      if (roomAge < maxAge) {
-        console.log('检测到未完成的房间，自动进入房间:', currentRoomInfo);
-        // 显示提示信息
-        wx.showToast({
-          title: '正在回到房间...',
-          icon: 'loading',
-          duration: 1000
-        });
-        // 延迟一下确保页面完全加载
-        setTimeout(() => {
-          this.enterRoom(currentRoomInfo.roomId, currentRoomInfo.roomCode);
-        }, 800);
-        return;
-      } else {
-        // 房间信息过期，清除
-        console.log('房间信息已过期，清除:', currentRoomInfo);
-        wx.removeStorageSync('current_room_info');
-        wx.showToast({
-          title: '房间信息已过期',
-          icon: 'none',
-          duration: 1500
-        });
-      }
-    }
+    // 房间自动进入逻辑已由restartStrategy处理，这里不再需要
 
     // 检查用户信息，如果app.js已经静默登录成功，直接使用
     const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
@@ -126,8 +81,18 @@ Page({
       }
 
       console.log('开始自动登录...')
+      
+      // 显示加载提示
+      wx.showLoading({
+        title: '正在登录...',
+        mask: true
+      })
+      
       const userInfo = await app.autoLogin()
       console.log('自动登录成功:', userInfo)
+      
+      // 隐藏加载提示
+      wx.hideLoading()
       
       // 更新页面显示（保存完整的用户信息）
       this.setData({
@@ -143,7 +108,26 @@ Page({
       
     } catch (error) {
       console.error('自动登录失败:', error)
-      // 自动登录失败不影响页面正常显示，用户仍可以手动登录
+      
+      // 隐藏加载提示
+      wx.hideLoading()
+      
+      // 显示友好的错误提示
+      wx.showModal({
+        title: '登录失败',
+        content: '自动登录失败，请检查网络连接后重试',
+        showCancel: true,
+        cancelText: '稍后重试',
+        confirmText: '重新登录',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户选择重新登录，重试自动登录
+            setTimeout(() => {
+              this.autoLogin()
+            }, 1000)
+          }
+        }
+      })
     }
   },
 
@@ -154,32 +138,44 @@ Page({
       const localUserInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
       
       if (localUserInfo && localUserInfo.user_id) {
-        // 使用缓存管理工具获取用户信息（优先从缓存，缓存失效时从服务器获取）
-        const updatedUserInfo = await userCache.getUserInfo(localUserInfo.user_id)
+        console.log('找到本地用户信息，尝试从服务器获取最新信息:', localUserInfo.user_id)
         
-        if (updatedUserInfo) {
-          // 更新全局数据
-          app.globalData.userInfo = updatedUserInfo
+        try {
+          // 使用缓存管理工具获取用户信息（优先从缓存，缓存失效时从服务器获取）
+          const updatedUserInfo = await userCache.getUserInfo(localUserInfo.user_id)
           
-          this.setData({
-            userInfo: updatedUserInfo
-          })
-          
-          console.log('从缓存/数据库加载用户信息成功:', updatedUserInfo)
-          return
+          if (updatedUserInfo) {
+            // 更新全局数据
+            app.globalData.userInfo = updatedUserInfo
+            
+            this.setData({
+              userInfo: updatedUserInfo
+            })
+            
+            console.log('从缓存/数据库加载用户信息成功:', updatedUserInfo)
+            return
+          }
+        } catch (serverError) {
+          console.error('从服务器获取用户信息失败:', serverError)
+          // 服务器获取失败，使用本地缓存的信息
         }
       }
       
-      // 如果数据库中没有数据，使用本地存储的信息或默认值
-      if (localUserInfo) {
+      // 如果数据库中没有数据或获取失败，使用本地存储的信息或默认值
+      if (localUserInfo && localUserInfo.user_id) {
+        console.log('使用本地缓存的用户信息:', localUserInfo)
         this.setData({
           userInfo: {
             user_id: localUserInfo.user_id,
             nickName: localUserInfo.nickName || '微信用户',
-            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png'
+            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png',
+            openid: localUserInfo.openid || localUserInfo.Openid,
+            nickname: localUserInfo.nickname,
+            avatar_url: localUserInfo.avatar_url
           }
         })
       } else {
+        console.log('没有用户信息，显示默认值')
         // 完全没有用户信息，显示默认值
         this.setData({
           userInfo: {
@@ -193,12 +189,15 @@ Page({
       
       // 出错时使用本地存储的信息或默认值
       const localUserInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
-      if (localUserInfo) {
+      if (localUserInfo && localUserInfo.user_id) {
         this.setData({
           userInfo: {
             user_id: localUserInfo.user_id,
             nickName: localUserInfo.nickName || '微信用户',
-            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png'
+            avatarUrl: localUserInfo.avatarUrl || '/images/default-avatar.png',
+            openid: localUserInfo.openid || localUserInfo.Openid,
+            nickname: localUserInfo.nickname,
+            avatar_url: localUserInfo.avatar_url
           }
         })
       } else {
@@ -340,41 +339,6 @@ Page({
     }
   },
 
-  // 进入指定房间（用于自动回到房间功能）
-  enterRoom(roomId, roomCode) {
-    console.log('enterRoom被调用，roomId:', roomId, 'roomCode:', roomCode)
-    
-    if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== 0) {
-      const url = `/pages/room/room?roomId=${roomId}`
-      console.log('自动进入房间URL:', url)
-      
-      wx.redirectTo({
-        url: url,
-        success: () => {
-          console.log('自动进入房间成功')
-        },
-        fail: (error) => {
-          console.error('自动进入房间失败:', error)
-          wx.showToast({
-            title: '进入房间失败',
-            icon: 'none',
-            duration: 2000
-          })
-          // 清除无效的房间信息
-          wx.removeStorageSync('current_room_info')
-        }
-      })
-    } else {
-      console.error('房间ID无效:', roomId)
-      wx.showToast({
-        title: '房间信息无效',
-        icon: 'none',
-        duration: 2000
-      })
-      // 清除无效的房间信息
-      wx.removeStorageSync('current_room_info')
-    }
-  },
 
   // 创建房间
   async createRoom() {

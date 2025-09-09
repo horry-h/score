@@ -52,7 +52,14 @@ Page({
           newRooms = [];
         }
         
-        const rooms = this.data.page === 1 ? newRooms : [...this.data.rooms, ...newRooms];
+        // 处理房间数据，格式化时间和分数
+        const processedRooms = newRooms.map(room => ({
+          ...room,
+          formatted_time: this.formatTimestamp(room.created_at),
+          formatted_score: this.formatScore(room.final_score)
+        }));
+        
+        const rooms = this.data.page === 1 ? processedRooms : [...this.data.rooms, ...processedRooms];
         
         this.setData({
           rooms,
@@ -124,4 +131,42 @@ Page({
       url: '/pages/index/index'
     });
   },
+
+  // 格式化时间戳为可读时间
+  formatTimestamp(timestamp) {
+    if (!timestamp) return '未知时间';
+    
+    try {
+      // 如果是Unix时间戳（秒），需要转换为毫秒
+      const date = new Date(timestamp * 1000);
+      
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) {
+        return '时间格式错误';
+      }
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    } catch (error) {
+      console.error('时间格式化失败:', error);
+      return '时间解析失败';
+    }
+  },
+
+  // 格式化分数
+  formatScore(score) {
+    if (score === null || score === undefined) return '0';
+    
+    // 确保分数完整显示，不省略
+    const num = parseInt(score);
+    if (isNaN(num)) return '0';
+    
+    // 显示正负号和完整数字
+    return num > 0 ? `+${num}` : num.toString();
+  }
 });

@@ -172,8 +172,8 @@ Page({
   },
 
   onHide() {
-    // 保存当前房间信息，用于用户重新进入时自动回到房间
-    this.saveCurrentRoomInfo();
+    // 断开WebSocket连接
+    this.disconnectWebSocket();
   },
 
   onUnload() {
@@ -182,24 +182,6 @@ Page({
     
     // 清理缓存，释放内存
     this.cleanupCache();
-    
-    // 清除当前房间信息（用户主动离开房间）
-    wx.removeStorageSync('current_room_info');
-    console.log('用户离开房间，清除房间信息');
-  },
-
-  // 保存当前房间信息
-  saveCurrentRoomInfo() {
-    if (this.data.roomId && this.data.roomInfo) {
-      const roomInfo = {
-        roomId: this.data.roomId,
-        roomCode: this.data.roomInfo.room_code,
-        roomStatus: this.data.roomInfo.status,
-        timestamp: Date.now()
-      };
-      wx.setStorageSync('current_room_info', roomInfo);
-      console.log('保存当前房间信息:', roomInfo);
-    }
   },
 
   // 加载房间数据

@@ -140,6 +140,10 @@ App({
     } catch (error) {
       console.error('静默自动登录失败:', error)
       // 静默失败，不显示任何提示，让用户正常使用
+      // 但确保全局数据中有基本的用户信息结构
+      if (!this.globalData.userInfo) {
+        this.globalData.userInfo = null
+      }
     }
   },
 

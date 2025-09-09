@@ -40,11 +40,11 @@
           <view class="room-info">
             <view class="room-time">
               <text class="icon">📅</text>
-              <text>{{item.created_at | formatTimestamp}}</text>
+              <text class="time-text">{{item.formatted_time}}</text>
             </view>
-            <view class="room-score {{item.final_score > 0 ? 'positive' : 'negative'}}">
+            <view class="room-score {{item.final_score > 0 ? 'positive' : (item.final_score < 0 ? 'negative' : 'neutral')}}">
               <text class="icon">💰</text>
-              <text>{{item.final_score | formatScore}}分</text>
+              <text class="score-text">{{item.formatted_score}}分</text>
             </view>
           </view>
           <view class="room-stats">
