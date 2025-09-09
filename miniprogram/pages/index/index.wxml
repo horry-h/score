@@ -3,7 +3,6 @@
   <!-- 头部区域 -->
   <view class="common-header">
     <view class="common-header-left">
-      <text class="title-icon">🏠</text>
       <text class="title-text">记分助手</text>
     </view>
     <view class="common-header-title"></view>
