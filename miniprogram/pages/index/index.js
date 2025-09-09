@@ -2,6 +2,7 @@
 const api = require('../../utils/api')
 const eventBus = require('../../utils/eventBus')
 const userCache = require('../../utils/userCache')
+const version = require('../../utils/version')
 const app = getApp()
 
 Page({
@@ -256,6 +257,9 @@ Page({
         }
         
         if (activeRoom) {
+          // 添加格式化时间，使用last_accessed_at字段
+          activeRoom.formatted_time = this.formatTimestamp(activeRoom.last_accessed_at);
+          
           this.setData({
             recentRoom: activeRoom
           })
@@ -1064,17 +1068,59 @@ Page({
 
   // 分享给好友
   onShareAppMessage() {
+    const versionInfo = version.getCurrentVersion();
+    const sharePath = version.generateSharePath('/pages/index/index');
+    
     return {
-      title: '记分助手',
-      path: '/pages/index/index'
+      title: `记分助手 (${version.getVersionDisplayName()})`,
+      path: sharePath
     }
   },
 
   // 分享到朋友圈
   onShareTimeline() {
+    const versionInfo = version.getCurrentVersion();
+    const sharePath = version.generateSharePath('/pages/index/index');
+    
     return {
-      title: '记分助手',
-      path: '/pages/index/index'
+      title: `记分助手 (${version.getVersionDisplayName()})`,
+      path: sharePath
+    }
+  },
+
+  // 格式化时间戳为可读时间
+  formatTimestamp(timestamp) {
+    if (!timestamp) return '未知时间';
+    
+    try {
+      let date;
+      
+      // 判断时间格式类型
+      if (typeof timestamp === 'string') {
+        // ISO 8601 格式字符串，如 "2025-09-10T01:43:29+08:00"
+        date = new Date(timestamp);
+      } else if (typeof timestamp === 'number') {
+        // Unix时间戳（秒），需要转换为毫秒
+        date = new Date(timestamp * 1000);
+      } else {
+        return '时间格式错误';
+      }
+      
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) {
+        return '时间格式错误';
+      }
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    } catch (error) {
+      console.error('时间格式化失败:', error, '原始数据:', timestamp);
+      return '时间解析失败';
     }
   }
 })

@@ -1,6 +1,7 @@
 // room.js
 const api = require('../../utils/api');
 const wsManager = require('../../utils/websocket');
+const version = require('../../utils/version');
 const app = getApp();
 
 Page({
@@ -262,6 +263,13 @@ Page({
         if (this.data.roomCode && !this.data.roomId) {
           this.setData({ roomId: roomData.id });
           console.log('从roomCode获取到roomId:', roomData.id);
+        }
+        
+        // 检查用户是否在房间中，如果不在则自动加入
+        const userInRoom = await this.checkAndAutoJoinRoom(roomData);
+        if (!userInRoom) {
+          wx.hideLoading();
+          return;
         }
         
         // 现在加载玩家信息和转移记录
@@ -582,6 +590,127 @@ Page({
     finalTransfers.sort((a, b) => b.id - a.id);
     
     return finalTransfers;
+  },
+
+  // 检查用户是否在房间中，如果不在则自动加入
+  async checkAndAutoJoinRoom(roomData) {
+    try {
+      const userInfo = this.data.userInfo || app.globalData.userInfo;
+      if (!userInfo || !userInfo.user_id) {
+        console.error('用户信息不可用');
+        return false;
+      }
+
+      // 检查用户是否已经在房间中
+      const playersResponse = await api.getRoomPlayers(this.data.roomId);
+      if (playersResponse.code === 200) {
+        let players;
+        try {
+          players = typeof playersResponse.data === 'string' ? JSON.parse(playersResponse.data) : playersResponse.data;
+        } catch (error) {
+          console.error('解析玩家数据失败:', error);
+          return false;
+        }
+
+        // 检查当前用户是否在玩家列表中
+        const userInRoom = players.some(player => player.user_id === userInfo.user_id);
+        if (userInRoom) {
+          console.log('用户已在房间中');
+          return true;
+        }
+      }
+
+      // 用户不在房间中，尝试自动加入
+      console.log('用户不在房间中，尝试自动加入...');
+      wx.showLoading({ title: '正在加入房间...' });
+
+      try {
+        const joinResponse = await api.joinRoom(userInfo.user_id, this.data.roomId);
+        
+        // 添加详细的响应日志
+        console.log('加入房间API响应:', joinResponse);
+        console.log('响应类型:', typeof joinResponse);
+        console.log('响应code:', joinResponse.code, '类型:', typeof joinResponse.code);
+        console.log('响应message:', joinResponse.message, '类型:', typeof joinResponse.message);
+        
+        if (joinResponse.code === 200) {
+          console.log('自动加入房间成功');
+          wx.hideLoading();
+          wx.showToast({
+            title: '已加入房间',
+            icon: 'success',
+            duration: 1500
+          });
+          return true;
+        } else {
+          console.error('加入房间失败:', joinResponse.message);
+          wx.hideLoading();
+          wx.showModal({
+            title: '加入失败',
+            content: joinResponse.message || '无法加入房间',
+            showCancel: false,
+            confirmText: '知道了',
+            success: () => {
+              wx.navigateBack();
+            }
+          });
+          return false;
+        }
+      } catch (error) {
+        console.error('加入房间API调用失败:', error);
+        wx.hideLoading();
+        
+        // 处理API reject的情况，检查错误信息
+        const errorMessage = error.message || error.toString();
+        console.log('错误信息:', errorMessage);
+        
+        if (errorMessage.includes('已在房间中')) {
+          console.log('用户已在房间中（通过错误信息确认）');
+          wx.showToast({
+            title: '您已在此房间中',
+            icon: 'success',
+            duration: 1500
+          });
+          return true;
+        } else if (errorMessage.includes('房间已结算')) {
+          console.log('房间已结算，无法加入');
+          wx.showModal({
+            title: '房间已结束',
+            content: '该房间已经结算，无法加入',
+            showCancel: false,
+            confirmText: '知道了',
+            success: () => {
+              wx.navigateBack();
+            }
+          });
+          return false;
+        } else {
+          wx.showModal({
+            title: '加入失败',
+            content: errorMessage || '网络错误，请重试',
+            showCancel: false,
+            confirmText: '知道了',
+            success: () => {
+              wx.navigateBack();
+            }
+          });
+          return false;
+        }
+      }
+    } catch (error) {
+      console.error('检查并加入房间失败:', error);
+      wx.hideLoading();
+      wx.showModal({
+        title: '加入失败',
+        content: '网络错误，请重试',
+        showCancel: false,
+        confirmText: '知道了',
+        success: () => {
+          wx.navigateBack();
+        }
+      });
+      return false;
+    }
   },
 
   // 增量更新流水记录
@@ -912,17 +1041,21 @@ Page({
       const roomId = res.target.dataset.roomId;
       console.log('从分享按钮分享，房间ID:', roomId);
       
+      const sharePath = version.generateSharePath('/pages/room/room', { roomId });
+      
       return {
-        title: '记分助手',
-        path: `/pages/room/room?roomId=${roomId}`
+        title: `记分助手 (${version.getVersionDisplayName()})`,
+        path: sharePath
       };
     } else {
       // 从右上角菜单分享，进入加入房间页面
       console.log('从右上角菜单分享');
       
+      const sharePath = version.generateSharePath('/pages/room/room', { roomId: this.data.roomInfo.id });
+      
       return {
-        title: '记分助手',
-        path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
+        title: `记分助手 (${version.getVersionDisplayName()})`,
+        path: sharePath
       };
     }
   },
@@ -931,9 +1064,11 @@ Page({
   onShareTimeline() {
     console.log('分享到朋友圈');
     
+    const sharePath = version.generateSharePath('/pages/room/room', { roomId: this.data.roomInfo.id });
+    
     return {
-      title: '记分助手',
-      path: `/pages/join-room/join-room?roomId=${this.data.roomInfo.id}`
+      title: `记分助手 (${version.getVersionDisplayName()})`,
+      path: sharePath
     };
   },
 

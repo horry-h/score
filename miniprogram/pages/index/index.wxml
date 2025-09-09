@@ -32,7 +32,7 @@
       <view class="room-info">
         <view class="room-time">
           <text class="time-icon">📅</text>
-          <text class="time-text">{{recentRoom.room_name}}</text>
+          <text class="time-text">{{recentRoom.formatted_time}}</text>
         </view>
         <view class="room-score">
           <text class="score-icon">💰</text>

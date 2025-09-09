@@ -1,7 +1,6 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/join-room/join-room",
     "pages/room/room",
     "pages/room-detail/room-detail",
     "pages/transfer/transfer",

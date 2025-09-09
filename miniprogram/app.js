@@ -2,6 +2,7 @@
 const api = require('./utils/api')
 const eventBus = require('./utils/eventBus')
 const userCache = require('./utils/userCache')
+const version = require('./utils/version')
 
 App({
   // 注册过滤器
@@ -177,9 +178,11 @@ App({
 
   // 全局分享配置
   onShareAppMessage() {
+    const sharePath = version.generateSharePath('/pages/index/index');
+    
     return {
-      title: '记分助手',
-      path: '/pages/index/index'
+      title: `记分助手 (${version.getVersionDisplayName()})`,
+      path: sharePath
     }
   },
 
