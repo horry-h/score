@@ -52,6 +52,12 @@ Page({
           newRooms = [];
         }
         
+        // 确保 newRooms 是数组
+        if (!Array.isArray(newRooms)) {
+          console.warn('房间列表数据不是数组:', newRooms);
+          newRooms = [];
+        }
+        
         // 处理房间数据，格式化时间和分数
         const processedRooms = newRooms.map(room => ({
           ...room,

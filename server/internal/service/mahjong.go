@@ -776,6 +776,11 @@ func (s *MahjongService) GetUserRooms(ctx context.Context, req *GetUserRoomsRequ
 		rooms = append(rooms, room)
 	}
 
+	// 如果没有房间，返回空数组而不是null
+	if len(rooms) == 0 {
+		rooms = []map[string]interface{}{}
+	}
+	
 	roomsData, _ := json.Marshal(rooms)
 	return &Response{Code: 200, Message: "获取成功", Data: string(roomsData)}, nil
 }

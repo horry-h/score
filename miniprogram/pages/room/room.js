@@ -20,6 +20,7 @@ Page({
     qrCodeData: null,
     qrCodeLoading: false,
     showAvatarOverlay: false, // 是否显示头像蒙层提示
+    avatarOverlayDismissed: false, // 头像蒙层是否已被用户主动关闭
     selectedPlayerId: null, // 当前选中的玩家ID（用于转移分数）
     profileForm: {
       nickname: '微信用户',
@@ -1386,6 +1387,11 @@ Page({
 
   // 检查是否应该显示头像蒙层提示
   shouldShowAvatarOverlay(userInfo) {
+    // 如果用户已经主动关闭过蒙层，不再显示
+    if (this.data.avatarOverlayDismissed) {
+      return false;
+    }
+    
     if (!userInfo || !userInfo.nickname) {
       return true; // 没有昵称信息时显示提示
     }
@@ -1396,7 +1402,10 @@ Page({
 
   // 关闭头像蒙层提示并打开用户信息修改浮窗
   closeAvatarOverlay() {
-    this.setData({ showAvatarOverlay: false });
+    this.setData({ 
+      showAvatarOverlay: false,
+      avatarOverlayDismissed: true // 标记蒙层已被用户主动关闭
+    });
     // 立即打开用户信息修改浮窗
     this.showProfileModal();
   },
