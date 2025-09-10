@@ -788,8 +788,11 @@ Page({
 
   // 快速转移
   async quickTransfer(e) {
+    console.log('quickTransfer 被调用', e);
     const player = e.currentTarget.dataset.player;
+    console.log('点击的玩家信息:', player);
     const { currentUserId } = this.data;
+    console.log('当前用户ID:', currentUserId);
 
     // 检查房间状态，如果已结算则不允许转移
     if (this.data.roomInfo.status === 2) {
@@ -860,7 +863,7 @@ Page({
   showTransferInput(playerName, currentScore) {
     return new Promise((resolve) => {
       wx.showModal({
-        title: '转移分数',
+        title: `转给:${playerName}`,
         content: '',
         editable: true,
         placeholderText: '1',
@@ -888,6 +891,7 @@ Page({
       });
     });
   },
+
 
   // 跳转到详细转移页面
   goToTransfer() {
@@ -1578,7 +1582,10 @@ Page({
         })
         
         // 关闭头像蒙层提示（因为用户已经修改了昵称）
-        this.closeAvatarOverlay();
+        this.setData({
+          showAvatarOverlay: false,
+          avatarOverlayDismissed: true // 标记蒙层已被用户主动关闭
+        });
         
         this.hideProfileModal()
         this.loadRoomData() // 重新加载房间数据以更新显示
