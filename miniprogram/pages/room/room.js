@@ -235,8 +235,6 @@ Page({
         showAvatarOverlay: shouldShowAvatarOverlay
       });
 
-      wx.showLoading({ title: '加载中...' });
-      
       console.log('开始加载房间数据，roomId:', this.data.roomId, 'roomCode:', this.data.roomCode);
       
       // 先获取房间信息
@@ -252,7 +250,6 @@ Page({
           console.log('解析后的房间数据:', roomData);
         } catch (error) {
           console.error('解析房间数据失败:', error);
-          wx.hideLoading();
           wx.showToast({
             title: '房间数据解析失败',
             icon: 'none'
@@ -275,7 +272,6 @@ Page({
         // 检查用户是否在房间中，如果不在则自动加入
         const userInRoom = await this.checkAndAutoJoinRoom(roomData);
         if (!userInRoom) {
-          wx.hideLoading();
           return;
         }
         
@@ -439,17 +435,13 @@ Page({
           console.log('流水记录已更新，总数:', updatedTransfers.length);
         }
       } else {
-        wx.hideLoading();
         wx.showToast({
           title: roomResponse.message || '加载房间信息失败',
           icon: 'none'
         });
         return;
       }
-
-      wx.hideLoading();
     } catch (error) {
-      wx.hideLoading();
       console.error('加载房间数据失败:', error);
       wx.showToast({
         title: '加载房间数据失败',
@@ -642,7 +634,6 @@ Page({
         
         if (joinResponse.code === 200) {
           console.log('自动加入房间成功');
-          wx.hideLoading();
           wx.showToast({
             title: '已加入房间',
             icon: 'success',
@@ -651,7 +642,6 @@ Page({
           return true;
         } else {
           console.error('加入房间失败:', joinResponse.message);
-          wx.hideLoading();
           wx.showModal({
             title: '加入失败',
             content: joinResponse.message || '无法加入房间',
@@ -665,7 +655,6 @@ Page({
         }
       } catch (error) {
         console.error('加入房间API调用失败:', error);
-        wx.hideLoading();
         
         // 处理API reject的情况，检查错误信息
         const errorMessage = error.message || error.toString();
@@ -706,7 +695,6 @@ Page({
       }
     } catch (error) {
       console.error('检查并加入房间失败:', error);
-      wx.hideLoading();
       wx.showModal({
         title: '加入失败',
         content: '网络错误，请重试',
@@ -822,14 +810,12 @@ Page({
         return;
       }
 
-      wx.showLoading({ title: '转移中...' });
       const response = await api.transferScore(
         this.data.roomId,
         currentUserId,
         player.user_id,
         amount
       );
-      wx.hideLoading();
 
       if (response.code === 200) {
         wx.showToast({

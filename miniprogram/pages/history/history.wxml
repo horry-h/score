@@ -43,7 +43,6 @@
               <text class="time-text">{{item.formatted_time}}</text>
             </view>
             <view class="room-score {{item.final_score > 0 ? 'positive' : (item.final_score < 0 ? 'negative' : 'neutral')}}">
-              <text class="icon">💰</text>
               <text class="score-text">{{item.formatted_score}}分</text>
             </view>
           </view>
