@@ -197,7 +197,6 @@
           <input 
             class="form-input" 
             type="number" 
-            placeholder="请输入房间号" 
             value="{{roomCode}}"
             bindinput="onRoomCodeInput"
           />

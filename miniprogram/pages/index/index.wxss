@@ -433,7 +433,7 @@
 
 .profile-modal .form-input {
   width: 100%;
-  padding: 24rpx 20rpx;
+  padding: 32rpx 20rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 16rpx;
   font-size: 32rpx;
@@ -441,6 +441,7 @@
   box-sizing: border-box;
   transition: all 0.3s ease;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  min-height: 80rpx;
 }
 
 .profile-modal .form-input:focus {
@@ -758,7 +759,7 @@
 
 .form-input {
   width: 100%;
-  padding: 24rpx 20rpx;
+  padding: 32rpx 20rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 16rpx;
   font-size: 32rpx;
@@ -766,6 +767,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
+  min-height: 80rpx;
 }
 
 .form-input:focus {
@@ -921,7 +923,7 @@
 
 .join-room-body .form-input {
   width: 100%;
-  padding: 24rpx 20rpx;
+  padding: 32rpx 20rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 16rpx;
   font-size: 32rpx;
@@ -929,6 +931,7 @@
   box-sizing: border-box;
   transition: all 0.3s ease;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  min-height: 80rpx;
 }
 
 .join-room-body .form-input:focus {
