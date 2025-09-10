@@ -592,11 +592,17 @@ Page({
         
         if (joinResponse.code === 200) {
           console.log('自动加入房间成功');
-          wx.showToast({
-            title: '已加入房间',
-            icon: 'success',
-            duration: 1500
-          });
+          
+          // 检查是否是"已在房间中"的情况
+          if (joinResponse.message && joinResponse.message.includes('已在房间中')) {
+            console.log('用户已在房间中，无需重复加入');
+          } else {
+            wx.showToast({
+              title: '已加入房间',
+              icon: 'success',
+              duration: 1500
+            });
+          }
           return true;
         } else {
           console.error('加入房间失败:', joinResponse.message);

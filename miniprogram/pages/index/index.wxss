@@ -680,6 +680,22 @@
   letter-spacing: 0.5rpx;
 }
 
+/* 创建中状态样式 */
+.action-btn.creating {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.action-btn.creating .btn-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 登录浮窗样式 */
 .login-modal {
   position: fixed;

@@ -78,9 +78,9 @@
     </view>
     
     <view class="action-buttons">
-      <button class="action-btn primary" bindtap="createRoom">
-        <text class="btn-icon">➕</text>
-        <text class="btn-text">创建房间</text>
+      <button class="action-btn primary {{creatingRoom ? 'creating' : ''}}" bindtap="createRoom" disabled="{{creatingRoom}}">
+        <text class="btn-icon">{{creatingRoom ? '⏳' : '➕'}}</text>
+        <text class="btn-text">{{creatingRoom ? '创建中...' : '创建房间'}}</text>
       </button>
       <button class="action-btn secondary" bindtap="joinRoom">
         <text class="btn-icon">📱</text>

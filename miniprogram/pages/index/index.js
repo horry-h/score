@@ -13,6 +13,7 @@ Page({
     },
     recentRoom: null,
     loading: false,
+    creatingRoom: false, // 防止重复点击创建房间
     showLoginModal: false,
     showProfileModal: false,
     showJoinRoomModal: false,
@@ -348,12 +349,21 @@ Page({
 
   // 创建房间
   async createRoom() {
+    // 防止重复点击
+    if (this.data.creatingRoom) {
+      console.log('正在创建房间中，请勿重复点击');
+      return;
+    }
+
     // 检查用户是否已登录
     const userInfo = app.globalData.userInfo || userCache.getCachedUserInfo()
     if (!userInfo || !userInfo.user_id) {
       this.showLoginModal()
       return
     }
+    
+    // 设置创建中状态
+    this.setData({ creatingRoom: true });
     
     try {
       wx.showLoading({ title: '创建中...' })
@@ -379,6 +389,7 @@ Page({
             title: '房间数据解析失败',
             icon: 'none'
           })
+          this.setData({ creatingRoom: false });
           return
         }
         
@@ -394,6 +405,7 @@ Page({
         
         // 直接跳转到房间页面
         setTimeout(() => {
+          this.setData({ creatingRoom: false });
           wx.redirectTo({
             url: `/pages/room/room?roomId=${roomData.room_id}`,
           });
@@ -404,6 +416,7 @@ Page({
           title: response.message || '创建房间失败',
           icon: 'none'
         })
+        this.setData({ creatingRoom: false });
       }
     } catch (error) {
       wx.hideLoading()
@@ -412,6 +425,7 @@ Page({
         title: '创建房间失败',
         icon: 'none'
       })
+      this.setData({ creatingRoom: false });
     }
   },
 
