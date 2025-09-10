@@ -170,8 +170,7 @@ Page({
   onShow() {
     if (this.data.roomId) {
       this.loadRoomData();
-      // 连接WebSocket
-      this.connectWebSocket();
+      // WebSocket连接将在loadRoomData完成后建立
     }
   },
 
@@ -315,63 +314,10 @@ Page({
           // 检查当前用户是否在玩家列表中
           const currentUserInList = playersData.find(player => player.user_id === userInfo.user_id);
           if (!currentUserInList) {
-            console.log('当前用户不在房间中，尝试自动加入房间...');
-            console.log('使用用户信息:', userInfo);
-            try {
-              // 自动加入房间
-              const joinResponse = await api.joinRoom(userInfo.user_id, this.data.roomId);
-              console.log('自动加入房间响应:', joinResponse);
-              
-              if (joinResponse.code === 200) {
-                console.log('自动加入房间成功');
-                wx.showToast({
-                  title: '欢迎加入房间！',
-                  icon: 'success',
-                  duration: 2000
-                });
-                
-                // 重新获取玩家列表
-                const updatedPlayersResponse = await api.getRoomPlayers(this.data.roomId);
-                if (updatedPlayersResponse.code === 200) {
-                  let updatedPlayersData;
-                  try {
-                    updatedPlayersData = typeof updatedPlayersResponse.data === 'string' ? JSON.parse(updatedPlayersResponse.data) : updatedPlayersResponse.data;
-                  } catch (error) {
-                    console.error('解析更新后的玩家数据失败:', error);
-                    updatedPlayersData = playersData;
-                  }
-                  playersData = updatedPlayersData || playersData;
-                }
-              } else if (joinResponse.code === 400 && joinResponse.message === '房间已结算') {
-                console.log('房间已结算，无法加入');
-                wx.showToast({
-                  title: '房间已结束',
-                  icon: 'none'
-                });
-                return;
-              } else if (joinResponse.code === 404) {
-                console.log('房间不存在');
-                wx.showToast({
-                  title: '房间不存在',
-                  icon: 'none'
-                });
-                return;
-              } else {
-                console.log('自动加入房间失败:', joinResponse.message);
-                wx.showToast({
-                  title: joinResponse.message || '加入房间失败',
-                  icon: 'none'
-                });
-                return;
-              }
-            } catch (error) {
-              console.error('自动加入房间时发生错误:', error);
-              wx.showToast({
-                title: '加入房间失败',
-                icon: 'none'
-              });
-              return;
-            }
+            console.log('当前用户不在房间中，但checkAndAutoJoinRoom应该已经处理了加入逻辑');
+            // 如果用户不在房间中，说明checkAndAutoJoinRoom没有成功加入房间
+            // 这里不需要重复处理，直接返回
+            return;
           } else {
             console.log('当前用户已在房间中');
           }
@@ -456,6 +402,11 @@ Page({
         wx.hideLoading();
       }
       this.setData({ loading: false });
+      
+      // 在数据加载完成后建立WebSocket连接
+      if (this.data.roomId && this.data.currentUserId) {
+        this.connectWebSocket();
+      }
     }
   },
 
@@ -831,7 +782,7 @@ Page({
         });
         // 转移成功后清除选中状态
         this.setData({ selectedPlayerId: null });
-        this.loadRoomData(); // 重新加载数据
+        this.loadRoomData(false); // 重新加载数据，但不显示加载提示
       } else {
         wx.showToast({
           title: response.message || '转移失败',
@@ -1850,7 +1801,7 @@ Page({
   // 处理玩家加入事件
   handlePlayerJoined(data) {
     // 重新加载房间数据以获取最新的玩家列表
-    this.loadRoomData();
+    this.loadRoomData(false);
     
     // 显示欢迎消息
     if (data.player && data.player.nickname) {
@@ -1865,7 +1816,7 @@ Page({
   // 处理玩家离开事件
   handlePlayerLeft(data) {
     // 重新加载房间数据
-    this.loadRoomData();
+    this.loadRoomData(false);
     
     // 显示离开消息
     if (data.player && data.player.nickname) {
@@ -1883,7 +1834,7 @@ Page({
     this.updateTransfersIncremental();
     
     // 重新加载玩家数据以获取最新分数
-    this.loadRoomData();
+    this.loadRoomData(false);
     
     // 显示转移消息
     if (data.transfer) {
@@ -1899,7 +1850,7 @@ Page({
   // 处理房间结算事件
   handleRoomSettled(data) {
     // 重新加载房间数据
-    this.loadRoomData();
+    this.loadRoomData(false);
     
     // 显示结算消息
     wx.showToast({
@@ -1912,12 +1863,12 @@ Page({
   // 处理玩家信息更新事件
   handlePlayerUpdated(data) {
     // 重新加载房间数据
-    this.loadRoomData();
+    this.loadRoomData(false);
   },
 
   // 处理房间信息更新事件
   handleRoomUpdated(data) {
     // 重新加载房间数据
-    this.loadRoomData();
+    this.loadRoomData(false);
   }
 });
