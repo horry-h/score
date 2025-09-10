@@ -257,7 +257,7 @@ Page({
         }
         
         if (activeRoom) {
-          // 添加格式化时间，使用last_accessed_at字段
+          // 添加格式化时间，使用房间创建时间
           activeRoom.formatted_time = this.formatTimestamp(activeRoom.last_accessed_at);
           
           this.setData({

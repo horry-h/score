@@ -834,14 +834,14 @@ func (s *MahjongService) GetRoomDetail(ctx context.Context, req *GetRoomDetailRe
 func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest) (*Response, error) {
 	// 查询最近20个房间，限制数量以优化性能
 	rows, err := s.db.Query(`
-		SELECT r.id, r.room_code, r.room_name, r.status, rp.joined_at,
+		SELECT r.id, r.room_code, r.room_name, r.status, r.created_at,
 		       rp.current_score,
 		       (SELECT COUNT(*) FROM room_players WHERE room_id = r.id) as player_count,
 		       (SELECT COUNT(*) FROM score_transfers WHERE room_id = r.id) as transfer_count
 		FROM room_players rp
 		INNER JOIN rooms r ON rp.room_id = r.id
 		WHERE rp.user_id = ? AND r.status = 1
-		ORDER BY rp.joined_at DESC
+		ORDER BY r.created_at DESC
 		LIMIT 20
 	`, req.UserId)
 	
@@ -853,18 +853,18 @@ func (s *MahjongService) GetRecentRoom(ctx context.Context, req *GetUserRequest)
 	var recentRooms []RecentRoom
 	for rows.Next() {
 		var recentRoom RecentRoom
-		var lastAccessedAt time.Time
+		var createdAt time.Time
 		
 		err := rows.Scan(
 			&recentRoom.RoomId, &recentRoom.RoomCode, &recentRoom.RoomName, &recentRoom.Status,
-			&lastAccessedAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
+			&createdAt, &recentRoom.CurrentScore, &recentRoom.PlayerCount, &recentRoom.TransferCount,
 		)
 		if err != nil {
 			return &Response{Code: 500, Message: "解析房间数据失败"}, nil
 		}
 		
-		// 转换时间戳
-		recentRoom.LastAccessedAt = lastAccessedAt
+		// 设置房间创建时间
+		recentRoom.LastAccessedAt = createdAt
 		recentRooms = append(recentRooms, recentRoom)
 	}
 	
