@@ -221,6 +221,7 @@ Page({
 
     try {
       this.setData({ loading: true })
+      wx.showLoading({ title: '加载中...' })
       const response = await api.getRecentRoom(userInfo.user_id)
       
       console.log('getRecentRoom响应:', response)
@@ -280,6 +281,7 @@ Page({
         recentRoom: null
       })
     } finally {
+      wx.hideLoading()
       this.setData({ loading: false })
     }
   },

@@ -144,11 +144,11 @@ Page({
       
       console.log('使用roomId进入房间:', parsedRoomId);
       this.setData({ roomId: parsedRoomId });
-      this.loadRoomData();
+      this.loadRoomData(true); // 显示加载提示
     } else if (roomCode && roomCode !== 'undefined' && roomCode !== 'null' && roomCode.trim() !== '') {
       console.log('使用roomCode进入房间:', roomCode);
       this.setData({ roomCode: roomCode });
-      this.loadRoomData();
+      this.loadRoomData(true); // 显示加载提示
     } else {
       console.error('未接收到有效的roomId或roomCode参数:', { roomId, roomCode });
       wx.showToast({
@@ -189,10 +189,14 @@ Page({
   },
 
   // 加载房间数据
-  async loadRoomData() {
+  async loadRoomData(showLoading = false) {
     try {
       console.log('loadRoomData开始，当前roomId:', this.data.roomId);
       console.log('loadRoomData开始，当前roomCode:', this.data.roomCode);
+      
+      if (showLoading) {
+        wx.showLoading({ title: '加载中...' });
+      }
       
       // 用户信息已在onLoad时确保可用
       const userInfo = this.data.userInfo || app.globalData.userInfo || wx.getStorageSync('userInfo');
@@ -448,6 +452,9 @@ Page({
         icon: 'none'
       });
     } finally {
+      if (showLoading) {
+        wx.hideLoading();
+      }
       this.setData({ loading: false });
     }
   },
