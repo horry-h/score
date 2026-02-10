@@ -106,14 +106,15 @@ if certbot certificates 2>&1 | grep -q "$DOMAIN"; then
     echo ""
     echo "当前证书信息:"
     certbot certificates
+    echo ""
     
-    read -p "是否续期现有证书? (y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "正在续期证书..."
+    # 检查证书是否过期或即将过期
+    if certbot certificates 2>&1 | grep -q "EXPIRED\|INVALID"; then
+        echo "⚠️  检测到证书已过期，自动续期..."
         certbot renew --nginx --force-renewal
     else
-        echo "跳过证书续期"
+        echo "正在检查并续期证书..."
+        certbot renew --nginx --force-renewal
     fi
 else
     echo "正在申请新证书..."
@@ -122,13 +123,7 @@ else
     echo "   2. 防火墙已开放 80 和 443 端口"
     echo "   3. Nginx正在运行"
     echo ""
-    
-    read -p "是否继续申请证书? (y/n): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "❌ 已取消证书申请"
-        exit 1
-    fi
+    echo "开始申请证书..."
     
     # 申请证书(使用nginx插件,自动配置)
     certbot --nginx \
